@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!--
+        Geometric M — clean strokes, Nothing Phone style
+        Canvas: 108x108, safe zone: 18..90 (72dp centred)
+        M bounds: horizontally centred, vertically centred in safe zone
+        Stroke width: 5.2 units
+    -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:strokeColor="#00000000"
+        android:strokeWidth="0"
+        android:pathData="
+            M 37,75
+            L 37,40
+            L 54,56
+            L 71,40
+            L 71,75
+            L 66.2,75
+            L 66.2,48.5
+            L 54,61.5
+            L 41.8,48.5
+            L 41.8,75
+            Z
+        "/>
+</vector>

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MTimer</string>
+    <string name="health_connect_sync_label">Meditation Sync</string>
+</resources>
