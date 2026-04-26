@@ -47,13 +47,13 @@ class SoundPlayer @Inject constructor(
         }
 
         var played = false
-        assetPath?.let { path ->
+        if (assetPath != null) {
             try {
                 // Check if asset exists first
                 val assets = context.assets.list("sounds") ?: emptyArray()
-                val fileName = path.substringAfterLast("/")
+                val fileName = assetPath.substringAfterLast("/")
                 if (assets.contains(fileName)) {
-                    val descriptor = context.assets.openFd(path)
+                    val descriptor = context.assets.openFd(assetPath)
                     val soundPoolId = soundPool?.load(descriptor, 1) ?: -1
                     
                     soundPool?.setOnLoadCompleteListener { pool, sampleId, status ->
@@ -64,7 +64,23 @@ class SoundPlayer @Inject constructor(
                     played = true
                 }
             } catch (e: Exception) {
-                android.util.Log.e("SoundPlayer", "Error playing sound: $path", e)
+                android.util.Log.e("SoundPlayer", "Error playing asset: $assetPath", e)
+            }
+        } else {
+            // Try loading from internal storage (user imported)
+            try {
+                val soundFile = java.io.File(context.filesDir, "sounds/$soundId")
+                if (soundFile.exists()) {
+                    val soundPoolId = soundPool?.load(soundFile.absolutePath, 1) ?: -1
+                    soundPool?.setOnLoadCompleteListener { pool, sampleId, status ->
+                        if (status == 0 && sampleId == soundPoolId) {
+                            requestAudioFocusAndPlay(pool, sampleId)
+                        }
+                    }
+                    played = true
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("SoundPlayer", "Error playing user sound: $soundId", e)
             }
         }
 

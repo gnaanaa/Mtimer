@@ -16,7 +16,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 @Singleton
 class UserPreferencesDataStore @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext val context: Context
 ) {
     private val useLightThemeKey = booleanPreferencesKey("use_light_theme")
     private val isOnboardingCompletedKey = booleanPreferencesKey("onboarding_completed")

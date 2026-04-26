@@ -1,21 +1,36 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Hilt rules
+-keep,allowobfuscation,allowshrinking @dagger.hilt.android.internal.lifecycle.HiltViewModelMap *
+-keep,allowobfuscation,allowshrinking @dagger.hilt.internal.generatesrootinput.InjectedFieldSignature *
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Room rules
+-keep class * extends androidx.room.RoomDatabase
+-dontwarn androidx.room.paging.**
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Health Connect rules
+-keep class androidx.health.connect.client.records.** { *; }
+-keep class androidx.health.connect.client.units.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Kotlin Serialization rules
+-keepattributes *Annotation*, EnclosingMethod, Signature
+-keepclassmembers class ** {
+    @kotlinx.serialization.SerialName <fields>;
+}
+
+# Google Drive API rules
+-keep class com.google.api.services.drive.** { *; }
+-keep class com.google.api.client.** { *; }
+-dontwarn com.google.api.client.googleapis.extensions.android.**
+
+# Coroutines rules
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepnames class kotlinx.coroutines.android.AndroidExceptionPreHandler {}
+-keepnames class kotlinx.coroutines.android.AndroidDispatcherFactory {}
+-keepnames class retrofit2.KotlinExtensions$suspendImpl$1 {}
+-keepnames class retrofit2.KotlinExtensions {}
+
+-keepclassmembernames class kotlinx.coroutines.android.HandlerContext$ScheduledAtFixedRatePost {
+    void run();
+}
+
+-dontwarn kotlinx.coroutines.**

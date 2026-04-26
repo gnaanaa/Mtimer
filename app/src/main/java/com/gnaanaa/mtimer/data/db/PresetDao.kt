@@ -18,6 +18,9 @@ interface PresetDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPreset(preset: PresetEntity)
 
+    @Query("SELECT * FROM presets")
+    suspend fun getAllPresetsList(): List<PresetEntity>
+
     @Delete
     suspend fun deletePreset(preset: PresetEntity)
 }

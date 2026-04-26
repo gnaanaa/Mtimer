@@ -1,6 +1,10 @@
 package com.gnaanaa.mtimer.ui.preset
 
+import android.provider.OpenableColumns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,11 +14,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,13 +33,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
@@ -57,6 +67,22 @@ fun PresetEditScreen(
     // Read the presetId argument that was passed via navigation
     val presetId = backStackEntry.arguments?.getString("presetId") ?: "new"
     val isNew = presetId == "new"
+    val context = LocalContext.current
+
+    val customSounds by viewModel.customSounds.collectAsState()
+
+    val soundPickerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            val name = context.contentResolver.query(it, null, null, null, null)?.use { cursor ->
+                val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                cursor.moveToFirst()
+                cursor.getString(nameIndex)
+            } ?: "imported_sound_${System.currentTimeMillis()}.mp3"
+            viewModel.importSound(it, name)
+        }
+    }
 
     // Local editable state — rememberSaveable survives recomposition
     var name by rememberSaveable { mutableStateOf("") }
@@ -175,7 +201,9 @@ fun PresetEditScreen(
             SoundPicker(
                 label = "Start sound",
                 selectedId = startSoundId,
-                onSelected = { startSoundId = it }
+                customSounds = customSounds,
+                onSelected = { startSoundId = it },
+                onImport = { soundPickerLauncher.launch("audio/*") }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -183,7 +211,9 @@ fun PresetEditScreen(
             SoundPicker(
                 label = "End sound",
                 selectedId = endSoundId,
-                onSelected = { endSoundId = it }
+                customSounds = customSounds,
+                onSelected = { endSoundId = it },
+                onImport = { soundPickerLauncher.launch("audio/*") }
             )
         }
     }
@@ -194,10 +224,14 @@ fun PresetEditScreen(
 private fun SoundPicker(
     label: String,
     selectedId: String,
-    onSelected: (String) -> Unit
+    customSounds: List<String>,
+    onSelected: (String) -> Unit,
+    onImport: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val selectedLabel = SOUND_OPTIONS.firstOrNull { it.first == selectedId }?.second ?: selectedId
+    val selectedLabel = SOUND_OPTIONS.firstOrNull { it.first == selectedId }?.second 
+        ?: customSounds.firstOrNull { it == selectedId }
+        ?: selectedId
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -226,6 +260,34 @@ private fun SoundPicker(
                     }
                 )
             }
+            
+            if (customSounds.isNotEmpty()) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                customSounds.forEach { soundName ->
+                    DropdownMenuItem(
+                        text = { Text(soundName) },
+                        onClick = {
+                            onSelected(soundName)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+            
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            DropdownMenuItem(
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                        Text("Import sound...")
+                    }
+                },
+                onClick = {
+                    onImport()
+                    expanded = false
+                }
+            )
         }
     }
 }

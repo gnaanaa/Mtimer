@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.gnaanaa.mtimer.ui.home.HomeScreen
+import com.gnaanaa.mtimer.ui.history.SessionHistoryScreen
 import com.gnaanaa.mtimer.ui.onboarding.OnboardingScreen
 import com.gnaanaa.mtimer.ui.preset.PresetEditScreen
 import com.gnaanaa.mtimer.ui.preset.PresetListScreen
@@ -19,6 +20,7 @@ sealed class Screen(val route: String) {
     object Timer : Screen("timer")
     object PresetList : Screen("preset_list")
     object Settings : Screen("settings")
+    object History : Screen("history")
     object PresetEdit : Screen("preset_edit/{presetId}") {
         fun createRoute(presetId: String) = "preset_edit/$presetId"
     }
@@ -46,7 +48,13 @@ fun MTimerNavGraph(
             HomeScreen(
                 onStartTimer = { navController.navigate(Screen.Timer.route) },
                 onNavigateToPresets = { navController.navigate(Screen.PresetList.route) },
-                onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+                onNavigateToHistory = { navController.navigate(Screen.History.route) }
+            )
+        }
+        composable(Screen.History.route) {
+            SessionHistoryScreen(
+                onBack = { navController.popBackStack() }
             )
         }
         composable(Screen.Settings.route) {

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.MindfulnessSessionRecord
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
@@ -35,22 +36,9 @@ class HealthConnectSyncWorker @AssistedInject constructor(
             } else {
                 applicationContext
             }
-            val client = HealthConnectClient.getOrCreate(healthContext)
-            val permissions = setOf(
-                HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
-                HealthPermission.getWritePermission(MindfulnessSessionRecord::class)
-            )
             
-            val grantedPermissions = client.permissionController.getGrantedPermissions()
-            android.util.Log.d("HealthConnect", "Granted permissions in worker: $grantedPermissions")
-            
-            // On some devices/SDK versions, the permission name might vary slightly
-            val hasMindfulness = grantedPermissions.any { 
-                it.contains("MINDFULNESS", ignoreCase = true) 
-            }
-            
-            if (!hasMindfulness) {
-                android.util.Log.w("HealthConnect", "Mindfulness permissions not found in granted list. Aborting sync.")
+            if (!hasAnyWritePermission(healthContext)) {
+                android.util.Log.w("HealthConnect", "No write permissions found (Mindfulness or Exercise). Aborting sync.")
                 return Result.failure()
             }
         } catch (e: Exception) {
@@ -70,8 +58,15 @@ class HealthConnectSyncWorker @AssistedInject constructor(
                     presetDao.getPresetById(it)?.name 
                 }
                 
+                // Use attribution context to ensure MTimer is identified as the source app
+                val healthContext = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    applicationContext.createAttributionContext("health_connect_sync")
+                } else {
+                    applicationContext
+                }
+                
                 syncSessionToHealthConnect(
-                    context = applicationContext,
+                    context = healthContext,
                     session = session,
                     presetName = presetName
                 )
@@ -79,16 +74,19 @@ class HealthConnectSyncWorker @AssistedInject constructor(
                 sessionRepository.markSynced(session.id, "hc_synced_${System.currentTimeMillis()}")
                 successCount++
                 android.util.Log.i("HealthConnect", "Successfully synced and marked session ${session.id}")
-                
-                // Update widget after successful sync
-                try {
-                    MTimerWidget().updateAll(applicationContext)
-                } catch (e: Exception) {
-                    android.util.Log.e("HealthConnect", "Failed to update widget", e)
-                }
             } catch (e: Exception) {
                 android.util.Log.e("HealthConnect", "Failed to sync session ${session.id}", e)
                 // Continue with next session, don't abort everything
+            }
+        }
+
+        // Update widget once after all sessions are synced
+        if (successCount > 0) {
+            try {
+                MTimerWidget().updateAll(applicationContext)
+                android.util.Log.d("HealthConnect", "Widget updated after $successCount syncs")
+            } catch (e: Exception) {
+                android.util.Log.e("HealthConnect", "Failed to update widget", e)
             }
         }
         

@@ -14,7 +14,7 @@ android {
     defaultConfig {
         applicationId = "com.gnaanaa.mtimer"
         minSdk = 28
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -33,12 +33,20 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
     }
 
     buildFeatures {
         compose = true
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/DEPENDENCIES"
+        }
     }
 }
 
@@ -74,6 +82,18 @@ dependencies {
     implementation(libs.glance.material3)
     implementation(libs.work.runtime)
     implementation(libs.play.services.auth)
+    implementation(libs.google.api.client)
+    implementation(libs.google.drive.api)
+    implementation(libs.google.http.client.gson)
+    implementation(libs.gson)
+    implementation(libs.coil.compose)
     implementation(libs.kotlinx.coroutines)
     implementation(libs.kotlinx.serialization)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.test.manifest)
 }

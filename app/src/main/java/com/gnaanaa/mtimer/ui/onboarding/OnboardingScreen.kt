@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.MindfulnessSessionRecord
 import androidx.health.connect.client.feature.ExperimentalMindfulnessSessionApi
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -61,12 +63,20 @@ fun OnboardingScreen(
 
     val permissions = setOf(
         HealthPermission.getWritePermission(MindfulnessSessionRecord::class),
-        HealthPermission.getReadPermission(MindfulnessSessionRecord::class)
+        HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
+        HealthPermission.getReadPermission(HeartRateRecord::class),
+        HealthPermission.getWritePermission(HeartRateRecord::class),
+        HealthPermission.getWritePermission(ExerciseSessionRecord::class),
+        HealthPermission.getReadPermission(ExerciseSessionRecord::class)
     )
+
+    // Log permissions to verify what is being requested
+    android.util.Log.d("HealthConnect", "Requesting permissions: $permissions")
 
     val healthLauncher = rememberLauncherForActivityResult(
         PermissionController.createRequestPermissionResultContract()
-    ) { _ ->
+    ) { granted ->
+        android.util.Log.d("HealthConnect", "Onboarding permissions result: $granted")
         viewModel.completeOnboarding()
         onComplete()
     }

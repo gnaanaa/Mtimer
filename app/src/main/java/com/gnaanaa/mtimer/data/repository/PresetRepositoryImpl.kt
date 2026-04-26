@@ -19,6 +19,10 @@ class PresetRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getAllPresetsList(): List<Preset> {
+        return presetDao.getAllPresetsList().map { it.toDomain() }
+    }
+
     override suspend fun getPresetById(id: String): Preset? {
         return presetDao.getPresetById(id)?.toDomain()
     }
