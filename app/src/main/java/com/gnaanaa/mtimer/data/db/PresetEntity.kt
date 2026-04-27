@@ -3,7 +3,9 @@ package com.gnaanaa.mtimer.data.db
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.gnaanaa.mtimer.domain.model.Preset
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "presets")
 data class PresetEntity(
     @PrimaryKey val id: String,

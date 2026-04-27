@@ -31,13 +31,7 @@ class HealthConnectSyncWorker @AssistedInject constructor(
         android.util.Log.d("HealthConnect", "SyncWorker starting...")
         
         try {
-            val healthContext = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                applicationContext.createAttributionContext("health_connect_sync")
-            } else {
-                applicationContext
-            }
-            
-            if (!hasAnyWritePermission(healthContext)) {
+            if (!hasAnyWritePermission(applicationContext)) {
                 android.util.Log.w("HealthConnect", "No write permissions found (Mindfulness or Exercise). Aborting sync.")
                 return Result.failure()
             }
@@ -58,15 +52,8 @@ class HealthConnectSyncWorker @AssistedInject constructor(
                     presetDao.getPresetById(it)?.name 
                 }
                 
-                // Use attribution context to ensure MTimer is identified as the source app
-                val healthContext = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    applicationContext.createAttributionContext("health_connect_sync")
-                } else {
-                    applicationContext
-                }
-                
                 syncSessionToHealthConnect(
-                    context = healthContext,
+                    context = applicationContext,
                     session = session,
                     presetName = presetName
                 )

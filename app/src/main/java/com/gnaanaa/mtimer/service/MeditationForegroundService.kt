@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.SystemClock
@@ -60,6 +61,19 @@ class MeditationForegroundService : Service() {
 
         private val _timerState = MutableStateFlow<TimerState>(TimerState.Idle)
         val timerState = _timerState.asStateFlow()
+
+        fun startTimer(context: Context, preset: com.gnaanaa.mtimer.domain.model.Preset) {
+            val intent = Intent(context, MeditationForegroundService::class.java).apply {
+                action = ACTION_START
+                putExtra(EXTRA_PRESET_ID, preset.id)
+                putExtra(EXTRA_PRESET_NAME, preset.name)
+                putExtra(EXTRA_DURATION_SECONDS, preset.durationSeconds)
+                putExtra(EXTRA_PREPARE_SECONDS, preset.prepareSeconds)
+                putExtra(EXTRA_START_SOUND_ID, preset.startSoundId)
+                putExtra(EXTRA_END_SOUND_ID, preset.endSoundId)
+            }
+            context.startForegroundService(intent)
+        }
     }
 
     override fun onCreate() {

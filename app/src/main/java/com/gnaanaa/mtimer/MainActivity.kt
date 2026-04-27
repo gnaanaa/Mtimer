@@ -16,6 +16,7 @@ import com.gnaanaa.mtimer.data.datastore.UserPreferencesDataStore
 import com.gnaanaa.mtimer.ui.navigation.Screen
 import com.gnaanaa.mtimer.ui.navigation.MTimerNavGraph
 import com.gnaanaa.mtimer.ui.theme.MTimerTheme
+import com.gnaanaa.mtimer.widget.worker.WidgetUpdateWorker
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -28,6 +29,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        // Ensure widget is updated
+        WidgetUpdateWorker.enqueue(this)
+
         setContent {
             val useLightTheme by userPreferencesDataStore.useLightTheme.collectAsState(initial = false)
             val isOnboardingCompleted by userPreferencesDataStore.isOnboardingCompleted.collectAsState(initial = null)

@@ -100,9 +100,10 @@ suspend fun hasAllPermissions(context: Context): Boolean {
     val permissions = setOf(
         HealthPermission.getWritePermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
+        HealthPermission.getReadPermission(HeartRateRecord::class),
+        HealthPermission.getWritePermission(HeartRateRecord::class),
         HealthPermission.getWritePermission(ExerciseSessionRecord::class),
-        HealthPermission.getReadPermission(ExerciseSessionRecord::class),
-        HealthPermission.getReadPermission(HeartRateRecord::class)
+        HealthPermission.getReadPermission(ExerciseSessionRecord::class)
     )
     
     return granted.containsAll(permissions)
@@ -130,23 +131,20 @@ suspend fun getWeeklyMindfulnessMinutes(context: Context): Int {
     }
 
     val now = Instant.now()
-    val startOfWeek = LocalDateTime.now()
-        .truncatedTo(ChronoUnit.DAYS)
-        .with(java.time.DayOfWeek.MONDAY)
-        .atZone(ZoneId.systemDefault())
-        .toInstant()
+    val weekAgo = now.minus(7, ChronoUnit.DAYS)
 
     return try {
-        val response = client.aggregate(
-            AggregateRequest(
-                metrics = setOf(MindfulnessSessionRecord.MINDFULNESS_DURATION_TOTAL),
-                timeRangeFilter = TimeRangeFilter.between(startOfWeek, now)
+        val response = client.readRecords(
+            ReadRecordsRequest(
+                recordType = MindfulnessSessionRecord::class,
+                timeRangeFilter = TimeRangeFilter.after(weekAgo)
             )
         )
-        val duration = response[MindfulnessSessionRecord.MINDFULNESS_DURATION_TOTAL] ?: Duration.ZERO
-        duration.toMinutes().toInt()
+        response.records
+            .sumOf { Duration.between(it.startTime, it.endTime).toMinutes() }
+            .toInt()
     } catch (e: Exception) {
-        Log.e(TAG, "Failed to aggregate mindfulness minutes", e)
+        Log.e(TAG, "Failed to read mindfulness records", e)
         0
     }
 }

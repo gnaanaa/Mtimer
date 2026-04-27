@@ -1,9 +1,12 @@
 package com.gnaanaa.mtimer.data.repository
 
+import android.content.Context
 import com.gnaanaa.mtimer.data.db.PresetDao
 import com.gnaanaa.mtimer.data.db.toDomain
 import com.gnaanaa.mtimer.data.db.toEntity
+import com.gnaanaa.mtimer.data.sync.DriveSyncWorker
 import com.gnaanaa.mtimer.domain.model.Preset
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -11,6 +14,7 @@ import javax.inject.Singleton
 
 @Singleton
 class PresetRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val presetDao: PresetDao
 ) : PresetRepository {
     override fun getAllPresets(): Flow<List<Preset>> {
@@ -29,9 +33,11 @@ class PresetRepositoryImpl @Inject constructor(
 
     override suspend fun savePreset(preset: Preset) {
         presetDao.insertPreset(preset.toEntity())
+        DriveSyncWorker.enqueue(context)
     }
 
     override suspend fun deletePreset(preset: Preset) {
         presetDao.deletePreset(preset.toEntity())
+        DriveSyncWorker.enqueue(context)
     }
 }

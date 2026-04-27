@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,17 +62,21 @@ fun OnboardingScreen(
     val context = LocalContext.current
     val availability = viewModel.healthConnectClient != null
 
-    val permissions = setOf(
-        HealthPermission.getWritePermission(MindfulnessSessionRecord::class),
-        HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
-        HealthPermission.getReadPermission(HeartRateRecord::class),
-        HealthPermission.getWritePermission(HeartRateRecord::class),
-        HealthPermission.getWritePermission(ExerciseSessionRecord::class),
-        HealthPermission.getReadPermission(ExerciseSessionRecord::class)
-    )
+    val permissions = remember {
+        setOf(
+            HealthPermission.getWritePermission(MindfulnessSessionRecord::class),
+            HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
+            HealthPermission.getReadPermission(HeartRateRecord::class),
+            HealthPermission.getWritePermission(HeartRateRecord::class),
+            HealthPermission.getWritePermission(ExerciseSessionRecord::class),
+            HealthPermission.getReadPermission(ExerciseSessionRecord::class)
+        )
+    }
 
     // Log permissions to verify what is being requested
-    android.util.Log.d("HealthConnect", "Requesting permissions: $permissions")
+    LaunchedEffect(Unit) {
+        android.util.Log.d("HealthConnect", "Onboarding initialized. Permissions: $permissions")
+    }
 
     val healthLauncher = rememberLauncherForActivityResult(
         PermissionController.createRequestPermissionResultContract()
