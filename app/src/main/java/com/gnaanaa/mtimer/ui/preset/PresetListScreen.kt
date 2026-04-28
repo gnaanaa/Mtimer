@@ -1,34 +1,24 @@
 package com.gnaanaa.mtimer.ui.preset
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.Spa
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gnaanaa.mtimer.domain.model.Preset
+import com.gnaanaa.mtimer.ui.home.DotMatrix
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +33,22 @@ fun PresetListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Presets") },
+                title = {
+                    Column {
+                        Text(
+                            "PRESETS",
+                            fontFamily = DotMatrix,
+                            letterSpacing = 4.sp
+                        )
+                        Text(
+                            "${presets.size} CONFIGURED",
+                            fontFamily = DotMatrix,
+                            fontSize = 11.sp,
+                            letterSpacing = 2.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                        )
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -52,22 +57,46 @@ fun PresetListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onCreatePreset) {
+            FloatingActionButton(
+                onClick = onCreatePreset,
+                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                contentColor = MaterialTheme.colorScheme.primary
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Preset")
             }
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-            items(presets) { preset ->
-                PresetItem(
-                    preset = preset,
-                    onClick = { onEditPreset(preset.id) },
-                    onDelete = { viewModel.deletePreset(preset) }
+        if (presets.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "NO PRESETS YET",
+                    fontFamily = DotMatrix,
+                    fontSize = 12.sp,
+                    letterSpacing = 3.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.4f)
                 )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(vertical = 12.dp)
+            ) {
+                items(presets, key = { it.id }) { preset ->
+                    PresetItem(
+                        preset = preset,
+                        onClick = { onEditPreset(preset.id) },
+                        onDelete = { viewModel.deletePreset(preset) }
+                    )
+                }
             }
         }
     }
@@ -79,23 +108,53 @@ fun PresetItem(
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .background(
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.07f),
+                shape = MaterialTheme.shapes.large
+            )
             .clickable(onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(preset.name, style = MaterialTheme.typography.titleMedium)
-                Text("${preset.durationSeconds / 60} min", style = MaterialTheme.typography.bodyMedium)
-            }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete")
-            }
+        // Lotus icon — mirrors the start button
+        Icon(
+            imageVector = Icons.Default.Spa,
+            contentDescription = null,
+            modifier = Modifier.size(26.dp),
+            tint = MaterialTheme.colorScheme.primary.copy(0.7f)
+        )
+
+        Spacer(Modifier.width(16.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                preset.name.uppercase(),
+                fontFamily = DotMatrix,
+                fontSize = 14.sp,
+                letterSpacing = 2.sp
+            )
+            val mins = preset.durationSeconds / 60
+            val secs = preset.durationSeconds % 60
+            val durationLabel = if (secs == 0) "${mins}m" else "${mins}m ${secs}s"
+            Text(
+                durationLabel,
+                fontFamily = DotMatrix,
+                fontSize = 11.sp,
+                letterSpacing = 1.sp,
+                color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+            )
+        }
+
+        IconButton(onClick = onDelete) {
+            Icon(
+                Icons.Default.Delete,
+                contentDescription = "Delete",
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onBackground.copy(0.35f)
+            )
         }
     }
 }

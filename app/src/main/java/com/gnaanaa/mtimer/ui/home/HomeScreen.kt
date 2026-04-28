@@ -1,36 +1,69 @@
 package com.gnaanaa.mtimer.ui.home
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.gnaanaa.mtimer.R
+import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.domain.model.Session
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.util.*
+import kotlin.math.*
 
-// Custom Lotus Icon using a combination of shapes or a Material Icon approximation
-val LotusIcon: ImageVector = Icons.Default.SelfImprovement
+@OptIn(ExperimentalTextApi::class)
+val DotMatrix = FontFamily(
+    Font(
+        resId = R.font.doto_variable,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(
+            FontVariation.Setting("ROND", 1f),  // round dots
+            FontVariation.Setting("wght", 400f) // weight axis
+        )
+    )
+)
+
+@OptIn(ExperimentalTextApi::class)
+val DotMatrixSquare = FontFamily(
+    Font(
+        resId = R.font.doto_variable,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(
+            FontVariation.Setting("ROND", 0f),  // square pixels
+            FontVariation.Setting("wght", 400f)
+        )
+    )
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,224 +76,401 @@ fun HomeScreen(
 ) {
     val recentSessions by viewModel.recentSessions.collectAsState()
     val presets by viewModel.presets.collectAsState()
+
     var selectedSession by remember { mutableStateOf<Session?>(null) }
+    var selectedPreset by remember { mutableStateOf<Preset?>(null) }
+
+    val dateFormat = remember {
+        SimpleDateFormat("MMM dd • HH:mm", Locale.getDefault())
+    }
+
+    LaunchedEffect(presets) {
+        if (selectedPreset == null && presets.isNotEmpty()) {
+            selectedPreset = presets.first()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("MTimer") },
+                title = {
+                    Column {
+                        Text(
+                            "MTIMER",
+                            fontFamily = DotMatrix,
+                            letterSpacing = 4.sp
+                        )
+                        Text(
+                            "READY TO RESET?",
+                            fontFamily = DotMatrix,
+                            fontSize = 11.sp,
+                            letterSpacing = 2.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Settings, contentDescription = null)
                     }
                 }
             )
         }
     ) { padding ->
+
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            // Top Section: Circular Presets (First Half)
-            Column(
-                modifier = Modifier
-                    .weight(1.2f)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    "Presets",
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(16.dp),
-                    fontWeight = FontWeight.Bold
-                )
 
-                if (presets.isEmpty()) {
-                    Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Text("No presets yet", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                } else {
-                    // Use LazyRow for horizontal sliding if more than 4 presets
-                    LazyRow(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        items(presets) { preset ->
-                            PresetCircleItem(
-                                name = preset.name,
-                                duration = "${preset.durationSeconds / 60}m",
-                                onClick = {
-                                    viewModel.startTimer(preset)
-                                    onStartTimer()
-                                }
-                            )
-                        }
+            StartSessionButton(
+                enabled = selectedPreset != null,
+                selectedPreset = selectedPreset,
+                onClick = {
+                    selectedPreset?.let {
+                        viewModel.startTimer(it)
+                        onStartTimer()
                     }
                 }
+            )
 
-                Button(
-                    onClick = onNavigateToPresets,
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    shape = MaterialTheme.shapes.medium
-                ) {
-                    Icon(Icons.Default.Tune, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Configure Presets")
+            Spacer(Modifier.height(12.dp))
+
+            // ── Rotary Dial with spring-snap ───────────────────────────────
+            PresetDial(
+                presets = presets,
+                selectedPreset = selectedPreset,
+                onSelected = { selectedPreset = it }
+            )
+
+            TextButton(
+                onClick = onNavigateToPresets,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("EDIT PRESETS", fontFamily = DotMatrix, letterSpacing = 2.sp)
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "HISTORY",
+                    fontFamily = DotMatrix,
+                    fontSize = 12.sp,
+                    letterSpacing = 3.sp
+                )
+                TextButton(onClick = onNavigateToHistory) {
+                    Text("VIEW ALL", fontFamily = DotMatrix, letterSpacing = 2.sp)
                 }
             }
 
-            HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
-
-            // Bottom Section: History (Second Half)
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            if (recentSessions.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Recent History",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        "NO SESSIONS YET",
+                        fontFamily = DotMatrix,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.4f)
                     )
-                    TextButton(onClick = onNavigateToHistory) {
-                        Text("View All")
-                        Icon(Icons.Default.ChevronRight, contentDescription = null)
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(recentSessions.take(5), key = { it.id }) { session ->
+                        HistoryRow(
+                            session = session,
+                            formattedDate = dateFormat.format(Date(session.startTime)),
+                            onClick = { selectedSession = session }
+                        )
                     }
                 }
+            }
+        }
+    }
 
-                if (recentSessions.isEmpty()) {
-                    Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Text("No recent sessions", color = MaterialTheme.colorScheme.onSurfaceVariant)
+    selectedSession?.let {
+        SessionDetailDialog(it) { selectedSession = null }
+    }
+}
+
+// ── Start Button ───────────────────────────────────────────────────────────
+@Composable
+fun StartSessionButton(
+    enabled: Boolean,
+    selectedPreset: Preset?,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+            .height(76.dp)
+            .background(
+                if (enabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                else MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.large
+            )
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Lotus icon — left side
+        Icon(
+            imageVector = Icons.Default.Spa,
+            contentDescription = null,
+            modifier = Modifier.size(32.dp),
+            tint = if (enabled)
+                MaterialTheme.colorScheme.primary
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
+        )
+
+        Spacer(Modifier.width(16.dp))
+
+        // Text block
+        Column {
+            Text(
+                "START SESSION",
+                fontFamily = DotMatrix,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 3.sp,
+                fontSize = 16.sp
+            )
+            selectedPreset?.let { preset ->
+                val label = buildString {
+                    append(preset.name.uppercase())
+                    if (preset.durationSeconds > 0) {
+                        val mins = preset.durationSeconds / 60
+                        append("  (${mins}m)")
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(recentSessions.take(5)) { session ->
-                            SessionItem(session = session, onClick = { selectedSession = session })
+                }
+                Text(
+                    label,
+                    fontFamily = DotMatrix,
+                    fontSize = 13.sp,
+                    letterSpacing = 2.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.55f)
+                )
+            }
+        }
+    }
+}
+
+// ── Rotary Dial ────────────────────────────────────────────────────────────
+//
+//  Gesture model
+//  ─────────────
+//  • Track circular angle using atan2(dy, dx) relative to dial center.
+//  • On each pointer move, compute angleDelta = currentAngle - previousAngle
+//    (unwrapped to avoid ±180° jumps).
+//  • Accumulate into a continuous `rotation` Animatable (degrees).
+//  • On pointer-up, snap to nearest slot with a spring so the selected
+//    preset is always top-center (angle = -90°, i.e. 270°).
+//
+//  Slot mapping
+//  ────────────
+//  Preset[i] is drawn at world angle = rotation + i * step.
+//  The "active" slot is the one closest to -90° (top of circle).
+//  index = round(-rotation / step) mod presets.size
+//
+@Composable
+fun PresetDial(
+    presets: List<Preset>,
+    selectedPreset: Preset?,
+    onSelected: (Preset) -> Unit
+) {
+    if (presets.isEmpty()) return
+
+    val step = 360f / presets.size
+    val rotation = remember { Animatable(0f) }
+
+    // Recompute index directly from rotation — no derivedStateOf needed
+    fun indexFromRotation(rot: Float): Int =
+        ((-rot / step).roundToInt()).mod(presets.size)
+
+    val currentIndex by remember {
+        derivedStateOf { indexFromRotation(rotation.value) }
+    }
+
+    LaunchedEffect(currentIndex) {
+        if (presets.isNotEmpty()) onSelected(presets[currentIndex])
+    }
+
+    val density = LocalDensity.current
+    val radiusDp = 100.dp
+    val radiusPx = with(density) { radiusDp.toPx() }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(280.dp)
+            .pointerInput(presets) {
+                val centerX = size.width / 2f
+                val centerY = size.height / 2f
+
+                forEachGesture {
+                    coroutineScope {
+                        awaitPointerEventScope {
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            var prevAngle = atan2(
+                                down.position.y - centerY,
+                                down.position.x - centerX
+                            ).toDegrees()
+
+                            launch { rotation.stop() }
+
+                            do {
+                                val event = awaitPointerEvent()
+                                val pointer = event.changes.firstOrNull() ?: break
+                                if (!pointer.pressed) break
+
+                                val curAngle = atan2(
+                                    pointer.position.y - centerY,
+                                    pointer.position.x - centerX
+                                ).toDegrees()
+
+                                var delta = curAngle - prevAngle
+                                if (delta > 180f) delta -= 360f
+                                if (delta < -180f) delta += 360f
+
+                                launch { rotation.snapTo(rotation.value + delta) }
+                                prevAngle = curAngle
+                                pointer.consume()
+                            } while (true)
+
+                            // ── Fixed snap: find nearest slot to current rotation ──
+                            val snappedIndex = indexFromRotation(rotation.value)
+                            // Target is the multiple of `step` closest to current rotation
+                            val rawTarget = -snappedIndex * step
+                            val currentRot = rotation.value
+                            // Shift rawTarget by full rotations to minimise travel distance
+                            val turns = ((currentRot - rawTarget) / 360f).roundToInt()
+                            val targetRotation = rawTarget + turns * 360f
+
+                            launch {
+                                rotation.animateTo(
+                                    targetValue = targetRotation,
+                                    animationSpec = spring(
+                                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                                        stiffness = Spring.StiffnessMediumLow
+                                    )
+                                )
+                            }
                         }
                     }
                 }
-            }
-        }
-    }
-
-    // Detail Dialog
-    selectedSession?.let { session ->
-        SessionDetailDialog(session = session, onDismiss = { selectedSession = null })
-    }
-}
-
-@Composable
-fun PresetCircleItem(
-    name: String,
-    duration: String,
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(100.dp)
+            },
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .background(Color.Black)
-                .border(BorderStroke(2.dp, Color.DarkGray), CircleShape)
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = LotusIcon,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = name,
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = duration,
-                    color = Color.White.copy(alpha = 0.8f),
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-    }
-}
+        presets.forEachIndexed { index, preset ->
+            val worldAngleDeg = rotation.value + index * step
+            val rad = Math.toRadians(worldAngleDeg.toDouble())
 
-@Composable
-fun SessionItem(session: Session, onClick: () -> Unit) {
-    val dateFormat = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            val xDp = with(density) { (radiusPx * cos(rad)).toFloat().toDp() }
+            val yDp = with(density) { (radiusPx * sin(rad)).toFloat().toDp() }
+
+            val isSelected = index == currentIndex
+
+            Text(
+                text = preset.name.uppercase(),
+                fontFamily = DotMatrix,
+                fontSize = if (isSelected) 13.sp else 11.sp,
+                letterSpacing = if (isSelected) 2.sp else 1.sp,
+                modifier = Modifier
+                    .offset(xDp, yDp)
+                    .scale(if (isSelected) 1.25f else 0.85f)
+                    .clickable { onSelected(preset) },
+                color = if (isSelected)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.onBackground.copy(0.4f)
+            )
+        }
+
+        // Center arrow
+        Text(
+            "→",
+            fontFamily = DotMatrix,
+            fontSize = 22.sp,
+            color = MaterialTheme.colorScheme.primary
         )
+    }
+}
+
+// ── History Row ────────────────────────────────────────────────────────────
+@Composable
+fun HistoryRow(session: Session, formattedDate: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(dateFormat.format(Date(session.startTime)), style = MaterialTheme.typography.bodyMedium)
-                Text("${session.durationSeconds / 60} min", style = MaterialTheme.typography.bodySmall)
-            }
+        Text(
+            formattedDate,
+            fontFamily = DotMatrix,
+            fontSize = 12.sp,
+            letterSpacing = 1.sp
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                formatDuration(session.durationSeconds),
+                fontFamily = DotMatrix,
+                fontSize = 13.sp
+            )
+            Spacer(Modifier.width(6.dp))
             Icon(
                 imageVector = if (session.completed) Icons.Default.CheckCircle else Icons.Default.Cancel,
                 contentDescription = null,
-                tint = if (session.completed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(16.dp)
             )
         }
     }
 }
 
+// ── Session Detail Dialog ──────────────────────────────────────────────────
 @Composable
 fun SessionDetailDialog(session: Session, onDismiss: () -> Unit) {
-    val dateFormat = SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault())
-    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-    
+    val dateFormat = remember {
+        SimpleDateFormat("EEEE, MMM dd yyyy", Locale.getDefault())
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
+            TextButton(onClick = onDismiss) {
+                Text("CLOSE", fontFamily = DotMatrix, letterSpacing = 2.sp)
+            }
         },
-        title = { Text("Session Details") },
+        title = {
+            Text(
+                "SESSION DETAILS",
+                fontFamily = DotMatrix,
+                letterSpacing = 3.sp
+            )
+        },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                DetailRow("Date", dateFormat.format(Date(session.startTime)))
-                DetailRow("Started", timeFormat.format(Date(session.startTime)))
-                DetailRow("Duration", "${session.durationSeconds / 60}m ${session.durationSeconds % 60}s")
-                DetailRow("Status", if (session.completed) "Completed" else "Stopped Early")
+                DetailRow("DATE", dateFormat.format(Date(session.startTime)))
+                DetailRow("DURATION", formatDuration(session.durationSeconds))
+                DetailRow("STATUS", if (session.completed) "COMPLETED" else "STOPPED")
                 if (session.healthConnectSynced) {
-                    DetailRow("Sync", "Synced to Health Connect")
+                    DetailRow("SYNC", "HEALTH CONNECT ✓")
                 }
             }
         }
@@ -269,8 +479,26 @@ fun SessionDetailDialog(session: Session, onDismiss: () -> Unit) {
 
 @Composable
 fun DetailRow(label: String, value: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            label,
+            fontFamily = DotMatrix,
+            fontSize = 11.sp,
+            letterSpacing = 2.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(value, fontFamily = DotMatrix, fontSize = 12.sp)
     }
 }
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+fun formatDuration(seconds: Int): String {
+    val m = seconds / 60
+    val s = seconds % 60
+    return "%02d:%02d".format(m, s)
+}
+
+private fun Float.toDegrees() = Math.toDegrees(this.toDouble()).toFloat()
