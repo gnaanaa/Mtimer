@@ -29,6 +29,7 @@ fun PresetListScreen(
     viewModel: PresetViewModel = hiltViewModel()
 ) {
     val presets by viewModel.presets.collectAsState()
+    var presetToDelete by remember { mutableStateOf<Preset?>(null) }
 
     Scaffold(
         topBar = {
@@ -45,7 +46,7 @@ fun PresetListScreen(
                             fontFamily = DotMatrix,
                             fontSize = 11.sp,
                             letterSpacing = 2.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                         )
                     }
                 },
@@ -78,7 +79,7 @@ fun PresetListScreen(
                     fontFamily = DotMatrix,
                     fontSize = 12.sp,
                     letterSpacing = 3.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.4f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
                 )
             }
         } else {
@@ -94,11 +95,40 @@ fun PresetListScreen(
                     PresetItem(
                         preset = preset,
                         onClick = { onEditPreset(preset.id) },
-                        onDelete = { viewModel.deletePreset(preset) }
+                        onDelete = { presetToDelete = preset }
                     )
                 }
             }
         }
+    }
+
+    presetToDelete?.let { preset ->
+        AlertDialog(
+            onDismissRequest = { presetToDelete = null },
+            title = { Text("DELETE PRESET", fontFamily = DotMatrix, letterSpacing = 2.sp) },
+            text = { 
+                Text(
+                    "Are you sure you want to delete \"${preset.name}\"?",
+                    fontFamily = DotMatrix,
+                    letterSpacing = 1.sp
+                ) 
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deletePreset(preset)
+                        presetToDelete = null
+                    }
+                ) {
+                    Text("DELETE", color = MaterialTheme.colorScheme.error, fontFamily = DotMatrix, letterSpacing = 2.sp)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { presetToDelete = null }) {
+                    Text("CANCEL", fontFamily = DotMatrix, letterSpacing = 2.sp)
+                }
+            }
+        )
     }
 }
 
@@ -124,7 +154,7 @@ fun PresetItem(
             imageVector = Icons.Default.Spa,
             contentDescription = null,
             modifier = Modifier.size(26.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(0.7f)
+            tint = MaterialTheme.colorScheme.primary
         )
 
         Spacer(Modifier.width(16.dp))
@@ -144,7 +174,7 @@ fun PresetItem(
                 fontFamily = DotMatrix,
                 fontSize = 11.sp,
                 letterSpacing = 1.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
             )
         }
 
@@ -153,7 +183,7 @@ fun PresetItem(
                 Icons.Default.Delete,
                 contentDescription = "Delete",
                 modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onBackground.copy(0.35f)
+                tint = MaterialTheme.colorScheme.onBackground.copy(0.75f)
             )
         }
     }

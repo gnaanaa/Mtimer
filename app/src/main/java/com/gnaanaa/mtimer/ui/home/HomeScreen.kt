@@ -30,11 +30,17 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gnaanaa.mtimer.R
 import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.domain.model.Session
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.withStyle
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -47,8 +53,8 @@ val DotMatrix = FontFamily(
         resId = R.font.doto_variable,
         weight = FontWeight.Normal,
         variationSettings = FontVariation.Settings(
-            FontVariation.Setting("ROND", 1f),  // round dots
-            FontVariation.Setting("wght", 400f) // weight axis
+            FontVariation.Setting("ROND", 100f), // Full round dots
+            FontVariation.Setting("wght", 600f)
         )
     )
 )
@@ -60,7 +66,7 @@ val DotMatrixSquare = FontFamily(
         weight = FontWeight.Normal,
         variationSettings = FontVariation.Settings(
             FontVariation.Setting("ROND", 0f),  // square pixels
-            FontVariation.Setting("wght", 400f)
+            FontVariation.Setting("wght", 600f)
         )
     )
 )
@@ -105,7 +111,7 @@ fun HomeScreen(
                             fontFamily = DotMatrix,
                             fontSize = 11.sp,
                             letterSpacing = 2.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                         )
                     }
                 },
@@ -182,7 +188,7 @@ fun HomeScreen(
                         "NO SESSIONS YET",
                         fontFamily = DotMatrix,
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(0.4f)
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
                     )
                 }
             } else {
@@ -193,7 +199,7 @@ fun HomeScreen(
                     items(recentSessions.take(5), key = { it.id }) { session ->
                         HistoryRow(
                             session = session,
-                            formattedDate = dateFormat.format(Date(session.startTime)),
+                            formattedDate = dateFormat.format(Date(session.startTime)).uppercase().alignColons(),
                             onClick = { selectedSession = session }
                         )
                     }
@@ -220,7 +226,7 @@ fun StartSessionButton(
             .fillMaxWidth()
             .height(76.dp)
             .background(
-                if (enabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                if (enabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                 else MaterialTheme.colorScheme.surfaceVariant,
                 shape = MaterialTheme.shapes.large
             )
@@ -263,7 +269,7 @@ fun StartSessionButton(
                     fontFamily = DotMatrix,
                     fontSize = 13.sp,
                     letterSpacing = 2.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.55f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
                 )
             }
         }
@@ -308,6 +314,24 @@ fun PresetDial(
 
     LaunchedEffect(currentIndex) {
         if (presets.isNotEmpty()) onSelected(presets[currentIndex])
+    }
+
+    // Sync rotation when selectedPreset changes (e.g. from click or initial load)
+    LaunchedEffect(selectedPreset) {
+        val targetIndex = presets.indexOf(selectedPreset)
+        if (targetIndex != -1 && targetIndex != indexFromRotation(rotation.value)) {
+            val rawTarget = -targetIndex * step
+            val currentRot = rotation.value
+            val turns = ((currentRot - rawTarget) / 360f).roundToInt()
+            val targetRotation = rawTarget + turns * 360f
+            rotation.animateTo(
+                targetValue = targetRotation,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            )
+        }
     }
 
     val density = LocalDensity.current
@@ -397,7 +421,7 @@ fun PresetDial(
                 color = if (isSelected)
                     MaterialTheme.colorScheme.primary
                 else
-                    MaterialTheme.colorScheme.onBackground.copy(0.4f)
+                    MaterialTheme.colorScheme.onBackground.copy(0.75f)
             )
         }
 
@@ -413,7 +437,7 @@ fun PresetDial(
 
 // ── History Row ────────────────────────────────────────────────────────────
 @Composable
-fun HistoryRow(session: Session, formattedDate: String, onClick: () -> Unit) {
+fun HistoryRow(session: Session, formattedDate: Any, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -422,15 +446,24 @@ fun HistoryRow(session: Session, formattedDate: String, onClick: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            formattedDate,
-            fontFamily = DotMatrix,
-            fontSize = 12.sp,
-            letterSpacing = 1.sp
-        )
+        if (formattedDate is AnnotatedString) {
+            Text(
+                text = formattedDate,
+                fontFamily = DotMatrix,
+                fontSize = 12.sp,
+                letterSpacing = 1.sp
+            )
+        } else {
+            Text(
+                text = formattedDate.toString(),
+                fontFamily = DotMatrix,
+                fontSize = 12.sp,
+                letterSpacing = 1.sp
+            )
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                formatDuration(session.durationSeconds),
+                text = formatDurationAligned(session.durationSeconds),
                 fontFamily = DotMatrix,
                 fontSize = 13.sp
             )
@@ -438,7 +471,8 @@ fun HistoryRow(session: Session, formattedDate: String, onClick: () -> Unit) {
             Icon(
                 imageVector = if (session.completed) Icons.Default.CheckCircle else Icons.Default.Cancel,
                 contentDescription = null,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(16.dp),
+                tint = if (session.completed) androidx.compose.ui.graphics.Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
             )
         }
     }
@@ -466,8 +500,8 @@ fun SessionDetailDialog(session: Session, onDismiss: () -> Unit) {
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                DetailRow("DATE", dateFormat.format(Date(session.startTime)))
-                DetailRow("DURATION", formatDuration(session.durationSeconds))
+                DetailRow("DATE", dateFormat.format(Date(session.startTime)).uppercase().alignColons())
+                DetailRow("DURATION", formatDurationAligned(session.durationSeconds))
                 DetailRow("STATUS", if (session.completed) "COMPLETED" else "STOPPED")
                 if (session.healthConnectSynced) {
                     DetailRow("SYNC", "HEALTH CONNECT ✓")
@@ -478,7 +512,7 @@ fun SessionDetailDialog(session: Session, onDismiss: () -> Unit) {
 }
 
 @Composable
-fun DetailRow(label: String, value: String) {
+fun DetailRow(label: String, value: Any) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -490,11 +524,35 @@ fun DetailRow(label: String, value: String) {
             letterSpacing = 2.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Text(value, fontFamily = DotMatrix, fontSize = 12.sp)
+        if (value is AnnotatedString) {
+            Text(text = value, fontFamily = DotMatrix, fontSize = 12.sp)
+        } else {
+            Text(text = value.toString(), fontFamily = DotMatrix, fontSize = 12.sp)
+        }
     }
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
+fun formatDurationAligned(seconds: Int): AnnotatedString {
+    val m = seconds / 60
+    val s = seconds % 60
+    return "%02d:%02d".format(m, s).alignColons()
+}
+
+fun String.alignColons(): AnnotatedString {
+    return buildAnnotatedString {
+        val parts = this@alignColons.split(":")
+        for (i in parts.indices) {
+            append(parts[i])
+            if (i < parts.lastIndex) {
+                withStyle(SpanStyle(baselineShift = BaselineShift(0.15f))) {
+                    append(":")
+                }
+            }
+        }
+    }
+}
+
 fun formatDuration(seconds: Int): String {
     val m = seconds / 60
     val s = seconds % 60

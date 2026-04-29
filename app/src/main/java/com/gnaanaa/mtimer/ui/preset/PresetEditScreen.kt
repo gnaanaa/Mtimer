@@ -43,7 +43,7 @@ private val SOUND_OPTIONS = listOf(
 // Fill this in once you add files to res/raw/, e.g.:
 //   "bell_tibetan" to R.raw.bell_tibetan
 // Until then, selecting any sound just won't play audio.
-private val SOUND_RAW_IDS: Map<String, Int> = emptyMap()
+// Assets are handled dynamically via AssetManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,17 +112,39 @@ fun PresetEditScreen(
         currentPlayer?.release()
         currentPlayer = null
 
-        val rawId: Int? = SOUND_RAW_IDS[soundId]
-        if (rawId != null) {
-            // create() returns null if the resource can't be decoded
-            val mp = MediaPlayer.create(context, rawId)
-            if (mp != null) {
-                // Release automatically when playback finishes
-                mp.setOnCompletionListener { player ->
-                    player.release()
+        if (soundId != "silence") {
+            try {
+                val assetPath = when (soundId) {
+                    "bell_tibetan" -> "sounds/bell_tibetan.mp3"
+                    "bell_singing" -> "sounds/bell_singing.mp3"
+                    "chime_soft" -> "sounds/chime_soft.mp3"
+                    "bell_simple" -> "sounds/bell_simple.mp3"
+                    else -> null
                 }
-                mp.start()
-                currentPlayer = mp
+
+                if (assetPath != null) {
+                    val descriptor = context.assets.openFd(assetPath)
+                    val mp = MediaPlayer()
+                    mp.setDataSource(descriptor.fileDescriptor, descriptor.startOffset, descriptor.length)
+                    descriptor.close()
+                    mp.prepare()
+                    mp.setOnCompletionListener { it.release() }
+                    mp.start()
+                    currentPlayer = mp
+                } else {
+                    // Try custom imported sound
+                    val soundFile = java.io.File(context.filesDir, "sounds/$soundId")
+                    if (soundFile.exists()) {
+                        val mp = MediaPlayer()
+                        mp.setDataSource(soundFile.absolutePath)
+                        mp.prepare()
+                        mp.setOnCompletionListener { it.release() }
+                        mp.start()
+                        currentPlayer = mp
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("PresetEditScreen", "Failed to play preview", e)
             }
         }
     }
@@ -153,8 +175,12 @@ fun PresetEditScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        val resolvedName = name.trim().ifBlank { "Meditation" }
                         val totalSeconds = (durationHours * 3600) + (durationMins * 60)
+                        if (totalSeconds <= 0) {
+                            // Maybe show a toast or snackbar
+                            return@IconButton
+                        }
+                        val resolvedName = name.trim().ifBlank { "Meditation" }
                         val preset = Preset(
                             id              = if (isNew) java.util.UUID.randomUUID().toString() else presetId,
                             name            = resolvedName,
@@ -192,7 +218,7 @@ fun PresetEditScreen(
                         "e.g. MORNING CALM",
                         fontFamily = DotMatrix,
                         fontSize   = 13.sp,
-                        color      = MaterialTheme.colorScheme.onBackground.copy(0.3f)
+                        color      = MaterialTheme.colorScheme.onBackground.copy(0.6f)
                     )
                 },
                 textStyle  = LocalTextStyle.current.copy(
@@ -263,9 +289,10 @@ private fun SectionLabel(text: String) {
     Text(
         text          = text,
         fontFamily    = DotMatrix,
-        fontSize      = 10.sp,
+        fontSize      = 11.sp,
         letterSpacing = 3.sp,
-        color         = MaterialTheme.colorScheme.onBackground.copy(0.45f)
+        fontWeight    = FontWeight.Bold,
+        color         = MaterialTheme.colorScheme.primary // Bolder and brighter (using primary color)
     )
 }
 
@@ -322,7 +349,7 @@ private fun SpinnerPicker(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = label, fontFamily = DotMatrix, fontSize = 9.sp, color = MaterialTheme.colorScheme.primary.copy(0.65f))
+        Text(text = label, fontFamily = DotMatrix, fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(4.dp))
 
         Box(
@@ -359,7 +386,7 @@ private fun SpinnerPicker(
                             text = display(values[index]),
                             fontFamily = DotMatrix,
                             fontSize = if (isSelected) 17.sp else 13.sp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(0.3f),
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(0.6f),
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                         )
                     }

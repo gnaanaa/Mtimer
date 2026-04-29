@@ -2,6 +2,7 @@ package com.gnaanaa.mtimer.ui.settings
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,6 +24,7 @@ import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -34,7 +37,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -43,17 +45,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
+import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-
 import com.google.android.gms.common.api.Scope
 import com.google.api.services.drive.DriveScopes
 
@@ -122,7 +126,13 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = {
+                    Text(
+                        "SETTINGS",
+                        fontFamily = DotMatrix,
+                        letterSpacing = 4.sp
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -135,27 +145,35 @@ fun SettingsScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "Appearance",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Spacer(Modifier.height(8.dp))
+
+            SettingsSectionLabel("APPEARANCE")
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Light Theme", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        text = "LIGHT THEME",
+                        fontFamily = DotMatrix,
+                        fontSize = 14.sp,
+                        letterSpacing = 1.sp
+                    )
                     Text(
                         text = "Use light colors instead of true black",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        fontFamily = DotMatrix,
+                        fontSize = 11.sp,
+                        letterSpacing = 1.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
                     )
                 }
                 Switch(
@@ -164,43 +182,47 @@ fun SettingsScreen(
                 )
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-            Text(
-                text = "Health Connect",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            SettingsSectionLabel("HEALTH CONNECT")
 
             Card(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                )
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     val statusText = when (sdkStatus) {
-                        HealthConnectClient.SDK_AVAILABLE -> if (healthConnectGranted) "Health Sync is Active" else "Health Sync is Inactive"
-                        HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "Health Connect Update Required"
-                        else -> "Health Connect Unavailable"
+                        HealthConnectClient.SDK_AVAILABLE -> if (healthConnectGranted) "HEALTH SYNC ACTIVE" else "HEALTH SYNC INACTIVE"
+                        HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "UPDATE REQUIRED"
+                        else -> "HC UNAVAILABLE"
                     }
                     val statusColor = if (healthConnectGranted && sdkStatus == HealthConnectClient.SDK_AVAILABLE)
                         MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
 
                     Text(
                         text = statusText,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = statusColor
+                        fontFamily = DotMatrix,
+                        fontSize = 13.sp,
+                        letterSpacing = 2.sp,
+                        color = statusColor,
+                        fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = when (sdkStatus) {
                             HealthConnectClient.SDK_AVAILABLE -> if (healthConnectGranted)
-                                "MTimer is connected to Health Connect. Ensure Google Fit is also connected in Health Connect settings to see your data there."
-                            else "Sync your meditation sessions with Health Connect to track mindfulness minutes across apps like Google Fit."
-                            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "Please update Health Connect from the Play Store to enable syncing."
+                                "MTimer is connected. Sessions sync with Health Connect. Check Google Fit to view your mindfulness data."
+                            else "Sync sessions with Health Connect to track mindfulness minutes across apps."
+                            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "Please update Health Connect from the Play Store."
                             else -> "Health Connect is not available on this device."
                         },
-                        style = MaterialTheme.typography.bodyMedium
+                        fontFamily = DotMatrix,
+                        fontSize = 11.sp,
+                        letterSpacing = 1.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.95f)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
@@ -211,40 +233,45 @@ fun SettingsScreen(
                         if (sdkStatus == HealthConnectClient.SDK_AVAILABLE) {
                             OutlinedButton(
                                 onClick = { viewModel.openHC(context) },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Open Health App")
+                                Text("OPEN HEALTH", fontFamily = DotMatrix, fontSize = 11.sp)
                             }
                             Button(
                                 onClick = {
                                     permissionsLauncher.launch(viewModel.permissions)
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text(if (healthConnectGranted) "Check Access" else "Grant Access")
+                                Text(
+                                    if (healthConnectGranted) "CHECK ACCESS" else "GRANT ACCESS",
+                                    fontFamily = DotMatrix,
+                                    fontSize = 11.sp
+                                )
                             }
                         } else if (sdkStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
                             Button(
                                 onClick = { viewModel.openHC(context) },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("Update Health Connect")
+                                Text("UPDATE HEALTH CONNECT", fontFamily = DotMatrix, fontSize = 11.sp)
                             }
                         }
                     }
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-            Text(
-                text = "Google Account",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            SettingsSectionLabel("GOOGLE ACCOUNT")
 
             Card(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                )
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
@@ -255,27 +282,33 @@ fun SettingsScreen(
                                 model = googleAccount?.photoUrl,
                                 contentDescription = "Profile Picture",
                                 modifier = Modifier
-                                    .size(48.dp)
+                                    .size(40.dp)
                                     .clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
                                 Text(
-                                    text = googleAccount?.displayName ?: "Google User",
-                                    style = MaterialTheme.typography.bodyLarge
+                                    text = (googleAccount?.displayName ?: "USER").uppercase(),
+                                    fontFamily = DotMatrix,
+                                    fontSize = 14.sp,
+                                    letterSpacing = 1.sp
                                 )
                                 Text(
                                     text = googleAccount?.email ?: "",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    fontFamily = DotMatrix,
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
                                 )
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Connected for cloud backup of presets and history.",
-                            style = MaterialTheme.typography.bodyMedium
+                            fontFamily = DotMatrix,
+                            fontSize = 11.sp,
+                            letterSpacing = 1.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.95f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         OutlinedButton(
@@ -284,35 +317,34 @@ fun SettingsScreen(
                                     viewModel.updateGoogleAccount(context, null)
                                 }
                             },
-                            modifier = Modifier.align(Alignment.End)
+                            modifier = Modifier.align(Alignment.End),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Sign Out")
+                            Text("SIGN OUT", fontFamily = DotMatrix, fontSize = 11.sp)
                         }
                     } else {
                         Text(
-                            text = "Sign in to sync your presets and meditation history across devices via Google Drive.",
-                            style = MaterialTheme.typography.bodyMedium
+                            text = "Sign in to sync your presets and history across devices via Google Drive.",
+                            fontFamily = DotMatrix,
+                            fontSize = 11.sp,
+                            letterSpacing = 1.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.95f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
                             onClick = {
                                 googleSignInLauncher.launch(googleSignInClient.signInIntent)
                             },
-                            modifier = Modifier.align(Alignment.End)
+                            modifier = Modifier.align(Alignment.End),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Sign In with Google")
+                            Text("SIGN IN", fontFamily = DotMatrix, fontSize = 11.sp)
                         }
                     }
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-            Text(
-                text = "Backup & Restore",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            SettingsSectionLabel("BACKUP & RESTORE")
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -320,38 +352,57 @@ fun SettingsScreen(
             ) {
                 OutlinedButton(
                     onClick = { exportLauncher.launch("mtimer_presets.json") },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Icon(Icons.Default.FileDownload, contentDescription = null)
+                    Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Export")
+                    Text("EXPORT", fontFamily = DotMatrix, fontSize = 11.sp)
                 }
                 OutlinedButton(
                     onClick = { importLauncher.launch(arrayOf("application/json", "application/octet-stream")) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Icon(Icons.Default.FileUpload, contentDescription = null)
+                    Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Import")
+                    Text("IMPORT", fontFamily = DotMatrix, fontSize = 11.sp)
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-
-            Text(
-                text = "About",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            Text(
-                text = "MTimer v1.0",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Text(
-                text = "A power-minimal meditation timer.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            SettingsSectionLabel("ABOUT")
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp)
+            ) {
+                Text(
+                    text = "MTIMER V1.0",
+                    fontFamily = DotMatrix,
+                    fontSize = 12.sp,
+                    letterSpacing = 2.sp
+                )
+                Text(
+                    text = "A power-minimal meditation timer.",
+                    fontFamily = DotMatrix,
+                    fontSize = 10.sp,
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun SettingsSectionLabel(text: String) {
+    Text(
+        text = text,
+        fontFamily = DotMatrix,
+        fontSize = 11.sp,
+        letterSpacing = 3.sp,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary, // Brighter and bolder
+        modifier = Modifier.padding(top = 8.dp)
+    )
 }

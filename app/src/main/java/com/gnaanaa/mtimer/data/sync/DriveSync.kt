@@ -6,6 +6,7 @@ import com.gnaanaa.mtimer.data.db.PresetDao
 import com.gnaanaa.mtimer.data.db.PresetEntity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.ByteArrayContent
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
@@ -88,6 +89,12 @@ class DriveSync @Inject constructor(
             }
             
             Log.i(TAG, "Drive sync completed successfully")
+        } catch (e: GoogleJsonResponseException) {
+            if (e.statusCode == 403) {
+                Log.e(TAG, "Google Drive API is not enabled or access denied. Please enable it in the Google Cloud Console: ${e.details?.message ?: e.message}")
+            } else {
+                Log.e(TAG, "Google Drive API error (${e.statusCode}): ${e.message}", e)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error during Drive sync", e)
         }

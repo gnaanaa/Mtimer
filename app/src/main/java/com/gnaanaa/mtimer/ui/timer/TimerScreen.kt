@@ -33,6 +33,11 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.withStyle
+import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.domain.model.TimerState
 
 @Composable
@@ -95,18 +100,32 @@ fun TimerScreen(
             }
 
             Text(
-                text = timeText,
+                text = buildAnnotatedString {
+                    val parts = timeText.split(":")
+                    if (parts.size == 2) {
+                        append(parts[0])
+                        withStyle(SpanStyle(baselineShift = BaselineShift(0.2f))) {
+                            append(":")
+                        }
+                        append(parts[1])
+                    } else {
+                        append(timeText)
+                    }
+                },
                 color = Color.White,
-                fontSize = 72.sp,
-                fontFamily = FontFamily.Monospace
+                fontSize = 84.sp,
+                fontFamily = DotMatrix,
+                letterSpacing = 4.sp
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = labelText,
-                color = Color.White.copy(alpha = 0.6f),
-                fontSize = 14.sp
+                text = labelText.uppercase(),
+                color = Color.White.copy(alpha = 0.9f),
+                fontFamily = DotMatrix,
+                fontSize = 16.sp,
+                letterSpacing = 2.sp
             )
         }
 
