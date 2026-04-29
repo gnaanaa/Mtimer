@@ -16,16 +16,12 @@
     <uses-permission android:name="android.permission.health.WRITE_MINDFULNESS" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
     <uses-permission android:name="android.permission.health.WRITE_HEART_RATE" />
-    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
-    <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
 
     <!-- Health Connect (Android 13 and below - APK version) -->
     <uses-permission android:name="androidx.health.permission.MindfulnessSession.READ" />
     <uses-permission android:name="androidx.health.permission.MindfulnessSession.WRITE" />
     <uses-permission android:name="androidx.health.permission.HeartRate.READ" />
     <uses-permission android:name="androidx.health.permission.HeartRate.WRITE" />
-    <uses-permission android:name="androidx.health.permission.Exercise.READ" />
-    <uses-permission android:name="androidx.health.permission.Exercise.WRITE" />
 
     <queries>
         <package android:name="com.google.android.apps.healthdata" />

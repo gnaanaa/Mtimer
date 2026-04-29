@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.gnaanaa.mtimer.data.db.PresetDao
 import com.gnaanaa.mtimer.data.db.PresetEntity
+import com.gnaanaa.mtimer.data.db.SessionDao
+import com.gnaanaa.mtimer.data.db.SessionEntity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
@@ -23,12 +25,18 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 private const val TAG = "DriveSync"
-private const val BACKUP_FILE_NAME = "presets_backup.json"
+private const val BACKUP_FILE_NAME = "mtimer_backup.json"
+
+data class BackupData(
+    val presets: List<PresetEntity>,
+    val sessions: List<SessionEntity>
+)
 
 @Singleton
 class DriveSync @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val presetDao: PresetDao
+    private val presetDao: PresetDao,
+    private val sessionDao: SessionDao
 ) {
     private val gson = Gson()
 
@@ -54,33 +62,52 @@ class DriveSync @Inject constructor(
         }
 
         try {
-            // 1. Get local presets
+            // 1. Get local state
             val localPresets = presetDao.getAllPresetsList()
+            val localSessions = sessionDao.getAllSessionsList()
             
             // 2. Find existing backup file on Drive
             val existingFile = findBackupFile(service)
             
             if (existingFile != null) {
-                // 3. Download and merge if necessary
+                // 3. Download and merge
                 val remoteJson = downloadFile(service, existingFile.id)
-                val remotePresets: List<PresetEntity> = gson.fromJson(
+                val remoteData: BackupData = gson.fromJson(
                     remoteJson, 
-                    object : TypeToken<List<PresetEntity>>() {}.type
+                    object : TypeToken<BackupData>() {}.type
                 )
                 
-                // Simple merge: add missing ones to local DB
-                val localIds = localPresets.map { it.id }.toSet()
-                remotePresets.forEach { remote ->
-                    if (remote.id !in localIds) {
+                // --- RESTORE LOGIC ---
+                
+                // A. Restore Sessions (History)
+                // History is additive. We merge by startTime to avoid duplicates.
+                val localSessionTimes = localSessions.map { it.startTime }.toSet()
+                remoteData.sessions.forEach { remote ->
+                    if (remote.startTime !in localSessionTimes) {
+                        // Reset ID to 0 so Room auto-generates a new local ID
+                        sessionDao.insertSession(remote.copy(id = 0))
+                        Log.d(TAG, "Restored session history from cloud: ${remote.startTime}")
+                    }
+                }
+
+                // B. Restore Presets
+                // To fix the "deletion being restored" issue:
+                // We only auto-restore presets if the local database is EMPTY (Fresh Install).
+                // If local has data, we treat Local as the source of truth for presets.
+                if (localPresets.isEmpty()) {
+                    remoteData.presets.forEach { remote ->
                         presetDao.insertPreset(remote)
-                        Log.d(TAG, "Restored preset from cloud: ${remote.name}")
+                        Log.d(TAG, "Fresh restore of preset from cloud: ${remote.name}")
                     }
                 }
             }
             
-            // 4. Upload updated local presets back to cloud
+            // 4. Upload current state back to cloud
+            // This ensures deletions (if Local has data) are synced up to the cloud file.
             val updatedPresets = presetDao.getAllPresetsList()
-            val jsonToUpload = gson.toJson(updatedPresets)
+            val updatedSessions = sessionDao.getAllSessionsList()
+            val backupData = BackupData(presets = updatedPresets, sessions = updatedSessions)
+            val jsonToUpload = gson.toJson(backupData)
             
             if (existingFile != null) {
                 updateBackupFile(service, existingFile.id, jsonToUpload)
@@ -88,12 +115,12 @@ class DriveSync @Inject constructor(
                 createBackupFile(service, jsonToUpload)
             }
             
-            Log.i(TAG, "Drive sync completed successfully")
+            Log.i(TAG, "Drive sync/backup completed successfully")
         } catch (e: GoogleJsonResponseException) {
             if (e.statusCode == 403) {
-                Log.e(TAG, "Google Drive API is not enabled or access denied. Please enable it in the Google Cloud Console: ${e.details?.message ?: e.message}")
+                Log.e(TAG, "Google Drive API access denied. Enable it in Cloud Console.")
             } else {
-                Log.e(TAG, "Google Drive API error (${e.statusCode}): ${e.message}", e)
+                Log.e(TAG, "Drive API error (${e.statusCode}): ${e.message}")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error during Drive sync", e)
@@ -101,6 +128,7 @@ class DriveSync @Inject constructor(
     }
 
     private fun findBackupFile(service: Drive): File? {
+        // Query for the specific filename in the appDataFolder
         val result = service.files().list()
             .setSpaces("appDataFolder")
             .setQ("name = '$BACKUP_FILE_NAME'")

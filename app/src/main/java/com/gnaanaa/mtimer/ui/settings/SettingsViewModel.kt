@@ -5,13 +5,16 @@ import android.net.Uri
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.feature.ExperimentalMindfulnessSessionApi
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.MindfulnessSessionRecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gnaanaa.mtimer.data.datastore.UserPreferencesDataStore
 import com.gnaanaa.mtimer.data.repository.PresetRepository
+import com.gnaanaa.mtimer.data.repository.SessionRepository
+import com.gnaanaa.mtimer.data.db.toEntity
+import com.gnaanaa.mtimer.data.db.toDomain
+import com.gnaanaa.mtimer.data.sync.BackupData
 import com.gnaanaa.mtimer.data.sync.hasAllPermissions
 import com.gnaanaa.mtimer.data.sync.openHealthConnectSettings
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -34,7 +37,8 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val userPreferencesDataStore: UserPreferencesDataStore,
     private val healthConnectClient: HealthConnectClient?,
-    private val presetRepository: PresetRepository
+    private val presetRepository: PresetRepository,
+    private val sessionRepository: SessionRepository
 ) : ViewModel() {
 
     private val gson = Gson()
@@ -49,9 +53,7 @@ class SettingsViewModel @Inject constructor(
         HealthPermission.getWritePermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
-        HealthPermission.getWritePermission(HeartRateRecord::class),
-        HealthPermission.getWritePermission(ExerciseSessionRecord::class),
-        HealthPermission.getReadPermission(ExerciseSessionRecord::class)
+        HealthPermission.getWritePermission(HeartRateRecord::class)
     )
 
     private val _sdkStatus = MutableStateFlow(HealthConnectClient.SDK_UNAVAILABLE)
@@ -106,13 +108,15 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 try {
-                    val presets = presetRepository.getAllPresetsList()
-                    val json = gson.toJson(presets)
+                    val presets = presetRepository.getAllPresetsList().map { it.toEntity() }
+                    val sessions = sessionRepository.getAllSessionsList().map { it.toEntity() }
+                    val backupData = BackupData(presets, sessions)
+                    val json = gson.toJson(backupData)
                     context.contentResolver.openOutputStream(uri)?.use { output ->
                         output.write(json.toByteArray())
                     }
                 } catch (e: Exception) {
-                    android.util.Log.e("SettingsViewModel", "Failed to export presets", e)
+                    android.util.Log.e("SettingsViewModel", "Failed to export backup", e)
                 }
             }
         }
@@ -124,12 +128,23 @@ class SettingsViewModel @Inject constructor(
                 try {
                     val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
                     if (json != null) {
-                        val type = object : TypeToken<List<com.gnaanaa.mtimer.domain.model.Preset>>() {}.type
-                        val presets: List<com.gnaanaa.mtimer.domain.model.Preset> = gson.fromJson(json, type)
-                        presets.forEach { presetRepository.savePreset(it) }
+                        val type = object : TypeToken<BackupData>() {}.type
+                        val backupData: BackupData = gson.fromJson(json, type)
+                        
+                        // Import presets
+                        backupData.presets.forEach { presetRepository.savePreset(it.toDomain()) }
+                        
+                        // Import sessions
+                        val localSessions = sessionRepository.getAllSessionsList()
+                        val localSessionTimes = localSessions.map { it.startTime }.toSet()
+                        backupData.sessions.forEach { remoteEntity ->
+                            if (remoteEntity.startTime !in localSessionTimes) {
+                                sessionRepository.saveSession(remoteEntity.toDomain())
+                            }
+                        }
                     }
                 } catch (e: Exception) {
-                    android.util.Log.e("SettingsViewModel", "Failed to import presets", e)
+                    android.util.Log.e("SettingsViewModel", "Failed to import backup", e)
                 }
             }
         }

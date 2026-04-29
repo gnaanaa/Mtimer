@@ -17,6 +17,9 @@ interface SessionDao {
     @Query("SELECT * FROM sessions WHERE healthConnectSynced = 0")
     suspend fun getUnsyncedSessions(): List<SessionEntity>
 
+    @Query("SELECT * FROM sessions ORDER BY startTime DESC")
+    suspend fun getAllSessionsList(): List<SessionEntity>
+
     @Query("UPDATE sessions SET healthConnectSynced = 1, healthConnectRecordId = :recordId WHERE id = :sessionId")
     suspend fun markSynced(sessionId: Long, recordId: String)
 }

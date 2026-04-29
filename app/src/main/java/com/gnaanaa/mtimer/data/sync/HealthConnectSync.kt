@@ -8,7 +8,6 @@ import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.feature.ExperimentalMindfulnessSessionApi
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.MindfulnessSessionRecord
 import androidx.health.connect.client.records.Record
@@ -41,10 +40,9 @@ suspend fun hasAnyWritePermission(context: Context): Boolean {
     if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) return false
     
     val granted = getGrantedPermissions(context)
-    val writeExercise = HealthPermission.getWritePermission(ExerciseSessionRecord::class)
     val writeMindfulness = HealthPermission.getWritePermission(MindfulnessSessionRecord::class)
     
-    return granted.contains(writeExercise) || granted.contains(writeMindfulness)
+    return granted.contains(writeMindfulness)
 }
 
 suspend fun fetchHeartRateRange(context: Context, startTime: Instant, endTime: Instant): List<HeartRateRecord.Sample> {
@@ -101,9 +99,7 @@ suspend fun hasAllPermissions(context: Context): Boolean {
         HealthPermission.getWritePermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
-        HealthPermission.getWritePermission(HeartRateRecord::class),
-        HealthPermission.getWritePermission(ExerciseSessionRecord::class),
-        HealthPermission.getReadPermission(ExerciseSessionRecord::class)
+        HealthPermission.getWritePermission(HeartRateRecord::class)
     )
     
     return granted.containsAll(permissions)
@@ -250,24 +246,6 @@ suspend fun syncSessionToHealthConnect(
             notes = "Meditation session recorded via MTimer$heartRateSummary"
         )
         records.add(mindfulness)
-    }
-
-    // ✅ Re-insert lightweight Exercise record as "Yoga" to ensure visibility in Google Fit
-    // Some apps (like Fit) still prioritize Exercise records for visualization over Mindfulness.
-    // We use the same time range to help linking.
-    val writeExercise = HealthPermission.getWritePermission(ExerciseSessionRecord::class)
-    if (hasPermission(granted, writeExercise)) {
-        val exercise = ExerciseSessionRecord(
-            startTime = start,
-            startZoneOffset = startOffset,
-            endTime = end,
-            endZoneOffset = endOffset,
-            metadata = buildMetadata(session.id, "exercise"),
-            exerciseType = ExerciseSessionRecord.EXERCISE_TYPE_YOGA,
-            title = title,
-            notes = "Meditation session recorded via MTimer$heartRateSummary"
-        )
-        records.add(exercise)
     }
 
     if (records.isEmpty()) {

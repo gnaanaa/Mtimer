@@ -351,7 +351,7 @@ fun SettingsScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedButton(
-                    onClick = { exportLauncher.launch("mtimer_presets.json") },
+                    onClick = { exportLauncher.launch("mtimer_backup.json") },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp)
                 ) {

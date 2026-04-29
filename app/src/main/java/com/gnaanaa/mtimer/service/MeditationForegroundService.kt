@@ -132,12 +132,13 @@ class MeditationForegroundService : Service() {
                 }
             }
 
+            wakeLockManager.acquire()
+
             // Start sound
             soundPlayer.playSound(startSound)
             
             _timerState.value = TimerState.Running(duration, duration, presetName)
             startForeground(NOTIFICATION_ID, createNotification("Meditating..."))
-            wakeLockManager.acquire()
 
             var remaining = duration
             while (remaining > 0) {
@@ -159,7 +160,7 @@ class MeditationForegroundService : Service() {
             // End sound
             _timerState.value = TimerState.Ending(presetName)
             android.util.Log.d("MeditationForegroundService", "Timer finished naturally, playing end sound")
-            soundPlayer.playSound(endSound)
+            soundPlayer.playSound(endSound, waitAfterMs = 5000)
             
             saveAndSyncSession(true)
             

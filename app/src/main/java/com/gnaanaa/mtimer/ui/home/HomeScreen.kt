@@ -308,16 +308,18 @@ fun PresetDial(
     fun indexFromRotation(rot: Float): Int =
         ((-rot / step).roundToInt()).mod(presets.size)
 
-    val currentIndex by remember {
+    val currentIndex by remember(presets) {
         derivedStateOf { indexFromRotation(rotation.value) }
     }
 
-    LaunchedEffect(currentIndex) {
-        if (presets.isNotEmpty()) onSelected(presets[currentIndex])
+    LaunchedEffect(currentIndex, presets) {
+        if (presets.isNotEmpty() && currentIndex < presets.size) {
+            onSelected(presets[currentIndex])
+        }
     }
 
     // Sync rotation when selectedPreset changes (e.g. from click or initial load)
-    LaunchedEffect(selectedPreset) {
+    LaunchedEffect(selectedPreset, presets) {
         val targetIndex = presets.indexOf(selectedPreset)
         if (targetIndex != -1 && targetIndex != indexFromRotation(rotation.value)) {
             val rawTarget = -targetIndex * step

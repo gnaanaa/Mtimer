@@ -101,15 +101,23 @@ fun PresetEditScreen(
     var currentPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
     DisposableEffect(Unit) {
         onDispose {
-            currentPlayer?.stop()
-            currentPlayer?.release()
+            currentPlayer?.let {
+                try {
+                    if (it.isPlaying) it.stop()
+                } catch (_: Exception) {}
+                it.release()
+            }
         }
     }
 
     val playPreview: (String) -> Unit = { soundId ->
         // Stop & release the previous player first
-        currentPlayer?.stop()
-        currentPlayer?.release()
+        currentPlayer?.let { oldPlayer ->
+            try {
+                oldPlayer.stop()
+            } catch (_: Exception) {}
+            oldPlayer.release()
+        }
         currentPlayer = null
 
         if (soundId != "silence") {
@@ -128,9 +136,12 @@ fun PresetEditScreen(
                     mp.setDataSource(descriptor.fileDescriptor, descriptor.startOffset, descriptor.length)
                     descriptor.close()
                     mp.prepare()
-                    mp.setOnCompletionListener { it.release() }
-                    mp.start()
-                    currentPlayer = mp
+                mp.setOnCompletionListener { 
+                    it.release()
+                    if (currentPlayer == it) currentPlayer = null
+                }
+                mp.start()
+                currentPlayer = mp
                 } else {
                     // Try custom imported sound
                     val soundFile = java.io.File(context.filesDir, "sounds/$soundId")
@@ -138,9 +149,12 @@ fun PresetEditScreen(
                         val mp = MediaPlayer()
                         mp.setDataSource(soundFile.absolutePath)
                         mp.prepare()
-                        mp.setOnCompletionListener { it.release() }
-                        mp.start()
-                        currentPlayer = mp
+                    mp.setOnCompletionListener { 
+                        it.release()
+                        if (currentPlayer == it) currentPlayer = null
+                    }
+                    mp.start()
+                    currentPlayer = mp
                     }
                 }
             } catch (e: Exception) {
@@ -311,6 +325,7 @@ private fun SpinnerPicker(
     display: (Int) -> String,
     onValueSelected: (Int) -> Unit
 ) {
+    if (values.isEmpty()) return
     val itemHeightDp = 36.dp
     val visibleItems = 3
 
@@ -323,7 +338,7 @@ private fun SpinnerPicker(
     val snapBehavior = rememberSnapFlingBehavior(listState)
 
     // CRITICAL: Sync the UI if the value changes externally (like loading from DB)
-    LaunchedEffect(selectedValue) {
+    LaunchedEffect(selectedValue, values) {
         val targetIndex = values.indexOf(selectedValue).coerceAtLeast(0)
         // Only scroll if the list isn't currently being touched by the user
         if (!listState.isScrollInProgress && listState.firstVisibleItemIndex != targetIndex) {
@@ -331,17 +346,19 @@ private fun SpinnerPicker(
         }
     }
 
-    val centeredIndex by remember {
+    val centeredIndex by remember(values) {
         derivedStateOf {
             listState.firstVisibleItemIndex.coerceIn(0, values.lastIndex)
         }
     }
 
     // Only notify the parent when the user actually changes the selection
-    LaunchedEffect(centeredIndex) {
-        val newValue = values[centeredIndex]
-        if (newValue != selectedValue) {
-            onValueSelected(newValue)
+    LaunchedEffect(centeredIndex, values) {
+        if (centeredIndex in values.indices) {
+            val newValue = values[centeredIndex]
+            if (newValue != selectedValue) {
+                onValueSelected(newValue)
+            }
         }
     }
 

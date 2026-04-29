@@ -8,6 +8,9 @@ import android.media.SoundPool
 import android.media.ToneGenerator
 import android.os.Build
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,7 +34,7 @@ class SoundPlayer @Inject constructor(
             .build()
     }
 
-    suspend fun playSound(soundId: String) {
+    suspend fun playSound(soundId: String, waitAfterMs: Long = 0) {
         if (soundId == "silence") return
 
         if (soundPool == null) {
@@ -46,46 +49,43 @@ class SoundPlayer @Inject constructor(
             else -> null
         }
 
-        var played = false
-        if (assetPath != null) {
-            try {
-                // Check if asset exists first
-                val assets = context.assets.list("sounds") ?: emptyArray()
-                val fileName = assetPath.substringAfterLast("/")
-                if (assets.contains(fileName)) {
-                    val descriptor = context.assets.openFd(assetPath)
-                    val soundPoolId = soundPool?.load(descriptor, 1) ?: -1
-                    
-                    soundPool?.setOnLoadCompleteListener { pool, sampleId, status ->
-                        if (status == 0 && sampleId == soundPoolId) {
-                            requestAudioFocusAndPlay(pool, sampleId)
-                        }
-                    }
-                    played = true
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("SoundPlayer", "Error playing asset: $assetPath", e)
-            }
-        } else {
-            // Try loading from internal storage (user imported)
-            try {
-                val soundFile = java.io.File(context.filesDir, "sounds/$soundId")
-                if (soundFile.exists()) {
-                    val soundPoolId = soundPool?.load(soundFile.absolutePath, 1) ?: -1
-                    soundPool?.setOnLoadCompleteListener { pool, sampleId, status ->
-                        if (status == 0 && sampleId == soundPoolId) {
-                            requestAudioFocusAndPlay(pool, sampleId)
-                        }
-                    }
-                    played = true
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("SoundPlayer", "Error playing user sound: $soundId", e)
+        val loadDeferred = CompletableDeferred<Int>()
+        soundPool?.setOnLoadCompleteListener { _, sampleId, status ->
+            if (status == 0) {
+                loadDeferred.complete(sampleId)
+            } else {
+                loadDeferred.completeExceptionally(RuntimeException("Failed to load sound: $status"))
             }
         }
 
-        if (!played && soundId != "silence") {
+        var soundPoolId = -1
+        try {
+            if (assetPath != null) {
+                val descriptor = context.assets.openFd(assetPath)
+                soundPoolId = soundPool?.load(descriptor, 1) ?: -1
+            } else {
+                val soundFile = java.io.File(context.filesDir, "sounds/$soundId")
+                if (soundFile.exists()) {
+                    soundPoolId = soundPool?.load(soundFile.absolutePath, 1) ?: -1
+                }
+            }
+
+            if (soundPoolId != -1) {
+                withTimeoutOrNull(3000) {
+                    val loadedId = loadDeferred.await()
+                    if (loadedId == soundPoolId) {
+                        requestAudioFocusAndPlay(soundPool!!, loadedId)
+                        if (waitAfterMs > 0) delay(waitAfterMs)
+                    }
+                }
+            } else {
+                playFallbackTone()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SoundPlayer", "Error playing sound: $soundId", e)
             playFallbackTone()
+        } finally {
+            soundPool?.setOnLoadCompleteListener(null)
         }
     }
 

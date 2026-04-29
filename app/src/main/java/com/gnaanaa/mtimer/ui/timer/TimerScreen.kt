@@ -38,6 +38,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import com.gnaanaa.mtimer.ui.home.DotMatrix
+import com.gnaanaa.mtimer.ui.home.alignColons
 import com.gnaanaa.mtimer.domain.model.TimerState
 
 @Composable
@@ -100,18 +101,7 @@ fun TimerScreen(
             }
 
             Text(
-                text = buildAnnotatedString {
-                    val parts = timeText.split(":")
-                    if (parts.size == 2) {
-                        append(parts[0])
-                        withStyle(SpanStyle(baselineShift = BaselineShift(0.2f))) {
-                            append(":")
-                        }
-                        append(parts[1])
-                    } else {
-                        append(timeText)
-                    }
-                },
+                text = timeText.alignColons(),
                 color = Color.White,
                 fontSize = 84.sp,
                 fontFamily = DotMatrix,

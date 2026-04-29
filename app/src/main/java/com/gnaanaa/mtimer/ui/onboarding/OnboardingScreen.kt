@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.sp
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.MindfulnessSessionRecord
 import androidx.health.connect.client.feature.ExperimentalMindfulnessSessionApi
@@ -67,9 +66,7 @@ fun OnboardingScreen(
             HealthPermission.getWritePermission(MindfulnessSessionRecord::class),
             HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
             HealthPermission.getReadPermission(HeartRateRecord::class),
-            HealthPermission.getWritePermission(HeartRateRecord::class),
-            HealthPermission.getWritePermission(ExerciseSessionRecord::class),
-            HealthPermission.getReadPermission(ExerciseSessionRecord::class)
+            HealthPermission.getWritePermission(HeartRateRecord::class)
         )
     }
 
