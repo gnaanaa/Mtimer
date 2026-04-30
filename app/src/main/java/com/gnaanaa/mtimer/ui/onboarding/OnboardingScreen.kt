@@ -50,6 +50,12 @@ class OnboardingViewModel @Inject constructor(
             userPreferencesDataStore.setOnboardingCompleted(true)
         }
     }
+
+    fun setGoogleFitEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesDataStore.setGoogleFitEnabled(enabled)
+        }
+    }
 }
 
 @OptIn(ExperimentalMindfulnessSessionApi::class)
@@ -115,7 +121,7 @@ fun OnboardingScreen(
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Track your mindfulness journey across apps via Health Connect.",
+                text = "Track your mindfulness journey across apps via Health Connect and Google Fit.",
                 fontFamily = DotMatrix,
                 fontSize = 14.sp,
                 letterSpacing = 1.sp,
@@ -139,6 +145,34 @@ fun OnboardingScreen(
             ) {
                 Text(
                     text = (if (availability) "Enable Health Connect" else "Health Connect Not Available").uppercase(),
+                    fontFamily = DotMatrix,
+                    fontSize = 12.sp,
+                    letterSpacing = 1.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    val fitnessOptions = com.gnaanaa.mtimer.data.sync.getGoogleFitOptions()
+                    val account = com.google.android.gms.auth.api.signin.GoogleSignIn.getAccountForExtension(context, fitnessOptions)
+                    if (!com.google.android.gms.auth.api.signin.GoogleSignIn.hasPermissions(account, fitnessOptions)) {
+                        com.google.android.gms.auth.api.signin.GoogleSignIn.requestPermissions(
+                            context as android.app.Activity,
+                            1002,
+                            account,
+                            fitnessOptions
+                        )
+                    }
+                    viewModel.setGoogleFitEnabled(true)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Text(
+                    text = "ENABLE GOOGLE FIT",
                     fontFamily = DotMatrix,
                     fontSize = 12.sp,
                     letterSpacing = 1.sp

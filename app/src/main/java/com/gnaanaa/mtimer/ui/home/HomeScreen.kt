@@ -13,7 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -54,7 +54,7 @@ val DotMatrix = FontFamily(
         weight = FontWeight.Normal,
         variationSettings = FontVariation.Settings(
             FontVariation.Setting("ROND", 100f), // Full round dots
-            FontVariation.Setting("wght", 600f)
+            FontVariation.Setting("wght", 700f)
         )
     )
 )
@@ -66,7 +66,7 @@ val DotMatrixSquare = FontFamily(
         weight = FontWeight.Normal,
         variationSettings = FontVariation.Settings(
             FontVariation.Setting("ROND", 0f),  // square pixels
-            FontVariation.Setting("wght", 600f)
+            FontVariation.Setting("wght", 700f)
         )
     )
 )
@@ -78,6 +78,8 @@ fun HomeScreen(
     onNavigateToPresets: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToHistory: () -> Unit,
+    onNavigateToAbout: () -> Unit,
+    onOpenDrawer: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val recentSessions by viewModel.recentSessions.collectAsState()
@@ -107,17 +109,17 @@ fun HomeScreen(
                             letterSpacing = 4.sp
                         )
                         Text(
-                            "READY TO RESET?",
+                            "RETURN TO YOURSELF, DAILY.",
                             fontFamily = DotMatrix,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             letterSpacing = 2.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = null)
+                navigationIcon = {
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menu")
                     }
                 }
             )
@@ -150,13 +152,6 @@ fun HomeScreen(
                 onSelected = { selectedPreset = it }
             )
 
-            TextButton(
-                onClick = onNavigateToPresets,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("EDIT PRESETS", fontFamily = DotMatrix, letterSpacing = 2.sp)
-            }
-
             Spacer(Modifier.height(16.dp))
 
             Row(
@@ -172,9 +167,6 @@ fun HomeScreen(
                     fontSize = 12.sp,
                     letterSpacing = 3.sp
                 )
-                TextButton(onClick = onNavigateToHistory) {
-                    Text("VIEW ALL", fontFamily = DotMatrix, letterSpacing = 2.sp)
-                }
             }
 
             if (recentSessions.isEmpty()) {
@@ -277,22 +269,6 @@ fun StartSessionButton(
 }
 
 // ── Rotary Dial ────────────────────────────────────────────────────────────
-//
-//  Gesture model
-//  ─────────────
-//  • Track circular angle using atan2(dy, dx) relative to dial center.
-//  • On each pointer move, compute angleDelta = currentAngle - previousAngle
-//    (unwrapped to avoid ±180° jumps).
-//  • Accumulate into a continuous `rotation` Animatable (degrees).
-//  • On pointer-up, snap to nearest slot with a spring so the selected
-//    preset is always top-center (angle = -90°, i.e. 270°).
-//
-//  Slot mapping
-//  ────────────
-//  Preset[i] is drawn at world angle = rotation + i * step.
-//  The "active" slot is the one closest to -90° (top of circle).
-//  index = round(-rotation / step) mod presets.size
-//
 @Composable
 fun PresetDial(
     presets: List<Preset>,
@@ -304,7 +280,6 @@ fun PresetDial(
     val step = 360f / presets.size
     val rotation = remember { Animatable(0f) }
 
-    // Recompute index directly from rotation — no derivedStateOf needed
     fun indexFromRotation(rot: Float): Int =
         ((-rot / step).roundToInt()).mod(presets.size)
 
@@ -318,7 +293,6 @@ fun PresetDial(
         }
     }
 
-    // Sync rotation when selectedPreset changes (e.g. from click or initial load)
     LaunchedEffect(selectedPreset, presets) {
         val targetIndex = presets.indexOf(selectedPreset)
         if (targetIndex != -1 && targetIndex != indexFromRotation(rotation.value)) {
@@ -378,12 +352,9 @@ fun PresetDial(
                                 pointer.consume()
                             } while (true)
 
-                            // ── Fixed snap: find nearest slot to current rotation ──
                             val snappedIndex = indexFromRotation(rotation.value)
-                            // Target is the multiple of `step` closest to current rotation
                             val rawTarget = -snappedIndex * step
                             val currentRot = rotation.value
-                            // Shift rawTarget by full rotations to minimise travel distance
                             val turns = ((currentRot - rawTarget) / 360f).roundToInt()
                             val targetRotation = rawTarget + turns * 360f
 
@@ -414,7 +385,7 @@ fun PresetDial(
             Text(
                 text = preset.name.uppercase(),
                 fontFamily = DotMatrix,
-                fontSize = if (isSelected) 13.sp else 11.sp,
+                fontSize = if (isSelected) 14.sp else 12.sp,
                 letterSpacing = if (isSelected) 2.sp else 1.sp,
                 modifier = Modifier
                     .offset(xDp, yDp)
@@ -423,11 +394,10 @@ fun PresetDial(
                 color = if (isSelected)
                     MaterialTheme.colorScheme.primary
                 else
-                    MaterialTheme.colorScheme.onBackground.copy(0.75f)
+                    MaterialTheme.colorScheme.onBackground.copy(0.8f)
             )
         }
 
-        // Center arrow
         Text(
             "→",
             fontFamily = DotMatrix,
@@ -452,14 +422,14 @@ fun HistoryRow(session: Session, formattedDate: Any, onClick: () -> Unit) {
             Text(
                 text = formattedDate,
                 fontFamily = DotMatrix,
-                fontSize = 12.sp,
+                fontSize = 13.sp,
                 letterSpacing = 1.sp
             )
         } else {
             Text(
                 text = formattedDate.toString(),
                 fontFamily = DotMatrix,
-                fontSize = 12.sp,
+                fontSize = 13.sp,
                 letterSpacing = 1.sp
             )
         }
@@ -467,7 +437,7 @@ fun HistoryRow(session: Session, formattedDate: Any, onClick: () -> Unit) {
             Text(
                 text = formatDurationAligned(session.durationSeconds),
                 fontFamily = DotMatrix,
-                fontSize = 13.sp
+                fontSize = 14.sp
             )
             Spacer(Modifier.width(6.dp))
             Icon(
@@ -522,14 +492,14 @@ fun DetailRow(label: String, value: Any) {
         Text(
             label,
             fontFamily = DotMatrix,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             letterSpacing = 2.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
         )
         if (value is AnnotatedString) {
-            Text(text = value, fontFamily = DotMatrix, fontSize = 12.sp)
+            Text(text = value, fontFamily = DotMatrix, fontSize = 13.sp)
         } else {
-            Text(text = value.toString(), fontFamily = DotMatrix, fontSize = 12.sp)
+            Text(text = value.toString(), fontFamily = DotMatrix, fontSize = 13.sp)
         }
     }
 }

@@ -15,8 +15,10 @@ import com.gnaanaa.mtimer.widget.MTimerWidget
 import androidx.glance.appwidget.updateAll
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 
 import androidx.health.connect.client.feature.ExperimentalMindfulnessSessionApi
+import com.gnaanaa.mtimer.data.datastore.UserPreferencesDataStore
 
 @OptIn(ExperimentalMindfulnessSessionApi::class)
 @HiltWorker
@@ -24,21 +26,15 @@ class HealthConnectSyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
     private val sessionRepository: SessionRepository,
-    private val presetDao: PresetDao
+    private val presetDao: PresetDao,
+    private val userPreferencesDataStore: UserPreferencesDataStore
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         android.util.Log.d("HealthConnect", "SyncWorker starting...")
         
-        try {
-            if (!hasAnyWritePermission(applicationContext)) {
-                android.util.Log.w("HealthConnect", "No write permissions found (Mindfulness or Exercise). Aborting sync.")
-                return Result.failure()
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("HealthConnect", "Failed to check permissions", e)
-            return Result.retry()
-        }
+        val isGoogleFitEnabled = userPreferencesDataStore.isGoogleFitEnabled.first()
+        val isHealthConnectEnabled = userPreferencesDataStore.isHealthConnectEnabled.first()
 
         val unsyncedSessions = sessionRepository.getUnsyncedSessions()
         android.util.Log.d("HealthConnect", "Found ${unsyncedSessions.size} unsynced sessions in database")
@@ -52,13 +48,29 @@ class HealthConnectSyncWorker @AssistedInject constructor(
                     presetDao.getPresetById(it)?.name 
                 }
                 
-                syncSessionToHealthConnect(
-                    context = applicationContext,
-                    session = session,
-                    presetName = presetName
-                )
+                // Sync to Health Connect
+                try {
+                    if (isHealthConnectEnabled && hasAnyWritePermission(applicationContext)) {
+                        syncSessionToHealthConnect(
+                            context = applicationContext,
+                            session = session,
+                            presetName = presetName
+                        )
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("HealthConnect", "HC sync failed for ${session.id}", e)
+                }
+
+                // Sync to Google Fit
+                if (isGoogleFitEnabled) {
+                    try {
+                        syncSessionToGoogleFit(applicationContext, session)
+                    } catch (e: Exception) {
+                        android.util.Log.e("GoogleFit", "Fit sync failed for ${session.id}", e)
+                    }
+                }
                 
-                sessionRepository.markSynced(session.id, "hc_synced_${System.currentTimeMillis()}")
+                sessionRepository.markSynced(session.id, "synced_${System.currentTimeMillis()}")
                 successCount++
                 android.util.Log.i("HealthConnect", "Successfully synced and marked session ${session.id}")
             } catch (e: Exception) {
@@ -70,10 +82,10 @@ class HealthConnectSyncWorker @AssistedInject constructor(
         // Update widget once after all sessions are synced
         if (successCount > 0) {
             try {
-                MTimerWidget().updateAll(applicationContext)
-                android.util.Log.d("HealthConnect", "Widget updated after $successCount syncs")
+                com.gnaanaa.mtimer.widget.worker.WidgetUpdateWorker.updateNow(applicationContext)
+                android.util.Log.d("HealthConnect", "Widget update enqueued after $successCount syncs")
             } catch (e: Exception) {
-                android.util.Log.e("HealthConnect", "Failed to update widget", e)
+                android.util.Log.e("HealthConnect", "Failed to enqueue widget update", e)
             }
         }
         

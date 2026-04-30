@@ -20,6 +20,8 @@ class UserPreferencesDataStore @Inject constructor(
 ) {
     private val useLightThemeKey = booleanPreferencesKey("use_light_theme")
     private val isOnboardingCompletedKey = booleanPreferencesKey("onboarding_completed")
+    private val isGoogleFitEnabledKey = booleanPreferencesKey("google_fit_enabled")
+    private val isHealthConnectEnabledKey = booleanPreferencesKey("health_connect_enabled")
 
     val useLightTheme: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
@@ -31,6 +33,16 @@ class UserPreferencesDataStore @Inject constructor(
             preferences[isOnboardingCompletedKey] ?: false
         }
 
+    val isGoogleFitEnabled: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[isGoogleFitEnabledKey] ?: false
+        }
+
+    val isHealthConnectEnabled: Flow<Boolean> = context.dataStore.data
+        .map { preferences ->
+            preferences[isHealthConnectEnabledKey] ?: false
+        }
+
     suspend fun setUseLightTheme(useLight: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[useLightThemeKey] = useLight
@@ -40,6 +52,18 @@ class UserPreferencesDataStore @Inject constructor(
     suspend fun setOnboardingCompleted(completed: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[isOnboardingCompletedKey] = completed
+        }
+    }
+
+    suspend fun setGoogleFitEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[isGoogleFitEnabledKey] = enabled
+        }
+    }
+
+    suspend fun setHealthConnectEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[isHealthConnectEnabledKey] = enabled
         }
     }
 }

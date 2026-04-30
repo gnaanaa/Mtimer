@@ -7,8 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,6 +26,7 @@ fun PresetListScreen(
     onBack: () -> Unit,
     onEditPreset: (String) -> Unit,
     onCreatePreset: () -> Unit,
+    onOpenDrawer: () -> Unit,
     viewModel: PresetViewModel = hiltViewModel()
 ) {
     val presets by viewModel.presets.collectAsState()
@@ -44,15 +45,15 @@ fun PresetListScreen(
                         Text(
                             "${presets.size} CONFIGURED",
                             fontFamily = DotMatrix,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             letterSpacing = 2.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
                         )
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menu")
                     }
                 }
             )
@@ -172,9 +173,9 @@ fun PresetItem(
             Text(
                 durationLabel,
                 fontFamily = DotMatrix,
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 letterSpacing = 1.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
+                color = MaterialTheme.colorScheme.onBackground.copy(0.95f)
             )
         }
 

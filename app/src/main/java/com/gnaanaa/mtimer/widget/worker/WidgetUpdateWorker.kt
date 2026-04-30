@@ -8,6 +8,7 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -30,14 +31,41 @@ class WidgetUpdateWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val minutes = try {
+        val now = System.currentTimeMillis()
+        val weekAgo = now - TimeUnit.DAYS.toMillis(7)
+        
+        // Sum local sessions
+        val localSessions = db.sessionDao().getAllSessionsList()
+        val localMinutes = localSessions
+            .filter { it.startTime >= weekAgo && it.completed }
+            .sumOf { it.durationSeconds } / 60
+
+        // Sum Health Connect (sessions from other apps)
+        val hcMinutes = try {
             getWeeklyMindfulnessMinutes(applicationContext)
         } catch (e: Exception) {
             0
         }
 
-        val presets = db.presetDao().getAllPresetsList()
-        val presetsJson = Json.encodeToString(presets)
+        // Use the larger of the two or combine? 
+        // If we sync our sessions to HC, combining might double-count.
+        // Let's take the max to be safe, or just HC if available as it should include ours.
+        val totalMinutes = maxOf(localMinutes.toInt(), hcMinutes)
+
+        // Get last 3 used presets
+        val lastUsedPresetIds = localSessions
+            .mapNotNull { it.presetId }
+            .distinct()
+            .take(3)
+        
+        val allPresets = db.presetDao().getAllPresetsList()
+        val recentPresets = if (lastUsedPresetIds.isEmpty()) {
+            allPresets.take(3)
+        } else {
+            lastUsedPresetIds.mapNotNull { id -> allPresets.find { it.id == id } }
+        }
+
+        val presetsJson = Json.encodeToString(recentPresets)
 
         val manager = GlanceAppWidgetManager(applicationContext)
         val glanceIds = manager.getGlanceIds(MTimerWidget::class.java)
@@ -45,7 +73,7 @@ class WidgetUpdateWorker @AssistedInject constructor(
         glanceIds.forEach { glanceId ->
             updateAppWidgetState(applicationContext, MTimerWidgetStateDefinition, glanceId) { prefs ->
                 prefs.toMutablePreferences().apply {
-                    this[intPreferencesKey("weekly_minutes")] = minutes
+                    this[intPreferencesKey("weekly_minutes")] = totalMinutes
                     this[stringPreferencesKey("presets_json")] = presetsJson
                 }
             }
@@ -66,6 +94,11 @@ class WidgetUpdateWorker @AssistedInject constructor(
                 ExistingPeriodicWorkPolicy.KEEP,
                 request
             )
+        }
+
+        fun updateNow(context: Context) {
+            val request = OneTimeWorkRequestBuilder<WidgetUpdateWorker>().build()
+            WorkManager.getInstance(context).enqueue(request)
         }
     }
 }

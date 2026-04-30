@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -65,12 +66,15 @@ import com.google.api.services.drive.DriveScopes
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val useLightTheme by viewModel.useLightTheme.collectAsState()
     val healthConnectGranted by viewModel.healthConnectPermissionsGranted.collectAsState()
+    val healthConnectEnabled by viewModel.isHealthConnectEnabled.collectAsState()
     val sdkStatus by viewModel.sdkStatus.collectAsState()
     val googleAccount by viewModel.googleAccount.collectAsState()
+    val googleFitEnabled by viewModel.isGoogleFitEnabled.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -134,8 +138,8 @@ fun SettingsScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menu")
                     }
                 }
             )
@@ -153,116 +157,48 @@ fun SettingsScreen(
 
             SettingsSectionLabel("APPEARANCE")
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "LIGHT THEME",
-                        fontFamily = DotMatrix,
-                        fontSize = 14.sp,
-                        letterSpacing = 1.sp
-                    )
-                    Text(
-                        text = "Use light colors instead of true black",
-                        fontFamily = DotMatrix,
-                        fontSize = 11.sp,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
-                    )
-                }
-                Switch(
-                    checked = useLightTheme,
-                    onCheckedChange = { viewModel.toggleTheme(it) }
-                )
-            }
+            SettingsToggleCard(
+                title = "LIGHT THEME",
+                subtitle = "Use light colors instead of true black",
+                checked = useLightTheme,
+                onCheckedChange = { viewModel.toggleTheme(it) }
+            )
 
-            SettingsSectionLabel("HEALTH CONNECT")
+            SettingsSectionLabel("SYNC & INTEGRATIONS")
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    val statusText = when (sdkStatus) {
-                        HealthConnectClient.SDK_AVAILABLE -> if (healthConnectGranted) "HEALTH SYNC ACTIVE" else "HEALTH SYNC INACTIVE"
-                        HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "UPDATE REQUIRED"
-                        else -> "HC UNAVAILABLE"
+            SettingsToggleCard(
+                title = "HEALTH CONNECT",
+                subtitle = "Share mindfulness data with other health apps.",
+                checked = healthConnectEnabled,
+                onCheckedChange = { enabled ->
+                    if (enabled && !healthConnectGranted) {
+                        permissionsLauncher.launch(viewModel.permissions)
                     }
-                    val statusColor = if (healthConnectGranted && sdkStatus == HealthConnectClient.SDK_AVAILABLE)
-                        MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                    viewModel.toggleHealthConnect(enabled)
+                },
+                enabled = sdkStatus == HealthConnectClient.SDK_AVAILABLE
+            )
 
-                    Text(
-                        text = statusText,
-                        fontFamily = DotMatrix,
-                        fontSize = 13.sp,
-                        letterSpacing = 2.sp,
-                        color = statusColor,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = when (sdkStatus) {
-                            HealthConnectClient.SDK_AVAILABLE -> if (healthConnectGranted)
-                                "MTimer is connected. Sessions sync with Health Connect. Check Google Fit to view your mindfulness data."
-                            else "Sync sessions with Health Connect to track mindfulness minutes across apps."
-                            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> "Please update Health Connect from the Play Store."
-                            else -> "Health Connect is not available on this device."
-                        },
-                        fontFamily = DotMatrix,
-                        fontSize = 11.sp,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.95f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (sdkStatus == HealthConnectClient.SDK_AVAILABLE) {
-                            OutlinedButton(
-                                onClick = { viewModel.openHC(context) },
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text("OPEN HEALTH", fontFamily = DotMatrix, fontSize = 11.sp)
-                            }
-                            Button(
-                                onClick = {
-                                    permissionsLauncher.launch(viewModel.permissions)
-                                },
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text(
-                                    if (healthConnectGranted) "CHECK ACCESS" else "GRANT ACCESS",
-                                    fontFamily = DotMatrix,
-                                    fontSize = 11.sp
-                                )
-                            }
-                        } else if (sdkStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
-                            Button(
-                                onClick = { viewModel.openHC(context) },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text("UPDATE HEALTH CONNECT", fontFamily = DotMatrix, fontSize = 11.sp)
-                            }
+            SettingsToggleCard(
+                title = "GOOGLE FIT",
+                subtitle = "Log meditation as activity for AIA Vitality and others.",
+                checked = googleFitEnabled,
+                onCheckedChange = { enabled ->
+                    if (enabled) {
+                        val fitnessOptions = com.gnaanaa.mtimer.data.sync.getGoogleFitOptions()
+                        val account = GoogleSignIn.getAccountForExtension(context, fitnessOptions)
+                        if (!GoogleSignIn.hasPermissions(account, fitnessOptions)) {
+                            GoogleSignIn.requestPermissions(
+                                context as android.app.Activity,
+                                1001,
+                                account,
+                                fitnessOptions
+                            )
                         }
                     }
+                    viewModel.toggleGoogleFit(enabled)
                 }
-            }
+            )
 
             SettingsSectionLabel("GOOGLE ACCOUNT")
 
@@ -297,8 +233,8 @@ fun SettingsScreen(
                                 Text(
                                     text = googleAccount?.email ?: "",
                                     fontFamily = DotMatrix,
-                                    fontSize = 10.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.95f)
                                 )
                             }
                         }
@@ -306,9 +242,9 @@ fun SettingsScreen(
                         Text(
                             text = "Connected for cloud backup of presets and history.",
                             fontFamily = DotMatrix,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             letterSpacing = 1.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.95f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 1.0f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         OutlinedButton(
@@ -320,15 +256,15 @@ fun SettingsScreen(
                             modifier = Modifier.align(Alignment.End),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("SIGN OUT", fontFamily = DotMatrix, fontSize = 11.sp)
+                            Text("SIGN OUT", fontFamily = DotMatrix, fontSize = 12.sp)
                         }
                     } else {
                         Text(
                             text = "Sign in to sync your presets and history across devices via Google Drive.",
                             fontFamily = DotMatrix,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             letterSpacing = 1.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.95f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 1.0f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
@@ -338,7 +274,7 @@ fun SettingsScreen(
                             modifier = Modifier.align(Alignment.End),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("SIGN IN", fontFamily = DotMatrix, fontSize = 11.sp)
+                            Text("SIGN IN", fontFamily = DotMatrix, fontSize = 12.sp)
                         }
                     }
                 }
@@ -357,7 +293,7 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("EXPORT", fontFamily = DotMatrix, fontSize = 11.sp)
+                    Text("EXPORT", fontFamily = DotMatrix, fontSize = 12.sp)
                 }
                 OutlinedButton(
                     onClick = { importLauncher.launch(arrayOf("application/json", "application/octet-stream")) },
@@ -366,29 +302,8 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("IMPORT", fontFamily = DotMatrix, fontSize = 11.sp)
+                    Text("IMPORT", fontFamily = DotMatrix, fontSize = 12.sp)
                 }
-            }
-
-            SettingsSectionLabel("ABOUT")
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 32.dp)
-            ) {
-                Text(
-                    text = "MTIMER V1.0",
-                    fontFamily = DotMatrix,
-                    fontSize = 12.sp,
-                    letterSpacing = 2.sp
-                )
-                Text(
-                    text = "A power-minimal meditation timer.",
-                    fontFamily = DotMatrix,
-                    fontSize = 10.sp,
-                    letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
-                )
             }
         }
     }
@@ -399,10 +314,56 @@ private fun SettingsSectionLabel(text: String) {
     Text(
         text = text,
         fontFamily = DotMatrix,
-        fontSize = 11.sp,
+        fontSize = 12.sp,
         letterSpacing = 3.sp,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary, // Brighter and bolder
         modifier = Modifier.padding(top = 8.dp)
     )
+}
+
+@Composable
+private fun SettingsToggleCard(
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    fontFamily = DotMatrix,
+                    fontSize = 14.sp,
+                    letterSpacing = 1.sp,
+                    color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                )
+                Text(
+                    text = subtitle,
+                    fontFamily = DotMatrix,
+                    fontSize = 12.sp,
+                    letterSpacing = 1.sp,
+                    color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 1.0f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                )
+            }
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                enabled = enabled
+            )
+        }
+    }
 }

@@ -34,6 +34,7 @@ import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.text.FontWeight
+import androidx.glance.text.FontFamily
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
@@ -103,6 +104,13 @@ class StartAction : ActionCallback {
 fun MTimerWidgetContent(minutes: Int, presets: List<com.gnaanaa.mtimer.data.db.PresetEntity>) {
     val size = LocalSize.current
     val isExpanded = size.width >= 200.dp
+    
+    // Using Monospace as a fallback for the DotMatrix vibe
+    val dotMatrixStyle = TextStyle(
+        color = ColorProvider(Color.White),
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.Medium
+    )
 
     Column(
         modifier = GlanceModifier
@@ -121,25 +129,21 @@ fun MTimerWidgetContent(minutes: Int, presets: List<com.gnaanaa.mtimer.data.db.P
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "${minutes}m",
-                        style = TextStyle(
-                            color = ColorProvider(Color.White),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        text = "${minutes}M",
+                        style = dotMatrixStyle.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     )
                     Text(
-                        text = "this week",
-                        style = TextStyle(
-                            color = ColorProvider(Color.White.copy(alpha = 0.6f)),
-                            fontSize = 10.sp
+                        text = "THIS WEEK",
+                        style = dotMatrixStyle.copy(
+                            color = ColorProvider(Color.White.copy(alpha = 0.7f)),
+                            fontSize = 9.sp
                         )
                     )
                 }
-                Spacer(modifier = GlanceModifier.width(16.dp))
                 if (presets.isNotEmpty()) {
+                    Spacer(modifier = GlanceModifier.width(16.dp))
                     Button(
-                        text = "Start",
+                        text = "START",
                         onClick = actionRunCallback<StartAction>(
                             actionParametersOf(StartAction.PresetIdKey to presets.first().id)
                         )
@@ -149,33 +153,52 @@ fun MTimerWidgetContent(minutes: Int, presets: List<com.gnaanaa.mtimer.data.db.P
         } else {
             // Expanded Layout
             Text(
-                text = "MTimer Weekly Progress",
-                style = TextStyle(
-                    color = ColorProvider(Color.White.copy(alpha = 0.6f)),
-                    fontSize = 12.sp
+                text = "MTIMER WEEKLY PROGRESS",
+                style = dotMatrixStyle.copy(
+                    color = ColorProvider(Color.White.copy(alpha = 0.7f)),
+                    fontSize = 11.sp
                 )
             )
+            Spacer(modifier = GlanceModifier.height(4.dp))
             Text(
-                text = "${minutes}m",
-                style = TextStyle(
-                    color = ColorProvider(Color.White),
-                    fontSize = 32.sp,
+                text = "${minutes} MINUTES",
+                style = dotMatrixStyle.copy(
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold
                 )
             )
+            
+            Spacer(modifier = GlanceModifier.height(16.dp))
+            
+            Text(
+                text = "QUICK START",
+                style = dotMatrixStyle.copy(
+                    color = ColorProvider(Color.White.copy(alpha = 0.6f)),
+                    fontSize = 9.sp
+                )
+            )
             Spacer(modifier = GlanceModifier.height(8.dp))
+            
             Row(
                 modifier = GlanceModifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                presets.take(3).forEach { preset ->
-                    Button(
-                        text = preset.name,
-                        onClick = actionRunCallback<StartAction>(
-                            actionParametersOf(StartAction.PresetIdKey to preset.id)
-                        ),
-                        modifier = GlanceModifier.padding(horizontal = 4.dp)
+                if (presets.isEmpty()) {
+                    Text(
+                        text = "NO PRESETS",
+                        style = dotMatrixStyle.copy(fontSize = 12.sp, color = ColorProvider(Color.Gray))
                     )
+                } else {
+                    presets.take(3).forEach { preset ->
+                        Button(
+                            text = preset.name.uppercase(),
+                            onClick = actionRunCallback<StartAction>(
+                                actionParametersOf(StartAction.PresetIdKey to preset.id)
+                            ),
+                            modifier = GlanceModifier.padding(horizontal = 4.dp)
+                        )
+                    }
                 }
             }
         }

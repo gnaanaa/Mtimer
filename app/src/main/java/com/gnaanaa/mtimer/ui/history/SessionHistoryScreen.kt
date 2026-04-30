@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,6 +33,7 @@ import java.util.*
 @Composable
 fun SessionHistoryScreen(
     onBack: () -> Unit,
+    onOpenDrawer: () -> Unit,
     viewModel: SessionHistoryViewModel = hiltViewModel()
 ) {
     val sessions by viewModel.sessions.collectAsState()
@@ -48,8 +50,8 @@ fun SessionHistoryScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Default.Menu, contentDescription = "Menu")
                     }
                 }
             )
@@ -111,15 +113,15 @@ fun SessionItem(session: Session, onClick: () -> Unit) {
             Text(
                 text = dateFormat.format(Date(session.startTime)).uppercase().alignColons(),
                 fontFamily = DotMatrix,
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 letterSpacing = 1.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.95f)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = formatDurationAligned(session.durationSeconds),
                 fontFamily = DotMatrix,
-                fontSize = 16.sp,
+                fontSize = 18.sp,
                 letterSpacing = 1.sp,
                 fontWeight = FontWeight.Bold
             )

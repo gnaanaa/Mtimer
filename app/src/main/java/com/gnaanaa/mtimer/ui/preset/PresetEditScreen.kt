@@ -176,9 +176,9 @@ fun PresetEditScreen(
                         Text(
                             if (isNew) "CONFIGURE YOUR SESSION" else name.uppercase(),
                             fontFamily    = DotMatrix,
-                            fontSize      = 11.sp,
+                            fontSize      = 12.sp,
                             letterSpacing = 2.sp,
-                            color         = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                            color         = MaterialTheme.colorScheme.onBackground.copy(0.7f)
                         )
                     }
                 },
@@ -231,7 +231,7 @@ fun PresetEditScreen(
                     Text(
                         "e.g. MORNING CALM",
                         fontFamily = DotMatrix,
-                        fontSize   = 13.sp,
+                        fontSize   = 14.sp,
                         color      = MaterialTheme.colorScheme.onBackground.copy(0.6f)
                     )
                 },
@@ -303,7 +303,7 @@ private fun SectionLabel(text: String) {
     Text(
         text          = text,
         fontFamily    = DotMatrix,
-        fontSize      = 11.sp,
+        fontSize      = 12.sp,
         letterSpacing = 3.sp,
         fontWeight    = FontWeight.Bold,
         color         = MaterialTheme.colorScheme.primary // Bolder and brighter (using primary color)
@@ -366,7 +366,7 @@ private fun SpinnerPicker(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = label, fontFamily = DotMatrix, fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Text(text = label, fontFamily = DotMatrix, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(4.dp))
 
         Box(
@@ -402,8 +402,8 @@ private fun SpinnerPicker(
                         Text(
                             text = display(values[index]),
                             fontFamily = DotMatrix,
-                            fontSize = if (isSelected) 17.sp else 13.sp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(0.6f),
+                            fontSize = if (isSelected) 18.sp else 14.sp,
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(0.7f),
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                         )
                     }
@@ -439,7 +439,7 @@ private fun SoundPicker(
             textStyle     = LocalTextStyle.current.copy(
                 fontFamily    = DotMatrix,
                 letterSpacing = 2.sp,
-                fontSize      = 13.sp
+                fontSize      = 14.sp
             ),
             modifier = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)
@@ -457,7 +457,7 @@ private fun SoundPicker(
                         Text(
                             displayName.uppercase(),
                             fontFamily    = DotMatrix,
-                            fontSize      = 12.sp,
+                            fontSize      = 13.sp,
                             letterSpacing = 1.sp
                         )
                     },
@@ -473,7 +473,7 @@ private fun SoundPicker(
                             Text(
                                 soundName.uppercase(),
                                 fontFamily    = DotMatrix,
-                                fontSize      = 12.sp,
+                                fontSize      = 13.sp,
                                 letterSpacing = 1.sp
                             )
                         },
@@ -495,7 +495,7 @@ private fun SoundPicker(
                         Text(
                             "IMPORT SOUND...",
                             fontFamily    = DotMatrix,
-                            fontSize      = 12.sp,
+                            fontSize      = 13.sp,
                             letterSpacing = 1.sp
                         )
                     }

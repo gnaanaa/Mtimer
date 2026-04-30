@@ -98,9 +98,27 @@ class SettingsViewModel @Inject constructor(
     val useLightTheme: StateFlow<Boolean> = userPreferencesDataStore.useLightTheme
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val isGoogleFitEnabled: StateFlow<Boolean> = userPreferencesDataStore.isGoogleFitEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val isHealthConnectEnabled: StateFlow<Boolean> = userPreferencesDataStore.isHealthConnectEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     fun toggleTheme(useLight: Boolean) {
         viewModelScope.launch {
             userPreferencesDataStore.setUseLightTheme(useLight)
+        }
+    }
+
+    fun toggleGoogleFit(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesDataStore.setGoogleFitEnabled(enabled)
+        }
+    }
+
+    fun toggleHealthConnect(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesDataStore.setHealthConnectEnabled(enabled)
         }
     }
 
