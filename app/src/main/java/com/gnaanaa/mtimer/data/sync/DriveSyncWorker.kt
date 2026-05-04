@@ -2,7 +2,10 @@ package com.gnaanaa.mtimer.data.sync
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
+import androidx.work.Constraints
 import androidx.work.CoroutineWorker
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -20,15 +23,30 @@ class DriveSyncWorker @AssistedInject constructor(
         return try {
             driveSync.syncPresets()
             Result.success()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             if (runAttemptCount < 3) Result.retry() else Result.failure()
         }
     }
 
     companion object {
+        private const val UNIQUE_WORK_NAME = "DriveSyncWork"
+
         fun enqueue(context: Context) {
-            val request = OneTimeWorkRequestBuilder<DriveSyncWorker>().build()
-            WorkManager.getInstance(context).enqueue(request)
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val request = OneTimeWorkRequestBuilder<DriveSyncWorker>()
+                .setConstraints(constraints)
+                .build()
+
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                UNIQUE_WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
+                request
+            )
         }
     }
 }

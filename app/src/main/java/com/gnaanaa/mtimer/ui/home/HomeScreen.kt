@@ -1,15 +1,15 @@
 package com.gnaanaa.mtimer.ui.home
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
@@ -19,8 +19,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.platform.LocalDensity
@@ -221,41 +228,85 @@ fun StartSessionButton(
     onClick: () -> Unit
 ) {
     val isEffectiveEnabled = enabled || alwaysEnabled
-    Row(
+    
+    // Power Optimization: Use a non-delegated state to avoid recomposition.
+    // Accessing .value inside drawBehind only triggers a redraw, not a full recomposition.
+    val infiniteTransition = rememberInfiniteTransition(label = "borderAnimation")
+    val alphaState = infiniteTransition.animateFloat(
+        initialValue = 0.15f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "alpha"
+    )
+
+    val primaryColor = MaterialTheme.colorScheme.primary
+
+    Box(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth()
-            .height(76.dp)
+            .height(84.dp)
+            .drawBehind {
+                if (isEffectiveEnabled) {
+                    val strokeWidthPx = 2.5.dp.toPx()
+                    val gapPx = 14.dp.toPx()
+                    
+                    // To get perfect circular dots:
+                    // 1. Dash length = 0f (or very small)
+                    // 2. StrokeCap = Round (this draws a circle at the 0-length point)
+                    // 3. Gap = distance between dots
+                    val dashPathEffect = PathEffect.dashPathEffect(
+                        floatArrayOf(0.01f, gapPx), 
+                        0f
+                    )
+                    
+                    drawRoundRect(
+                        color = primaryColor.copy(alpha = alphaState.value),
+                        style = Stroke(
+                            width = strokeWidthPx,
+                            pathEffect = dashPathEffect,
+                            cap = StrokeCap.Round
+                        ),
+                        cornerRadius = CornerRadius(16.dp.toPx())
+                    )
+                }
+            }
             .background(
-                if (isEffectiveEnabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                if (isEffectiveEnabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                 else MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.large
+                shape = RoundedCornerShape(16.dp)
             )
             .clickable(enabled = isEffectiveEnabled, onClick = onClick)
-            .padding(horizontal = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 24.dp),
+        contentAlignment = Alignment.Center
     ) {
         // Lotus icon — left side
         Icon(
             imageVector = Icons.Default.Spa,
             contentDescription = null,
-            modifier = Modifier.size(32.dp),
+            modifier = Modifier
+                .size(36.dp)
+                .align(Alignment.CenterStart),
             tint = if (isEffectiveEnabled)
-                MaterialTheme.colorScheme.primary
+                primaryColor
             else
                 MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
         )
 
-        Spacer(Modifier.width(16.dp))
-
-        // Text block
-        Column {
+        // Text block - Centered
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
                 labelOverride ?: "START SESSION",
                 fontFamily = DotMatrix,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp,
-                fontSize = 16.sp
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 4.sp,
+                fontSize = 18.sp,
+                color = if (isEffectiveEnabled) primaryColor else MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (labelOverride == null) {
                 selectedPreset?.let { preset ->
@@ -263,15 +314,19 @@ fun StartSessionButton(
                         append(preset.name.uppercase())
                         if (preset.durationSeconds > 0) {
                             val mins = preset.durationSeconds / 60
-                            append("  (${mins}m)")
+                            append("  (${mins}M)")
                         }
                     }
                     Text(
                         label,
                         fontFamily = DotMatrix,
                         fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
                         letterSpacing = 2.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
+                        color = if (isEffectiveEnabled) 
+                            MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                        else 
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
                     )
                 }
             }
@@ -455,7 +510,7 @@ fun HistoryRow(session: Session, formattedDate: Any, onClick: () -> Unit) {
                 imageVector = if (session.completed) Icons.Default.CheckCircle else Icons.Default.Cancel,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp),
-                tint = if (session.completed) androidx.compose.ui.graphics.Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
+                tint = if (session.completed) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
             )
         }
     }

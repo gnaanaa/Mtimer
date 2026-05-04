@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,6 +52,7 @@ fun TimerScreen(
     viewModel: TimerViewModel = hiltViewModel()
 ) {
     val timerState by viewModel.timerState.collectAsState()
+    var isZenMode by remember { mutableStateOf(false) }
     val view = LocalView.current
     val context = LocalContext.current
 
@@ -102,40 +108,61 @@ fun TimerScreen(
 
             Text(
                 text = timeText.alignColons(),
-                color = Color.White,
+                color = if (isZenMode) Color.White.copy(alpha = 0.15f) else Color.White,
                 fontSize = 84.sp,
                 fontFamily = DotMatrix,
                 letterSpacing = 4.sp
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            if (!isZenMode) {
+                Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = labelText.uppercase(),
-                color = Color.White.copy(alpha = 0.9f),
-                fontFamily = DotMatrix,
-                fontSize = 16.sp,
-                letterSpacing = 2.sp
-            )
+                Text(
+                    text = labelText.uppercase(),
+                    color = Color.White.copy(alpha = 0.9f),
+                    fontFamily = DotMatrix,
+                    fontSize = 16.sp,
+                    letterSpacing = 2.sp
+                )
+            }
         }
 
+        // Zen Mode Toggle
         Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 48.dp)
+                .align(Alignment.TopEnd)
+                .padding(24.dp)
                 .size(48.dp)
-                .clickable {
-                    viewModel.stopTimer()
-                    onClose()
-                },
+                .clickable { isZenMode = !isZenMode },
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Stop,
-                contentDescription = "Stop",
-                tint = Color.White,
-                modifier = Modifier.size(32.dp)
+                imageVector = if (isZenMode) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                contentDescription = "Zen Mode",
+                tint = if (isZenMode) Color.White.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.5f),
+                modifier = Modifier.size(24.dp)
             )
+        }
+
+        if (!isZenMode) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 48.dp)
+                    .size(48.dp)
+                    .clickable {
+                        viewModel.stopTimer()
+                        onClose()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Stop,
+                    contentDescription = "Stop",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
     }
 }

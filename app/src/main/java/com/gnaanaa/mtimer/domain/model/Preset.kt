@@ -6,6 +6,8 @@ data class Preset(
     val prepareSeconds: Int = 0,
     val startSoundId: String = "bell_tibetan",
     val durationSeconds: Int = 600,
+    val intervalSeconds: Int = 0, // 0 means no interval chimes
+    val intervalSoundId: String = "chime_soft",
     val endSoundId: String = "bell_tibetan",
     val colorAccent: Int? = null,
     val createdAt: Long = System.currentTimeMillis(),

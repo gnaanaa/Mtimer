@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">MTimer</string>
+    <string name="shortcut_daily_sit">Daily Sit</string>
+    <string name="shortcut_daily_sit_long">Start Daily Meditation</string>
+    <string name="shortcut_history">History</string>
+    <string name="shortcut_history_long">View Session History</string>
     <string name="health_connect_sync_label">Meditation Sync</string>
 </resources>

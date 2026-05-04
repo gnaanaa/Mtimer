@@ -40,4 +40,12 @@ class SessionRepositoryImpl @Inject constructor(
     override suspend fun markSynced(sessionId: Long, recordId: String) {
         sessionDao.markSynced(sessionId, recordId)
     }
+
+    override fun getSessionCount(): Flow<Int> {
+        return sessionDao.getSessionCount()
+    }
+
+    override fun getTotalDuration(): Flow<Long> {
+        return sessionDao.getTotalDuration().map { it ?: 0L }
+    }
 }

@@ -10,7 +10,9 @@ import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -76,8 +78,10 @@ fun PresetEditScreen(
     var name           by rememberSaveable { mutableStateOf("") }
     var durationHours  by rememberSaveable { mutableIntStateOf(0) }
     var durationMins   by rememberSaveable { mutableIntStateOf(10) }
+    var intervalSeconds by rememberSaveable { mutableIntStateOf(0) }
     var prepareSeconds by rememberSaveable { mutableIntStateOf(0) }
     var startSoundId   by rememberSaveable { mutableStateOf("bell_tibetan") }
+    var intervalSoundId by rememberSaveable { mutableStateOf("chime_soft") }
     var endSoundId     by rememberSaveable { mutableStateOf("bell_tibetan") }
     var loaded         by rememberSaveable { mutableStateOf(false) }
 
@@ -87,8 +91,10 @@ fun PresetEditScreen(
                 name           = existing.name
                 durationHours = (existing.durationSeconds / 3600).coerceIn(0, 23)
                 durationMins = ((existing.durationSeconds % 3600) / 60).coerceIn(0, 59)
+                intervalSeconds = existing.intervalSeconds
                 prepareSeconds = existing.prepareSeconds
                 startSoundId = existing.startSoundId
+                intervalSoundId = existing.intervalSoundId
                 endSoundId = existing.endSoundId
             }
             loaded = true
@@ -200,6 +206,8 @@ fun PresetEditScreen(
                             name            = resolvedName,
                             durationSeconds = totalSeconds,
                             prepareSeconds  = prepareSeconds,
+                            intervalSeconds = intervalSeconds,
+                            intervalSoundId = intervalSoundId,
                             startSoundId    = startSoundId,
                             endSoundId      = endSoundId
                         )
@@ -212,87 +220,141 @@ fun PresetEditScreen(
             )
         }
     ) { padding ->
+        val scrollState = rememberScrollState()
 
-        // No scroll — everything fits in one screen
         Column(
             modifier = Modifier
                 .padding(padding)
                 .padding(horizontal = 16.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxSize()
+                .verticalScroll(scrollState),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
+            Spacer(Modifier.height(4.dp))
             // ── Name ──────────────────────────────────────────────────────
-            SectionLabel("SESSION NAME")
-            OutlinedTextField(
-                value         = name,
-                onValueChange = { name = it },
-                placeholder   = {
-                    Text(
-                        "e.g. MORNING CALM",
-                        fontFamily = DotMatrix,
-                        fontSize   = 14.sp,
-                        color      = MaterialTheme.colorScheme.onBackground.copy(0.6f)
-                    )
-                },
-                textStyle  = LocalTextStyle.current.copy(
-                    fontFamily    = DotMatrix,
-                    letterSpacing = 2.sp
-                ),
-                modifier   = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape      = RoundedCornerShape(16.dp)
-            )
-
-            // ── Duration ──────────────────────────────────────────────────
-            SectionLabel("DURATION")
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                SpinnerPicker(
-                    modifier      = Modifier.weight(1f),
-                    label         = "HRS",
-                    values        = (0..23).toList(),
-                    selectedValue = durationHours, // Pass Value, not Index
-                    display       = { v -> "%02d".format(v) },
-                    onValueSelected = { durationHours = it }
-                )
-                SpinnerPicker(
-                    modifier      = Modifier.weight(1f),
-                    label         = "MIN",
-                    values        = (0..59).toList(),
-                    selectedValue = durationMins,
-                    display       = { v -> "%02d".format(v) },
-                    onValueSelected = { durationMins = it }
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                SectionLabel("SESSION NAME")
+                OutlinedTextField(
+                    value         = name,
+                    onValueChange = { name = it },
+                    placeholder   = {
+                        Text(
+                            "e.g. MORNING CALM",
+                            fontFamily = DotMatrix,
+                            fontSize   = 14.sp,
+                            color      = MaterialTheme.colorScheme.onBackground.copy(0.6f)
+                        )
+                    },
+                    textStyle  = LocalTextStyle.current.copy(
+                        fontFamily    = DotMatrix,
+                        letterSpacing = 2.sp
+                    ),
+                    modifier   = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape      = RoundedCornerShape(16.dp)
                 )
             }
 
-            // ── Prepare time ──────────────────────────────────────────────
-            SectionLabel("PREPARE TIME")
-            val prepareValues: List<Int> = (0..60 step 5).toList()
-            SpinnerPicker(
-                modifier      = Modifier.fillMaxWidth(),
-                label         = "SEC",
-                values        = prepareValues,
-                selectedValue = prepareSeconds,
-                display       = { v -> "${v}s" },
-                onValueSelected = { prepareSeconds = it }
-            )
+            // ── Duration ──────────────────────────────────────────────────
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                SectionLabel("DURATION")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SpinnerPicker(
+                        modifier = Modifier.weight(1f),
+                        label = "HRS",
+                        values = (0..23).toList(),
+                        selectedValue = durationHours,
+                        display = { v -> "%02d".format(v) },
+                        onValueSelected = { durationHours = it }
+                    )
+                    SpinnerPicker(
+                        modifier = Modifier.weight(1f),
+                        label = "MIN",
+                        values = (0..59).toList(),
+                        selectedValue = durationMins,
+                        display = { v -> "%02d".format(v) },
+                        onValueSelected = { durationMins = it }
+                    )
+                }
+            }
+
+            // ── Prepare and Interval (Shared Row) ─────────────────────────
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Prepare time
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    SectionLabel("PREP TIME")
+                    val prepareValues: List<Int> = (0..60 step 5).toList()
+                    SpinnerPicker(
+                        modifier = Modifier.fillMaxWidth(),
+                        label = "SEC",
+                        values = prepareValues,
+                        selectedValue = prepareSeconds,
+                        display = { v -> "${v}s" },
+                        onValueSelected = { prepareSeconds = it }
+                    )
+                }
+
+                // Interval Chimes
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    SectionLabel("INT CHIME")
+                    val intervalValues: List<Int> =
+                        listOf(0, 300, 600, 900, 1200, 1800) // 0, 5, 10, 15, 20, 30 mins
+                    SpinnerPicker(
+                        modifier = Modifier.fillMaxWidth(),
+                        label = "MIN",
+                        values = intervalValues,
+                        selectedValue = intervalSeconds,
+                        display = { v -> if (v == 0) "OFF" else "${v / 60}m" },
+                        onValueSelected = { intervalSeconds = it }
+                    )
+                }
+            }
 
             // ── Sounds ────────────────────────────────────────────────────
-            SectionLabel("START SOUND")
-            SoundPicker(
-                selectedId   = startSoundId,
-                customSounds = customSounds,
-                onSelected   = { id -> startSoundId = id; playPreview(id) },
-                onImport     = { soundPickerLauncher.launch("audio/*") }
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                SectionLabel("START SOUND")
+                SoundPicker(
+                    selectedId = startSoundId,
+                    customSounds = customSounds,
+                    onSelected = { id -> startSoundId = id; playPreview(id) },
+                    onImport = { soundPickerLauncher.launch("audio/*") }
+                )
+            }
 
-            SectionLabel("END SOUND")
-            SoundPicker(
-                selectedId   = endSoundId,
-                customSounds = customSounds,
-                onSelected   = { id -> endSoundId = id; playPreview(id) },
-                onImport     = { soundPickerLauncher.launch("audio/*") }
-            )
+            if (intervalSeconds > 0) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    SectionLabel("INTERVAL SOUND")
+                    SoundPicker(
+                        selectedId = intervalSoundId,
+                        customSounds = customSounds,
+                        onSelected = { id -> intervalSoundId = id; playPreview(id) },
+                        onImport = { soundPickerLauncher.launch("audio/*") }
+                    )
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                SectionLabel("END SOUND")
+                SoundPicker(
+                    selectedId = endSoundId,
+                    customSounds = customSounds,
+                    onSelected = { id -> endSoundId = id; playPreview(id) },
+                    onImport = { soundPickerLauncher.launch("audio/*") }
+                )
+            }
+            Spacer(Modifier.height(16.dp))
         }
     }
 }

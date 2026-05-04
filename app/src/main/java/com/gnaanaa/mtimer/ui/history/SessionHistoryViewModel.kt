@@ -21,4 +21,18 @@ class SessionHistoryViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    val sessionCount: StateFlow<Int> = sessionRepository.getSessionCount()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
+
+    val totalDuration: StateFlow<Long> = sessionRepository.getTotalDuration()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0L
+        )
 }

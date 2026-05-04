@@ -37,6 +37,8 @@ fun SessionHistoryScreen(
     viewModel: SessionHistoryViewModel = hiltViewModel()
 ) {
     val sessions by viewModel.sessions.collectAsState()
+    val sessionCount by viewModel.sessionCount.collectAsState()
+    val totalDuration by viewModel.totalDuration.collectAsState()
     var selectedSession by remember { mutableStateOf<Session?>(null) }
 
     Scaffold(
@@ -80,6 +82,18 @@ fun SessionHistoryScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                item {
+                    PracticeSummaryCard(sessionCount, totalDuration)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "RECENT SESSIONS",
+                        fontFamily = DotMatrix,
+                        fontSize = 12.sp,
+                        letterSpacing = 2.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
                 items(sessions, key = { it.id }) { session ->
                     SessionItem(
                         session = session,
@@ -92,6 +106,72 @@ fun SessionHistoryScreen(
 
     selectedSession?.let {
         SessionDetailDialog(it) { selectedSession = null }
+    }
+}
+
+@Composable
+fun PracticeSummaryCard(count: Int, totalSeconds: Long) {
+    val hours = totalSeconds / 3600
+    val minutes = (totalSeconds % 3600) / 60
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = "LIFETIME PRACTICE",
+                fontFamily = DotMatrix,
+                fontSize = 12.sp,
+                letterSpacing = 2.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Column {
+                    Text(
+                        text = "${hours}h ${minutes}m",
+                        fontFamily = DotMatrix,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "TOTAL TIME",
+                        fontFamily = DotMatrix,
+                        fontSize = 10.sp,
+                        letterSpacing = 1.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = count.toString(),
+                        fontFamily = DotMatrix,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "SESSIONS",
+                        fontFamily = DotMatrix,
+                        fontSize = 10.sp,
+                        letterSpacing = 1.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
     }
 }
 

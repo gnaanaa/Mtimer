@@ -84,7 +84,19 @@ class SettingsViewModel @Inject constructor(
             try {
                 val status = HealthConnectClient.getSdkStatus(context)
                 _sdkStatus.value = status
-                _healthConnectPermissionsGranted.value = hasAllPermissions(context)
+                val hasPerms = hasAllPermissions(context)
+                _healthConnectPermissionsGranted.value = hasPerms
+                
+                // Sync toggle with permission reality
+                val currentEnabled = userPreferencesDataStore.isHealthConnectEnabled.stateIn(viewModelScope).value
+                if (hasPerms && !currentEnabled) {
+                    android.util.Log.d("HealthConnect", "ViewModel: Auto-enabling as permissions are now granted")
+                    userPreferencesDataStore.setHealthConnectEnabled(true)
+                } else if (!hasPerms && currentEnabled) {
+                    android.util.Log.d("HealthConnect", "ViewModel: Auto-disabling due to missing permissions")
+                    userPreferencesDataStore.setHealthConnectEnabled(false)
+                }
+
                 _googleAccount.value = GoogleSignIn.getLastSignedInAccount(context)
             } catch (e: Exception) {
                 android.util.Log.e("HealthConnect", "Error checking permissions/account", e)
@@ -167,7 +179,7 @@ class SettingsViewModel @Inject constructor(
                             val backupData: BackupData = gson.fromJson(jsonElement, BackupData::class.java)
 
                             // Import presets
-                            backupData.presets.forEach { 
+                            backupData.presets?.forEach { 
                                 presetRepository.savePreset(it.toDomain()) 
                                 presetsRestored++
                             }
@@ -175,7 +187,7 @@ class SettingsViewModel @Inject constructor(
                             // Import sessions
                             val localSessions = sessionRepository.getAllSessionsList()
                             val localSessionTimes = localSessions.map { it.startTime }.toSet()
-                            backupData.sessions.forEach { remoteEntity ->
+                            backupData.sessions?.forEach { remoteEntity ->
                                 if (remoteEntity.startTime !in localSessionTimes) {
                                     sessionRepository.saveSession(remoteEntity.toDomain())
                                     historyRestored++

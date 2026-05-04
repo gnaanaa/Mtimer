@@ -9,4 +9,6 @@ interface SessionRepository {
     suspend fun getAllSessionsList(): List<Session>
     suspend fun getUnsyncedSessions(): List<Session>
     suspend fun markSynced(sessionId: Long, recordId: String)
+    fun getSessionCount(): Flow<Int>
+    fun getTotalDuration(): Flow<Long>
 }

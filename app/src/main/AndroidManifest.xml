@@ -52,6 +52,17 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <meta-data android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="mtimer" android:host="start_default" />
+                <data android:scheme="mtimer" android:host="history" />
+            </intent-filter>
         </activity>
 
         <!-- Required by Health Connect — must be present or permissions will be rejected -->

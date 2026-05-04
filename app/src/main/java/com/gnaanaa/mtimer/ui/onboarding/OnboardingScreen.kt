@@ -56,6 +56,15 @@ class OnboardingViewModel @Inject constructor(
             userPreferencesDataStore.setGoogleFitEnabled(enabled)
         }
     }
+
+    fun setHealthConnectEnabled(context: android.content.Context, enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesDataStore.setHealthConnectEnabled(enabled)
+            if (enabled) {
+                com.gnaanaa.mtimer.data.sync.HealthConnectSyncWorker.enqueue(context)
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMindfulnessSessionApi::class)
@@ -84,6 +93,7 @@ fun OnboardingScreen(
         PermissionController.createRequestPermissionResultContract()
     ) { granted ->
         android.util.Log.d("HealthConnect", "Onboarding permissions result: $granted")
+        viewModel.setHealthConnectEnabled(context, true)
         viewModel.completeOnboarding()
         onComplete()
     }

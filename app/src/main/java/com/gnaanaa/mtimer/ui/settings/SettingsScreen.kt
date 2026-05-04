@@ -74,12 +74,24 @@ fun SettingsScreen(
     val useLightTheme by viewModel.useLightTheme.collectAsState()
     val healthConnectGranted by viewModel.healthConnectPermissionsGranted.collectAsState()
     val healthConnectEnabled by viewModel.isHealthConnectEnabled.collectAsState()
+    
+    // Debug logging
+    android.util.Log.d("HealthConnectUI", "healthConnectEnabled: $healthConnectEnabled, healthConnectGranted: $healthConnectGranted")
+    
     val sdkStatus by viewModel.sdkStatus.collectAsState()
     val googleAccount by viewModel.googleAccount.collectAsState()
     val googleFitEnabled by viewModel.isGoogleFitEnabled.collectAsState()
     val importStatus by viewModel.importStatus.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    // Sync DataStore state with actual System Permission state
+    LaunchedEffect(healthConnectGranted) {
+        if (!healthConnectGranted && healthConnectEnabled) {
+            android.util.Log.d("HealthConnectUI", "Permissions revoked via system, disabling feature in app.")
+            viewModel.toggleHealthConnect(context, false)
+        }
+    }
 
     LaunchedEffect(importStatus) {
         importStatus?.let {
@@ -186,12 +198,35 @@ fun SettingsScreen(
                 subtitle = "Share mindfulness data with other health apps.",
                 checked = healthConnectEnabled,
                 onCheckedChange = { enabled ->
+                    android.util.Log.d("HealthConnectUI", "Toggle changed to: $enabled")
                     viewModel.toggleHealthConnect(context, enabled)
                     if (enabled && !healthConnectGranted) {
+                        android.util.Log.d("HealthConnectUI", "Requesting permissions...")
                         permissionsLauncher.launch(viewModel.permissions)
                     }
                 },
-                enabled = viewModel.isHealthConnectAvailable
+                enabled = viewModel.isHealthConnectAvailable,
+                onContent = {
+                    if (viewModel.isHealthConnectAvailable) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "To fully revoke access, use the button below to open system settings and remove MTimer's permissions.",
+                            fontFamily = DotMatrix,
+                            fontSize = 10.sp,
+                            lineHeight = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        OutlinedButton(
+                            onClick = { viewModel.openHC(context) },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(32.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+                        ) {
+                            Text("MANAGE PERMISSIONS", fontFamily = DotMatrix, fontSize = 10.sp)
+                        }
+                    }
+                }
             )
 
             SettingsToggleCard(
@@ -320,6 +355,8 @@ fun SettingsScreen(
                     Text("IMPORT", fontFamily = DotMatrix, fontSize = 12.sp)
                 }
             }
+
+            Spacer(Modifier.height(32.dp))
         }
     }
 }
@@ -343,7 +380,8 @@ private fun SettingsToggleCard(
     subtitle: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    onContent: @Composable (() -> Unit)? = null
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -352,39 +390,40 @@ private fun SettingsToggleCard(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         )
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    fontFamily = DotMatrix,
-                    fontSize = 14.sp,
-                    letterSpacing = 1.sp,
-                    color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                )
-                Text(
-                    text = subtitle,
-                    fontFamily = DotMatrix,
-                    fontSize = 12.sp,
-                    letterSpacing = 1.sp,
-                    color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 1.0f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        fontFamily = DotMatrix,
+                        fontSize = 14.sp,
+                        letterSpacing = 1.sp,
+                        color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    )
+                    Text(
+                        text = subtitle,
+                        fontFamily = DotMatrix,
+                        fontSize = 12.sp,
+                        letterSpacing = 1.sp,
+                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 1.0f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    )
+                }
+                Switch(
+                    checked = checked,
+                    onCheckedChange = onCheckedChange,
+                    enabled = enabled,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 )
             }
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                enabled = enabled,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            )
+            onContent?.invoke()
         }
     }
 }

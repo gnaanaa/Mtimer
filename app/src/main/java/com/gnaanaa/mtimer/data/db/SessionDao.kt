@@ -22,4 +22,10 @@ interface SessionDao {
 
     @Query("UPDATE sessions SET healthConnectSynced = 1, healthConnectRecordId = :recordId WHERE id = :sessionId")
     suspend fun markSynced(sessionId: Long, recordId: String)
+
+    @Query("SELECT COUNT(*) FROM sessions")
+    fun getSessionCount(): Flow<Int>
+
+    @Query("SELECT SUM(durationSeconds) FROM sessions")
+    fun getTotalDuration(): Flow<Long?>
 }

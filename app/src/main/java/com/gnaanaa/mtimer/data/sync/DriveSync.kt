@@ -6,10 +6,13 @@ import com.gnaanaa.mtimer.data.db.PresetDao
 import com.gnaanaa.mtimer.data.db.PresetEntity
 import com.gnaanaa.mtimer.data.db.SessionDao
 import com.gnaanaa.mtimer.data.db.SessionEntity
+import com.gnaanaa.mtimer.data.db.toDomain
+import com.gnaanaa.mtimer.data.db.toEntity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.ByteArrayContent
+import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
@@ -30,8 +33,8 @@ private const val TAG = "DriveSync"
 private const val BACKUP_FILE_NAME = "mtimer_backup.json"
 
 data class BackupData(
-    @SerializedName("presets") val presets: List<PresetEntity>,
-    @SerializedName("sessions") val sessions: List<SessionEntity>
+    @SerializedName("presets") val presets: List<PresetEntity>? = emptyList(),
+    @SerializedName("sessions") val sessions: List<SessionEntity>? = emptyList()
 )
 
 @Singleton
@@ -50,10 +53,16 @@ class DriveSync @Inject constructor(
             selectedAccount = account.account
         }
 
+        val requestInitializer = HttpRequestInitializer { request ->
+            credential.initialize(request)
+            request.connectTimeout = 60000 // 60s
+            request.readTimeout = 60000    // 60s
+        }
+
         return Drive.Builder(
             NetHttpTransport(),
             GsonFactory.getDefaultInstance(),
-            credential
+            requestInitializer
         ).setApplicationName("MTimer").build()
     }
 
@@ -84,7 +93,7 @@ class DriveSync @Inject constructor(
                 // A. Restore Sessions (History)
                 // History is additive. We merge by startTime to avoid duplicates.
                 val localSessionTimes = localSessions.map { it.startTime }.toSet()
-                remoteData.sessions.forEach { remote ->
+                remoteData.sessions?.forEach { remote ->
                     if (remote.startTime !in localSessionTimes) {
                         // Reset ID to 0 so Room auto-generates a new local ID
                         sessionDao.insertSession(remote.copy(id = 0))
@@ -97,8 +106,8 @@ class DriveSync @Inject constructor(
                 // We only auto-restore presets if the local database is EMPTY (Fresh Install).
                 // If local has data, we treat Local as the source of truth for presets.
                 if (localPresets.isEmpty()) {
-                    remoteData.presets.forEach { remote ->
-                        presetDao.insertPreset(remote)
+                    remoteData.presets?.forEach { remote ->
+                        presetDao.insertPreset(remote.toDomain().toEntity())
                         Log.d(TAG, "Fresh restore of preset from cloud: ${remote.name}")
                     }
                 }
@@ -124,8 +133,12 @@ class DriveSync @Inject constructor(
             } else {
                 Log.e(TAG, "Drive API error (${e.statusCode}): ${e.message}")
             }
+            throw e
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Error during Drive sync", e)
+            throw e
         }
     }
 

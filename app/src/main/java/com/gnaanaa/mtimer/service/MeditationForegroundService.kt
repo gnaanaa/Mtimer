@@ -53,6 +53,7 @@ class MeditationForegroundService : Service() {
         const val EXTRA_PRESET_NAME = "EXTRA_PRESET_NAME"
         const val EXTRA_DURATION_SECONDS = "EXTRA_DURATION_SECONDS"
         const val EXTRA_PREPARE_SECONDS = "EXTRA_PREPARE_SECONDS"
+        const val EXTRA_INTERVAL_SECONDS = "EXTRA_INTERVAL_SECONDS"
         const val EXTRA_START_SOUND_ID = "EXTRA_START_SOUND_ID"
         const val EXTRA_END_SOUND_ID = "EXTRA_END_SOUND_ID"
 
@@ -69,6 +70,7 @@ class MeditationForegroundService : Service() {
                 putExtra(EXTRA_PRESET_NAME, preset.name)
                 putExtra(EXTRA_DURATION_SECONDS, preset.durationSeconds)
                 putExtra(EXTRA_PREPARE_SECONDS, preset.prepareSeconds)
+                putExtra(EXTRA_INTERVAL_SECONDS, preset.intervalSeconds)
                 putExtra(EXTRA_START_SOUND_ID, preset.startSoundId)
                 putExtra(EXTRA_END_SOUND_ID, preset.endSoundId)
             }
@@ -88,9 +90,10 @@ class MeditationForegroundService : Service() {
                 val presetName = intent.getStringExtra(EXTRA_PRESET_NAME)
                 val duration = intent.getIntExtra(EXTRA_DURATION_SECONDS, 600)
                 val prepare = intent.getIntExtra(EXTRA_PREPARE_SECONDS, 0)
+                val interval = intent.getIntExtra(EXTRA_INTERVAL_SECONDS, 0)
                 val startSound = intent.getStringExtra(EXTRA_START_SOUND_ID) ?: "bell_tibetan"
                 val endSound = intent.getStringExtra(EXTRA_END_SOUND_ID) ?: "bell_tibetan"
-                startTimer(presetId, presetName, duration, prepare, startSound, endSound)
+                startTimer(presetId, presetName, duration, prepare, interval, startSound, endSound)
             }
             ACTION_STOP -> stopTimer()
             ACTION_PAUSE -> pauseTimer()
@@ -109,6 +112,7 @@ class MeditationForegroundService : Service() {
         presetName: String?,
         duration: Int,
         prepare: Int,
+        interval: Int,
         startSound: String,
         endSound: String
     ) {
@@ -145,6 +149,13 @@ class MeditationForegroundService : Service() {
                 if (_timerState.value is TimerState.Running) {
                     delay(1000)
                     remaining--
+                    
+                    // Interval chime check
+                    if (interval > 0 && remaining > 0 && (duration - remaining) % interval == 0) {
+                        android.util.Log.d("MeditationForegroundService", "Interval reached, playing chime")
+                        soundPlayer.playSound("bell_tibetan") // Or a specific interval sound if needed
+                    }
+
                     _timerState.value = TimerState.Running(remaining, duration, presetName)
                     updateNotification(formatTime(remaining))
                     

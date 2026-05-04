@@ -23,7 +23,9 @@ object DatabaseModule {
             context,
             MTimerDatabase::class.java,
             "mtimer_database"
-        ).build()
+        )
+        .fallbackToDestructiveMigration()
+        .build()
     }
 
     @Provides

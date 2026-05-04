@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="daily_sit"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_daily_sit"
+        android:shortcutLongLabel="@string/shortcut_daily_sit_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.gnaanaa.mtimer"
+            android:targetClass="com.gnaanaa.mtimer.MainActivity"
+            android:data="mtimer://start_default" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="view_history"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_history"
+        android:shortcutLongLabel="@string/shortcut_history_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.gnaanaa.mtimer"
+            android:targetClass="com.gnaanaa.mtimer.MainActivity"
+            android:data="mtimer://history" />
+    </shortcut>
+</shortcuts>
