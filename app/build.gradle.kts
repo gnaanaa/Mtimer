@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -11,6 +14,12 @@ android {
     namespace = "com.gnaanaa.mtimer"
     compileSdk = 36
 
+    val secretsPropertiesFile = rootProject.file("secrets.properties")
+    val secretsProperties = Properties()
+    if (secretsPropertiesFile.exists()) {
+        secretsProperties.load(FileInputStream(secretsPropertiesFile))
+    }
+
     defaultConfig {
         applicationId = "com.gnaanaa.mtimer"
         minSdk = 28
@@ -21,9 +30,19 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = secretsProperties.getProperty("RELEASE_STORE_FILE")?.let { file(it) }
+            storePassword = secretsProperties.getProperty("RELEASE_STORE_PASSWORD")
+            keyAlias = secretsProperties.getProperty("RELEASE_KEY_ALIAS")
+            keyPassword = secretsProperties.getProperty("RELEASE_KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
         }
     }

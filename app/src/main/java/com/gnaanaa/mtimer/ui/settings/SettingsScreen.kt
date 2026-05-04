@@ -34,10 +34,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -75,8 +77,16 @@ fun SettingsScreen(
     val sdkStatus by viewModel.sdkStatus.collectAsState()
     val googleAccount by viewModel.googleAccount.collectAsState()
     val googleFitEnabled by viewModel.isGoogleFitEnabled.collectAsState()
+    val importStatus by viewModel.importStatus.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(importStatus) {
+        importStatus?.let {
+            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_LONG).show()
+            viewModel.clearImportStatus()
+        }
+    }
 
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
@@ -124,6 +134,11 @@ fun SettingsScreen(
             viewModel.updateGoogleAccount(context, account)
         } catch (e: ApiException) {
             android.util.Log.e("GoogleSignIn", "Sign in failed: status=${e.statusCode}, message=${e.message}")
+            android.widget.Toast.makeText(
+                context,
+                "Sign-in failed (Error ${e.statusCode}). Check console configuration.",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -171,12 +186,12 @@ fun SettingsScreen(
                 subtitle = "Share mindfulness data with other health apps.",
                 checked = healthConnectEnabled,
                 onCheckedChange = { enabled ->
+                    viewModel.toggleHealthConnect(context, enabled)
                     if (enabled && !healthConnectGranted) {
                         permissionsLauncher.launch(viewModel.permissions)
                     }
-                    viewModel.toggleHealthConnect(enabled)
                 },
-                enabled = sdkStatus == HealthConnectClient.SDK_AVAILABLE
+                enabled = viewModel.isHealthConnectAvailable
             )
 
             SettingsToggleCard(
@@ -184,6 +199,7 @@ fun SettingsScreen(
                 subtitle = "Log meditation as activity for AIA Vitality and others.",
                 checked = googleFitEnabled,
                 onCheckedChange = { enabled ->
+                    viewModel.toggleGoogleFit(enabled)
                     if (enabled) {
                         val fitnessOptions = com.gnaanaa.mtimer.data.sync.getGoogleFitOptions()
                         val account = GoogleSignIn.getAccountForExtension(context, fitnessOptions)
@@ -196,7 +212,6 @@ fun SettingsScreen(
                             )
                         }
                     }
-                    viewModel.toggleGoogleFit(enabled)
                 }
             )
 
@@ -362,7 +377,13 @@ private fun SettingsToggleCard(
             Switch(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                enabled = enabled
+                enabled = enabled,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             )
         }
     }

@@ -9,10 +9,11 @@ import androidx.health.connect.client.records.MindfulnessSessionRecord
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.gnaanaa.mtimer.data.db.PresetDao
 import com.gnaanaa.mtimer.data.repository.SessionRepository
-import com.gnaanaa.mtimer.widget.MTimerWidget
-import androidx.glance.appwidget.updateAll
+import java.time.Instant
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
@@ -35,6 +36,11 @@ class HealthConnectSyncWorker @AssistedInject constructor(
         
         val isGoogleFitEnabled = userPreferencesDataStore.isGoogleFitEnabled.first()
         val isHealthConnectEnabled = userPreferencesDataStore.isHealthConnectEnabled.first()
+        
+        if (!isGoogleFitEnabled && !isHealthConnectEnabled) {
+             android.util.Log.d("HealthConnect", "Both integrations disabled, skipping work.")
+             return Result.success()
+        }
 
         val unsyncedSessions = sessionRepository.getUnsyncedSessions()
         android.util.Log.d("HealthConnect", "Found ${unsyncedSessions.size} unsynced sessions in database")
@@ -47,27 +53,49 @@ class HealthConnectSyncWorker @AssistedInject constructor(
                 val presetName = session.presetId?.let { 
                     presetDao.getPresetById(it)?.name 
                 }
-                
-                // Sync to Health Connect
-                try {
-                    if (isHealthConnectEnabled && hasAnyWritePermission(applicationContext)) {
-                        syncSessionToHealthConnect(
-                            context = applicationContext,
-                            session = session,
-                            presetName = presetName
-                        )
-                    }
+
+                // Fetch Heart Rate samples for use in both/either sync provider
+                val hrSamples = try {
+                    fetchHeartRateRange(
+                        applicationContext,
+                        Instant.ofEpochMilli(session.startTime),
+                        Instant.ofEpochMilli(if (session.endTime > session.startTime) session.endTime else session.startTime + (session.durationSeconds * 1000L))
+                    )
                 } catch (e: Exception) {
-                    android.util.Log.e("HealthConnect", "HC sync failed for ${session.id}", e)
+                    emptyList()
                 }
 
-                // Sync to Google Fit
+                // Prioritize Google Fit for AIA Vitality
+                var fitSuccess = false
                 if (isGoogleFitEnabled) {
                     try {
-                        syncSessionToGoogleFit(applicationContext, session)
+                        val samplesForFit = hrSamples.map { it.time.toEpochMilli() to it.beatsPerMinute.toDouble() }
+                        fitSuccess = syncSessionToGoogleFit(applicationContext, session, samplesForFit)
                     } catch (e: Exception) {
                         android.util.Log.e("GoogleFit", "Fit sync failed for ${session.id}", e)
                     }
+                }
+
+                // Sync to Health Connect
+                // We ONLY sync the session to Health Connect if Google Fit is disabled or failed.
+                // This prevents the "double entry" since Google Fit will sync its session back to HC anyway.
+                try {
+                    if (isHealthConnectEnabled && hasAnyWritePermission(applicationContext)) {
+                        // If fitSuccess is true, we still might want to sync the Heart Rate record 
+                        // from MTimer if we trust MTimer's HR record more, but to satisfy the 
+                        // "no double entry" request, we skip the HC session record.
+                        if (!fitSuccess) {
+                            syncSessionToHealthConnect(
+                                context = applicationContext,
+                                session = session,
+                                presetName = presetName
+                            )
+                        } else {
+                            android.util.Log.d("HealthConnect", "Skipping HC session record as Google Fit sync was successful (AIA Priority)")
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("HealthConnect", "HC sync failed for ${session.id}", e)
                 }
                 
                 sessionRepository.markSynced(session.id, "synced_${System.currentTimeMillis()}")
@@ -91,5 +119,12 @@ class HealthConnectSyncWorker @AssistedInject constructor(
         
         android.util.Log.d("HealthConnect", "SyncWorker finished. Synced $successCount/${unsyncedSessions.size} records.")
         return Result.success()
+    }
+
+    companion object {
+        fun enqueue(context: Context) {
+            val request = OneTimeWorkRequestBuilder<HealthConnectSyncWorker>().build()
+            WorkManager.getInstance(context).enqueue(request)
+        }
     }
 }

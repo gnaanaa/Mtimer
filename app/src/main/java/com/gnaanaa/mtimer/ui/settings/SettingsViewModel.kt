@@ -14,12 +14,15 @@ import com.gnaanaa.mtimer.data.repository.PresetRepository
 import com.gnaanaa.mtimer.data.repository.SessionRepository
 import com.gnaanaa.mtimer.data.db.toEntity
 import com.gnaanaa.mtimer.data.db.toDomain
+import com.gnaanaa.mtimer.data.db.PresetEntity
 import com.gnaanaa.mtimer.data.sync.BackupData
 import com.gnaanaa.mtimer.data.sync.hasAllPermissions
 import com.gnaanaa.mtimer.data.sync.openHealthConnectSettings
+import com.gnaanaa.mtimer.data.sync.HealthConnectSyncWorker
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +31,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -56,8 +60,17 @@ class SettingsViewModel @Inject constructor(
         HealthPermission.getWritePermission(HeartRateRecord::class)
     )
 
+    private val _importStatus = MutableStateFlow<String?>(null)
+    val importStatus = _importStatus.asStateFlow()
+
+    fun clearImportStatus() {
+        _importStatus.value = null
+    }
+
     private val _sdkStatus = MutableStateFlow(HealthConnectClient.SDK_UNAVAILABLE)
     val sdkStatus = _sdkStatus.asStateFlow()
+
+    val isHealthConnectAvailable: Boolean = healthConnectClient != null
 
     init {
         // Initial check for Google account
@@ -91,10 +104,6 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun isHealthConnectAvailable(): Boolean {
-        return healthConnectClient != null
-    }
-
     val useLightTheme: StateFlow<Boolean> = userPreferencesDataStore.useLightTheme
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
@@ -116,9 +125,13 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun toggleHealthConnect(enabled: Boolean) {
+    fun toggleHealthConnect(context: Context, enabled: Boolean) {
+        android.util.Log.d("HealthConnect", "ViewModel: Toggling HC enabled to $enabled")
         viewModelScope.launch {
             userPreferencesDataStore.setHealthConnectEnabled(enabled)
+            if (enabled) {
+                HealthConnectSyncWorker.enqueue(context)
+            }
         }
     }
 
@@ -146,23 +159,46 @@ class SettingsViewModel @Inject constructor(
                 try {
                     val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
                     if (json != null) {
-                        val type = object : TypeToken<BackupData>() {}.type
-                        val backupData: BackupData = gson.fromJson(json, type)
-                        
-                        // Import presets
-                        backupData.presets.forEach { presetRepository.savePreset(it.toDomain()) }
-                        
-                        // Import sessions
-                        val localSessions = sessionRepository.getAllSessionsList()
-                        val localSessionTimes = localSessions.map { it.startTime }.toSet()
-                        backupData.sessions.forEach { remoteEntity ->
-                            if (remoteEntity.startTime !in localSessionTimes) {
-                                sessionRepository.saveSession(remoteEntity.toDomain())
+                        val jsonElement = JsonParser.parseString(json)
+                        var presetsRestored = 0
+                        var historyRestored = 0
+
+                        if (jsonElement.isJsonObject) {
+                            val backupData: BackupData = gson.fromJson(jsonElement, BackupData::class.java)
+
+                            // Import presets
+                            backupData.presets.forEach { 
+                                presetRepository.savePreset(it.toDomain()) 
+                                presetsRestored++
                             }
+
+                            // Import sessions
+                            val localSessions = sessionRepository.getAllSessionsList()
+                            val localSessionTimes = localSessions.map { it.startTime }.toSet()
+                            backupData.sessions.forEach { remoteEntity ->
+                                if (remoteEntity.startTime !in localSessionTimes) {
+                                    sessionRepository.saveSession(remoteEntity.toDomain())
+                                    historyRestored++
+                                }
+                            }
+                            _importStatus.value = "Restored $presetsRestored presets and $historyRestored history records."
+                        } else if (jsonElement.isJsonArray) {
+                            val type = object : TypeToken<List<PresetEntity>>() {}.type
+                            val presets: List<PresetEntity> = gson.fromJson(jsonElement, type)
+                            presets.forEach { 
+                                presetRepository.savePreset(it.toDomain()) 
+                                presetsRestored++
+                            }
+                            _importStatus.value = "Restored $presetsRestored presets."
+                        } else {
+                            _importStatus.value = "No records restored: Invalid file format."
                         }
+                    } else {
+                        _importStatus.value = "No records restored: Could not read file."
                     }
                 } catch (e: Exception) {
                     android.util.Log.e("SettingsViewModel", "Failed to import backup", e)
+                    _importStatus.value = "No records restored: Error occurred."
                 }
             }
         }

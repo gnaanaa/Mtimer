@@ -50,6 +50,7 @@ class UserPreferencesDataStore @Inject constructor(
     }
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
+        android.util.Log.d("HealthConnect", "DataStore: Setting onboarding completed = $completed")
         context.dataStore.edit { preferences ->
             preferences[isOnboardingCompletedKey] = completed
         }
@@ -62,6 +63,7 @@ class UserPreferencesDataStore @Inject constructor(
     }
 
     suspend fun setHealthConnectEnabled(enabled: Boolean) {
+        android.util.Log.d("HealthConnect", "DataStore: Saving HC enabled = $enabled")
         context.dataStore.edit { preferences ->
             preferences[isHealthConnectEnabledKey] = enabled
         }

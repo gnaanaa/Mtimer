@@ -24,12 +24,14 @@ import java.util.Collections
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import com.google.gson.annotations.SerializedName
+
 private const val TAG = "DriveSync"
 private const val BACKUP_FILE_NAME = "mtimer_backup.json"
 
 data class BackupData(
-    val presets: List<PresetEntity>,
-    val sessions: List<SessionEntity>
+    @SerializedName("presets") val presets: List<PresetEntity>,
+    @SerializedName("sessions") val sessions: List<SessionEntity>
 )
 
 @Singleton

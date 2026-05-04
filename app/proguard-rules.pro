@@ -21,6 +21,19 @@
 -keep class com.google.api.client.** { *; }
 -dontwarn com.google.api.client.googleapis.extensions.android.**
 
+# Gson rules
+-keepattributes *Annotation*, Signature, EnclosingMethod
+-keep class com.google.gson.** { *; }
+-keep class com.google.gson.reflect.TypeToken
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Data Models (for Gson serialization)
+-keep class com.gnaanaa.mtimer.data.sync.BackupData { *; }
+-keep class com.gnaanaa.mtimer.data.db.PresetEntity { *; }
+-keep class com.gnaanaa.mtimer.data.db.SessionEntity { *; }
+
 # Coroutines rules
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
 -keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}

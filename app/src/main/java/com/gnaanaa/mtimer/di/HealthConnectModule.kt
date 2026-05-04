@@ -16,15 +16,17 @@ object HealthConnectModule {
     @Provides
     @Singleton
     fun provideHealthConnectClient(@ApplicationContext context: Context): HealthConnectClient? {
-        val sdkStatus = HealthConnectClient.getSdkStatus(context)
-        android.util.Log.d("HealthConnect", "SDK Status: $sdkStatus")
+        val status = HealthConnectClient.getSdkStatus(context)
+        android.util.Log.d("HealthConnect", "Module: SDK Status detected as $status")
         
-        // On Android 14+, Health Connect is built-in, so status might be different
-        // or we can just try to get the client.
+        // On Android 14+ (API 34+), Health Connect is part of the system.
+        // The SDK status might return SDK_UNAVAILABLE if the app-based provider is used,
+        // but the system-based one is active.
         return try {
+            // Attempt to create even if status says unavailable, as API 34+ handles this differently
             HealthConnectClient.getOrCreate(context)
         } catch (e: Exception) {
-            android.util.Log.e("HealthConnect", "Error getting client", e)
+            android.util.Log.e("HealthConnect", "Module: Failed to provide HealthConnectClient", e)
             null
         }
     }

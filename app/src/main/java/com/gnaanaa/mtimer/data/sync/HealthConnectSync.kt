@@ -150,10 +150,10 @@ suspend fun syncSessionToHealthConnect(
     context: Context,
     session: Session,
     presetName: String?
-) {
+): Boolean {
     if (!isHealthConnectAvailable(context)) {
         Log.w(TAG, "Health Connect not available")
-        return
+        return false
     }
 
     val client = HealthConnectClient.getOrCreate(context)
@@ -169,7 +169,7 @@ suspend fun syncSessionToHealthConnect(
 
     if (!canWriteMindfulness) {
         Log.w(TAG, "No mindfulness write permissions granted")
-        return
+        return false
     }
 
     val mindfulnessSupported = isMindfulnessSupported(client)
@@ -250,13 +250,15 @@ suspend fun syncSessionToHealthConnect(
 
     if (records.isEmpty()) {
         Log.w(TAG, "No records to insert")
-        return
+        return false
     }
 
-    try {
+    return try {
         val response = client.insertRecords(records)
         Log.i(TAG, "Inserted ${response.recordIdsList.size} records for session ${session.id}")
+        true
     } catch (e: Exception) {
         Log.e(TAG, "Insert failed for session ${session.id}", e)
+        false
     }
 }

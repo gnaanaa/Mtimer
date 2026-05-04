@@ -135,10 +135,16 @@ fun HomeScreen(
             StartSessionButton(
                 enabled = selectedPreset != null,
                 selectedPreset = selectedPreset,
+                labelOverride = if (presets.isEmpty()) "CREATE PRESET TO START" else null,
+                alwaysEnabled = presets.isEmpty(),
                 onClick = {
-                    selectedPreset?.let {
-                        viewModel.startTimer(it)
-                        onStartTimer()
+                    if (presets.isEmpty()) {
+                        onNavigateToPresets()
+                    } else {
+                        selectedPreset?.let {
+                            viewModel.startTimer(it)
+                            onStartTimer()
+                        }
                     }
                 }
             )
@@ -210,19 +216,22 @@ fun HomeScreen(
 fun StartSessionButton(
     enabled: Boolean,
     selectedPreset: Preset?,
+    labelOverride: String? = null,
+    alwaysEnabled: Boolean = false,
     onClick: () -> Unit
 ) {
+    val isEffectiveEnabled = enabled || alwaysEnabled
     Row(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth()
             .height(76.dp)
             .background(
-                if (enabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                if (isEffectiveEnabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                 else MaterialTheme.colorScheme.surfaceVariant,
                 shape = MaterialTheme.shapes.large
             )
-            .clickable(enabled = enabled, onClick = onClick)
+            .clickable(enabled = isEffectiveEnabled, onClick = onClick)
             .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -231,7 +240,7 @@ fun StartSessionButton(
             imageVector = Icons.Default.Spa,
             contentDescription = null,
             modifier = Modifier.size(32.dp),
-            tint = if (enabled)
+            tint = if (isEffectiveEnabled)
                 MaterialTheme.colorScheme.primary
             else
                 MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
@@ -242,27 +251,29 @@ fun StartSessionButton(
         // Text block
         Column {
             Text(
-                "START SESSION",
+                labelOverride ?: "START SESSION",
                 fontFamily = DotMatrix,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 3.sp,
                 fontSize = 16.sp
             )
-            selectedPreset?.let { preset ->
-                val label = buildString {
-                    append(preset.name.uppercase())
-                    if (preset.durationSeconds > 0) {
-                        val mins = preset.durationSeconds / 60
-                        append("  (${mins}m)")
+            if (labelOverride == null) {
+                selectedPreset?.let { preset ->
+                    val label = buildString {
+                        append(preset.name.uppercase())
+                        if (preset.durationSeconds > 0) {
+                            val mins = preset.durationSeconds / 60
+                            append("  (${mins}m)")
+                        }
                     }
+                    Text(
+                        label,
+                        fontFamily = DotMatrix,
+                        fontSize = 13.sp,
+                        letterSpacing = 2.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
+                    )
                 }
-                Text(
-                    label,
-                    fontFamily = DotMatrix,
-                    fontSize = 13.sp,
-                    letterSpacing = 2.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
-                )
             }
         }
     }
