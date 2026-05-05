@@ -14,6 +14,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.gnaanaa.mtimer.data.datastore.UserPreferencesDataStore
 import com.gnaanaa.mtimer.data.repository.PresetRepository
+import com.gnaanaa.mtimer.service.SoundPlayer
 import com.gnaanaa.mtimer.service.MeditationForegroundService
 import com.gnaanaa.mtimer.ui.navigation.Screen
 import com.gnaanaa.mtimer.ui.navigation.MTimerNavGraph
@@ -33,6 +34,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var presetRepository: PresetRepository
+
+    @Inject
+    lateinit var soundPlayer: SoundPlayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +84,7 @@ class MainActivity : ComponentActivity() {
                     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                         MTimerNavGraph(
                             navController = navController,
+                            soundPlayer = soundPlayer,
                             startDestination = startDestination
                         )
                     }

@@ -57,7 +57,9 @@ class SettingsViewModel @Inject constructor(
         HealthPermission.getWritePermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
-        HealthPermission.getWritePermission(HeartRateRecord::class)
+        HealthPermission.getWritePermission(HeartRateRecord::class),
+        "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND",
+        "android.permission.health.READ_HEALTH_DATA_HISTORY"
     )
 
     private val _importStatus = MutableStateFlow<String?>(null)

@@ -11,6 +11,7 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.MindfulnessSessionRecord
 import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateRequest
@@ -95,14 +96,20 @@ suspend fun hasAllPermissions(context: Context): Boolean {
     if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) return false
     
     val granted = getGrantedPermissions(context)
-    val permissions = setOf(
+    val corePermissions = mutableSetOf(
         HealthPermission.getWritePermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
         HealthPermission.getWritePermission(HeartRateRecord::class)
     )
     
-    return granted.containsAll(permissions)
+    // Background and history permissions are only for Android 14+ (Framework)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        corePermissions.add("android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND")
+        corePermissions.add("android.permission.health.READ_HEALTH_DATA_HISTORY")
+    }
+    
+    return granted.containsAll(corePermissions)
 }
 
 fun openHealthConnectSettings(context: Context) {
@@ -130,12 +137,24 @@ suspend fun getWeeklyMindfulnessMinutes(context: Context): Int {
     val weekAgo = now.minus(7, ChronoUnit.DAYS)
 
     return try {
-        val response = client.readRecords(
-            ReadRecordsRequest(
-                recordType = MindfulnessSessionRecord::class,
-                timeRangeFilter = TimeRangeFilter.after(weekAgo)
+        val response = try {
+            client.readRecords(
+                ReadRecordsRequest(
+                    recordType = MindfulnessSessionRecord::class,
+                    timeRangeFilter = TimeRangeFilter.after(weekAgo)
+                )
             )
-        )
+        } catch (e: Exception) {
+            // Fallback to only our records if reading all fails (SecurityException from other apps)
+            Log.w(TAG, "Failed to read all mindfulness records, falling back to own records", e)
+            client.readRecords(
+                ReadRecordsRequest(
+                    recordType = MindfulnessSessionRecord::class,
+                    timeRangeFilter = TimeRangeFilter.after(weekAgo),
+                    dataOriginFilter = setOf(DataOrigin(context.packageName))
+                )
+            )
+        }
         response.records
             .sumOf { Duration.between(it.startTime, it.endTime).toMinutes() }
             .toInt()
@@ -195,12 +214,23 @@ suspend fun syncSessionToHealthConnect(
     if (canReadHeartRate) {
         try {
             // Read samples from other providers (e.g. Fitbit)
-            val hrReadResponse = client.readRecords(
-                ReadRecordsRequest(
-                    recordType = HeartRateRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(start, end)
+            val hrReadResponse = try {
+                client.readRecords(
+                    ReadRecordsRequest(
+                        recordType = HeartRateRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(start, end)
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to read all heart rate records, falling back to own records", e)
+                client.readRecords(
+                    ReadRecordsRequest(
+                        recordType = HeartRateRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(start, end),
+                        dataOriginFilter = setOf(DataOrigin(context.packageName))
+                    )
+                )
+            }
             hrSamples = hrReadResponse.records.flatMap { it.samples }
 
             val hrAggResponse = client.aggregate(

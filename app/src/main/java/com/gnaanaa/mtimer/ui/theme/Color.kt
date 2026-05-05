@@ -19,13 +19,3 @@ val MTimerDarkOnBackground = Color(0xFFE8E8E8)
 val MTimerDarkOnSurface = Color(0xFFCCCCCC)
 val MTimerDarkSecondary = Color(0xFFAAAAAA)
 val MTimerDarkOutline = Color(0xFF333333)
-
-// MTimerLight — earthy, muted
-val MTimerLightPrimary = Color(0xFF1A1A1A)
-val MTimerLightOnPrimary = Color(0xFFFFFFFF)
-val MTimerLightBackground = Color(0xFFF5F3EE)
-val MTimerLightSurface = Color(0xFFECEAE4)
-val MTimerLightOnBackground = Color(0xFF000000)
-val MTimerLightOnSurface = Color(0xFF000000)
-val MTimerLightSecondary = Color(0xFF3D3D3D)
-val MTimerLightOutline = Color(0xFFBDBAB3)

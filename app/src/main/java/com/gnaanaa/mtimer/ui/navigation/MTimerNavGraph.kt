@@ -6,6 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.gnaanaa.mtimer.service.SoundPlayer
 import com.gnaanaa.mtimer.ui.onboarding.OnboardingScreen
 import com.gnaanaa.mtimer.ui.preset.PresetEditScreen
 import com.gnaanaa.mtimer.ui.timer.TimerScreen
@@ -27,6 +28,7 @@ sealed class Screen(val route: String) {
 @Composable
 fun MTimerNavGraph(
     navController: NavHostController,
+    soundPlayer: SoundPlayer,
     startDestination: String = Screen.Main.route
 ) {
     NavHost(
@@ -62,7 +64,8 @@ fun MTimerNavGraph(
         ) { backStackEntry ->
             PresetEditScreen(
                 backStackEntry = backStackEntry,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                soundPlayer = soundPlayer
             )
         }
     }

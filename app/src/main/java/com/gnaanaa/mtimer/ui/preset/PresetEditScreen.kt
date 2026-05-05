@@ -32,7 +32,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import com.gnaanaa.mtimer.domain.model.Preset
+import com.gnaanaa.mtimer.service.SoundPlayer
 import com.gnaanaa.mtimer.ui.home.DotMatrix
+import kotlinx.coroutines.launch
 
 private val SOUND_OPTIONS = listOf(
     "bell_tibetan" to "Tibetan Bowl",
@@ -52,7 +54,8 @@ private val SOUND_OPTIONS = listOf(
 fun PresetEditScreen(
     backStackEntry: NavBackStackEntry,
     onBack: () -> Unit,
-    viewModel: PresetViewModel = hiltViewModel()
+    viewModel: PresetViewModel = hiltViewModel(),
+    soundPlayer: SoundPlayer // Ideally this would be injected via ViewModel or EntryPoint
 ) {
     val presetId = backStackEntry.arguments?.getString("presetId") ?: "new"
     val isNew    = presetId == "new"
@@ -102,70 +105,21 @@ fun PresetEditScreen(
     }
 
     // ── Sound playback ────────────────────────────────────────────────────
-    // Keep a single player reference; create a new one on each preview call.
-    // MediaPlayer.create() is safe to call on the main thread for raw resources.
-    var currentPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+    
     DisposableEffect(Unit) {
         onDispose {
-            currentPlayer?.let {
-                try {
-                    if (it.isPlaying) it.stop()
-                } catch (_: Exception) {}
-                it.release()
-            }
+            soundPlayer.stopCurrentSound()
         }
     }
 
     val playPreview: (String) -> Unit = { soundId ->
-        // Stop & release the previous player first
-        currentPlayer?.let { oldPlayer ->
-            try {
-                oldPlayer.stop()
-            } catch (_: Exception) {}
-            oldPlayer.release()
-        }
-        currentPlayer = null
-
         if (soundId != "silence") {
-            try {
-                val assetPath = when (soundId) {
-                    "bell_tibetan" -> "sounds/bell_tibetan.mp3"
-                    "bell_singing" -> "sounds/bell_singing.mp3"
-                    "chime_soft" -> "sounds/chime_soft.mp3"
-                    "bell_simple" -> "sounds/bell_simple.mp3"
-                    else -> null
-                }
-
-                if (assetPath != null) {
-                    val descriptor = context.assets.openFd(assetPath)
-                    val mp = MediaPlayer()
-                    mp.setDataSource(descriptor.fileDescriptor, descriptor.startOffset, descriptor.length)
-                    descriptor.close()
-                    mp.prepare()
-                mp.setOnCompletionListener { 
-                    it.release()
-                    if (currentPlayer == it) currentPlayer = null
-                }
-                mp.start()
-                currentPlayer = mp
-                } else {
-                    // Try custom imported sound
-                    val soundFile = java.io.File(context.filesDir, "sounds/$soundId")
-                    if (soundFile.exists()) {
-                        val mp = MediaPlayer()
-                        mp.setDataSource(soundFile.absolutePath)
-                        mp.prepare()
-                    mp.setOnCompletionListener { 
-                        it.release()
-                        if (currentPlayer == it) currentPlayer = null
-                    }
-                    mp.start()
-                    currentPlayer = mp
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("PresetEditScreen", "Failed to play preview", e)
+            coroutineScope.launch {
+                soundPlayer.playSoundWithFade(soundId)
             }
+        } else {
+            soundPlayer.stopCurrentSound()
         }
     }
 

@@ -228,20 +228,6 @@ fun StartSessionButton(
     onClick: () -> Unit
 ) {
     val isEffectiveEnabled = enabled || alwaysEnabled
-    
-    // Power Optimization: Use a non-delegated state to avoid recomposition.
-    // Accessing .value inside drawBehind only triggers a redraw, not a full recomposition.
-    val infiniteTransition = rememberInfiniteTransition(label = "borderAnimation")
-    val alphaState = infiniteTransition.animateFloat(
-        initialValue = 0.15f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
-
     val primaryColor = MaterialTheme.colorScheme.primary
 
     Box(
@@ -249,33 +235,13 @@ fun StartSessionButton(
             .padding(16.dp)
             .fillMaxWidth()
             .height(84.dp)
-            .drawBehind {
-                if (isEffectiveEnabled) {
-                    val strokeWidthPx = 2.5.dp.toPx()
-                    val gapPx = 14.dp.toPx()
-                    
-                    // To get perfect circular dots:
-                    // 1. Dash length = 0f (or very small)
-                    // 2. StrokeCap = Round (this draws a circle at the 0-length point)
-                    // 3. Gap = distance between dots
-                    val dashPathEffect = PathEffect.dashPathEffect(
-                        floatArrayOf(0.01f, gapPx), 
-                        0f
-                    )
-                    
-                    drawRoundRect(
-                        color = primaryColor.copy(alpha = alphaState.value),
-                        style = Stroke(
-                            width = strokeWidthPx,
-                            pathEffect = dashPathEffect,
-                            cap = StrokeCap.Round
-                        ),
-                        cornerRadius = CornerRadius(16.dp.toPx())
-                    )
-                }
-            }
+            .border(
+                width = 2.dp,
+                color = if (isEffectiveEnabled) primaryColor.copy(alpha = 0.3f) else Color.Transparent,
+                shape = RoundedCornerShape(16.dp)
+            )
             .background(
-                if (isEffectiveEnabled) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                if (isEffectiveEnabled) primaryColor.copy(alpha = 0.08f)
                 else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp)
             )

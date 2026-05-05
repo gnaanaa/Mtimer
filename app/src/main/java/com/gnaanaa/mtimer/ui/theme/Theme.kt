@@ -24,14 +24,37 @@ val MTimerDarkColorScheme = darkColorScheme(
 )
 
 val MTimerLightColorScheme = lightColorScheme(
-    primary = MTimerLightPrimary,
-    onPrimary = MTimerLightOnPrimary,
-    background = MTimerLightBackground,
-    surface = MTimerLightSurface,
-    onBackground = MTimerLightOnBackground,
-    onSurface = MTimerLightOnSurface,
-    secondary = MTimerLightSecondary,
-    outline = MTimerLightOutline
+    primary = Color(0xFF1F6F8B),           // Ocean Blue
+    onPrimary = Color(0xFFFFFFFF),
+
+    primaryContainer = Color(0xFF99C1DE),  // Soft Aqua
+    onPrimaryContainer = Color(0xFF0F3D5E),
+
+    secondary = Color(0xFFC9ADA7),         // Driftwood
+    onSecondary = Color(0xFF1A1A2E),
+
+    secondaryContainer = Color(0xFFF2E9E4), // Sand Beige
+    onSecondaryContainer = Color(0xFF1A1A2E),
+
+    tertiary = Color(0xFFE76F51),          // Coral Accent
+    onTertiary = Color(0xFFFFFFFF),
+
+    tertiaryContainer = Color(0xFFFFDAD4),
+    onTertiaryContainer = Color(0xFF5A1A12),
+
+    background = Color(0xFFF2E9E4),        // Sand
+    onBackground = Color(0xFF1A1A2E),
+
+    surface = Color(0xFFFAFAFA),           // Foam
+    onSurface = Color(0xFF1A1A2E),
+
+    surfaceVariant = Color(0xFFE0E0E0),
+    onSurfaceVariant = Color(0xFF4A4A4A),
+
+    outline = Color(0xFF9A8C98),           // Warm Taupe
+
+    error = Color(0xFFB00020),
+    onError = Color(0xFFFFFFFF)
 )
 
 @Composable
