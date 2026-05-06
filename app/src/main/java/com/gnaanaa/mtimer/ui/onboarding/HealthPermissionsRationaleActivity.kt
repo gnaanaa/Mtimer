@@ -11,8 +11,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.gnaanaa.mtimer.ui.home.DotMatrix
+import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.theme.MTimerTheme
 
 class HealthPermissionsRationaleActivity : ComponentActivity() {
@@ -30,22 +35,66 @@ class HealthPermissionsRationaleActivity : ComponentActivity() {
                             .fillMaxSize()
                     ) {
                         Text(
-                            text = "MTimer Health Permissions",
-                            style = MaterialTheme.typography.headlineMedium
+                            text = "HEALTH DATA USAGE",
+                            fontFamily = DotMatrix,
+                            fontSize = 20.sp,
+                            letterSpacing = 2.sp,
+                            color = MaterialTheme.colorScheme.primary
                         )
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        Text(
+                            text = "MTimer integrates with Health Connect to provide a complete view of your meditation practice.",
+                            fontFamily = InterFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "MTimer uses Health Connect to sync your meditation sessions as mindfulness minutes. This allows you to track your mental well-being alongside your other health data.",
-                            style = MaterialTheme.typography.bodyLarge
+                        
+                        RationaleItem(
+                            title = "MINDFULNESS SESSIONS",
+                            description = "We sync your meditation duration so you can track your mindfulness minutes in other health apps, and we read your history to display your weekly meditation totals."
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        RationaleItem(
+                            title = "HEART RATE",
+                            description = "We read your heart rate during sessions to help you understand your body's relaxation response and provide physiological feedback."
+                        )
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
                         Text(
-                            text = "We only read and write mindfulness session data. Your data stays on your device and is only shared with Health Connect if you grant permission.",
-                            style = MaterialTheme.typography.bodyLarge
+                            text = "Your data is only processed on your device and is never shared with third parties or advertisers. All health data is handled according to our Privacy Policy.",
+                            fontFamily = InterFont,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun RationaleItem(title: String, description: String) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(
+            text = title,
+            fontFamily = DotMatrix,
+            fontSize = 12.sp,
+            letterSpacing = 1.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.secondary
+        )
+        Text(
+            text = description,
+            fontFamily = InterFont,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }

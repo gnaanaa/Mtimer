@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -22,6 +23,8 @@ fun AboutScreen(
     onBack: () -> Unit,
     onOpenDrawer: () -> Unit
 ) {
+    val uriHandler = LocalUriHandler.current
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -94,15 +97,15 @@ fun AboutScreen(
 
             AboutSection("OPEN SOURCE", "MTimer is released under the MIT License.\n\nCopyright © 2025\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files, to deal in the software without restriction — including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies — subject to the following condition: the above copyright notice and this permission notice shall be included in all copies or substantial portions of the software.\n\nThe software is provided as is, without warranty of any kind.")
 
-            AboutSection("CONTACT", "Ideas, bugs, or feedback — open an issue or get in touch.")
+            AboutSection("CONTACT", "Ideas, bugs, or feedback — open an issue or get in touch.\n(https://github.com/gnaanaa/Mtimer)")
 
             Spacer(Modifier.height(16.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
             Spacer(Modifier.height(40.dp))
 
-            // Privacy Policy Section
+            // Simplified Privacy Section with Link
             Text(
-                "PRIVACY POLICY",
+                "PRIVACY",
                 fontFamily = DotMatrix,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -110,32 +113,37 @@ fun AboutScreen(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
+            
             Text(
-                "Effective date: 1 May 2025",
-                fontFamily = DotMatrix,
-                fontSize = 11.sp,
-                letterSpacing = 1.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 32.dp)
+                "MTimer prioritizes your privacy. We do not operate servers, collect personal data, or use trackers. All your meditation data stays on your device or in accounts you explicitly control (Google Drive, Health Connect).",
+                fontFamily = InterFont,
+                fontSize = 14.sp,
+                letterSpacing = 0.5.sp,
+                lineHeight = 22.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+                modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            AboutSection("THE SHORT VERSION", "MTimer does not collect your data. It does not have a server. It does not know who you are. Everything stays on your device and in accounts you control.")
+            Button(
+                onClick = { 
+                    uriHandler.openUri("https://gnaanaa.github.io/Mtimer/PRIVACY_POLICY.html") 
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text(
+                    "VIEW FULL PRIVACY POLICY",
+                    fontFamily = DotMatrix,
+                    fontSize = 12.sp,
+                    letterSpacing = 2.sp
+                )
+            }
 
-            AboutSection("DATA COLLECTED", "MTimer records what you explicitly create within the app:\n\n• Meditation session records (date, duration, completion status, preset used)\n• Heart rate readings captured during a session, if your device supports it\n• Presets you configure\n• App settings and preferences\n\nNone of this is transmitted to any server operated by MTimer or its developer.")
-
-            AboutSection("WHERE YOUR DATA GOES", "Your data moves only where you send it:\n\n• On device — Session history, presets, and settings are stored locally in the app's private storage using Room database. No other app can access this without your permission.\n• Health Connect — If enabled, sessions are written to Android Health Connect on your device. Health Connect is managed by Google and governed by Google's privacy policy. MTimer only writes to Health Connect — it does not read data from other apps stored there. To fully revoke MTimer's access to Health Connect, you must use the Android system settings dashboard.\n• Google Fit — If enabled in Settings, sessions are written to Google Fit under the MEDITATION activity type. Google Fit is governed by Google's privacy policy. This sync is entirely opt-in and can be disabled at any time.\n• Google Drive — If you use the backup feature, your session history and presets are written to a file in your personal Google Drive account. MTimer requests access only to files it creates — it cannot see the rest of your Drive. Google Drive is governed by Google's privacy policy.\n• JSON Export — If you export your data, the resulting JSON file is saved to wherever you choose on your device. MTimer has no visibility into what happens to that file after export.")
-
-            AboutSection("DATA SHARING", "MTimer shares your data with no one. There are no analytics SDKs, no crash reporting services, no advertising networks, and no third-party tracking of any kind embedded in this app.\n\nThe only external services involved are Google Health Connect, Google Fit, and Google Drive — all of which you explicitly opt into and can revoke at any time from your device settings.")
-
-            AboutSection("PERMISSIONS", "Every permission MTimer requests is explained in the About section above. No permission is requested speculatively or for future use. If a feature requiring a permission is removed from the app, the permission is removed too.")
-
-            AboutSection("CHILDREN", "MTimer is not directed at children under 13 and does not knowingly collect any information from them.")
-
-            AboutSection("CHANGES TO THIS POLICY", "If this policy changes materially, the new version will be included in the app update and the effective date above will be updated. Continued use of the app after an update constitutes acceptance of the revised policy.")
-
-            AboutSection("CONTACT", "If you have questions about your data or this policy, please get in touch.\n(https://github.com/gnaanaa/Mtimer)")
-
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(48.dp))
         }
     }
 }
