@@ -40,7 +40,8 @@ private data class DrawerMenuItem(
 @Composable
 fun MainContainer(
     rootNavController: NavHostController,
-    onStartTimer: () -> Unit
+    onStartTimer: () -> Unit,
+    initialDrawerRoute: String = Screen.Home.route
 ) {
     val drawerNavController = rememberNavController()
     val navBackStackEntry by drawerNavController.currentBackStackEntryAsState()
@@ -49,9 +50,20 @@ fun MainContainer(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(initialDrawerRoute) {
+        if (drawerNavController.currentDestination?.route != initialDrawerRoute) {
+            drawerNavController.navigate(initialDrawerRoute) {
+                popUpTo(Screen.Home.route) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
+            // ... (rest of the drawer content)
             ModalDrawerSheet(
                 drawerContainerColor = MaterialTheme.colorScheme.background,
                 drawerShape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
@@ -142,7 +154,7 @@ fun MainContainer(
     ) {
         NavHost(
             navController = drawerNavController,
-            startDestination = Screen.Home.route
+            startDestination = initialDrawerRoute
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(

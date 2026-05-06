@@ -20,7 +20,11 @@ sealed class Screen(val route: String) {
     object History : Screen("history")
     object About : Screen("about")
     object HowToMeditate : Screen("how_to_meditate")
-    object Main : Screen("main")
+    object Main : Screen("main") {
+        fun createRoute(initialRoute: String? = null): String {
+            return if (initialRoute == null) "main" else "main?initialRoute=$initialRoute"
+        }
+    }
     object PresetEdit : Screen("preset_edit/{presetId}?name={name}&duration={duration}") {
         fun createRoute(
             presetId: String,
@@ -57,10 +61,21 @@ fun MTimerNavGraph(
             )
         }
         
-        composable(Screen.Main.route) {
+        composable(
+            route = Screen.Main.route + "?initialRoute={initialRoute}",
+            arguments = listOf(
+                navArgument("initialRoute") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
+        ) { backStackEntry ->
+            val initialRoute = backStackEntry.arguments?.getString("initialRoute")
             MainContainer(
                 rootNavController = navController,
-                onStartTimer = { navController.navigate(Screen.Timer.route) }
+                onStartTimer = { navController.navigate(Screen.Timer.route) },
+                initialDrawerRoute = initialRoute ?: Screen.Home.route
             )
         }
 

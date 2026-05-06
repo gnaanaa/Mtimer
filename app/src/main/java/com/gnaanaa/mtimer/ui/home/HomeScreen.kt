@@ -511,12 +511,16 @@ fun HistoryRow(
                 primaryColor.copy(alpha = 0.03f),
                 shape = RoundedCornerShape(12.dp)
             )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp),
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 12.dp)
+        ) {
             Text(
                 text = (session.presetName ?: "MEDITATION").uppercase(),
                 fontFamily = DotMatrix,
@@ -559,23 +563,23 @@ fun HistoryRow(
                 )
             }
 
-            // Start Again Button with PRESET time at the right end
+            // Start Again Button - Edge to edge, full height
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
+                    .width(64.dp)
+                    .fillMaxHeight()
                     .background(primaryColor.copy(alpha = 0.12f))
-                    .clickable(onClick = onStartAgain)
-                    .padding(horizontal = 8.dp, vertical = 5.dp),
+                    .clickable(onClick = onStartAgain),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Spa,
                         contentDescription = null,
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(16.dp),
                         tint = primaryColor
                     )
                     val mins = (presetDurationSeconds ?: session.durationSeconds) / 60

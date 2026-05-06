@@ -74,7 +74,9 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                     "history" -> {
-                                        navController.navigate(Screen.History.route)
+                                        navController.navigate(Screen.Main.createRoute(Screen.History.route)) {
+                                            launchSingleTop = true
+                                        }
                                     }
                                 }
                             }
