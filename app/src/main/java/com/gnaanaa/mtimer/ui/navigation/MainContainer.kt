@@ -156,7 +156,10 @@ fun MainContainer(
             }
             composable(Screen.HowToMeditate.route) {
                 HowToMeditateScreen(
-                    onOpenDrawer = { scope.launch { drawerState.open() } }
+                    onOpenDrawer = { scope.launch { drawerState.open() } },
+                    onCreatePreset = { name, duration ->
+                        rootNavController.navigate(Screen.PresetEdit.createRoute("new", name, duration))
+                    }
                 )
             }
             composable(Screen.History.route) {

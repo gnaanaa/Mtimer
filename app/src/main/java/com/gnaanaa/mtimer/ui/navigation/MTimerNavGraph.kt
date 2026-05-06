@@ -21,8 +21,19 @@ sealed class Screen(val route: String) {
     object About : Screen("about")
     object HowToMeditate : Screen("how_to_meditate")
     object Main : Screen("main")
-    object PresetEdit : Screen("preset_edit/{presetId}") {
-        fun createRoute(presetId: String) = "preset_edit/$presetId"
+    object PresetEdit : Screen("preset_edit/{presetId}?name={name}&duration={duration}") {
+        fun createRoute(
+            presetId: String,
+            name: String? = null,
+            duration: Int? = null
+        ): String {
+            val base = "preset_edit/$presetId"
+            val params = mutableListOf<String>()
+            if (name != null) params.add("name=$name")
+            if (duration != null) params.add("duration=$duration")
+            
+            return if (params.isEmpty()) base else "$base?${params.joinToString("&")}"
+        }
     }
 }
 
@@ -61,7 +72,19 @@ fun MTimerNavGraph(
 
         composable(
             route = Screen.PresetEdit.route,
-            arguments = listOf(navArgument("presetId") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("presetId") { type = NavType.StringType },
+                navArgument("name") { 
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument("duration") { 
+                    type = NavType.StringType // Pass as string to keep nullable/defaultValue simple
+                    nullable = true
+                    defaultValue = null
+                }
+            )
         ) { backStackEntry ->
             PresetEditScreen(
                 backStackEntry = backStackEntry,

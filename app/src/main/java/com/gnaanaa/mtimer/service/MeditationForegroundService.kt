@@ -138,8 +138,8 @@ class MeditationForegroundService : Service() {
 
             wakeLockManager.acquire()
 
-            // Start sound
-            soundPlayer.playSoundWithFade(startSound)
+            // Start sound in background so meditation timer starts immediately
+            launch { soundPlayer.playSoundWithFade(startSound) }
             
             _timerState.value = TimerState.Running(duration, duration, presetName)
             startForeground(NOTIFICATION_ID, createNotification("Meditating..."))
@@ -190,6 +190,7 @@ class MeditationForegroundService : Service() {
 
         val session = Session(
             presetId = currentPresetId,
+            presetName = currentPresetName,
             startTime = startTimeMillis,
             endTime = endTimeMillis,
             durationSeconds = if (completed) targetDurationSeconds else elapsedSeconds,

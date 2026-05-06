@@ -22,14 +22,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gnaanaa.mtimer.ui.home.DotMatrix
+import com.gnaanaa.mtimer.ui.home.InterFont
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HowToMeditateScreen(
-    onOpenDrawer: () -> Unit
+    onOpenDrawer: () -> Unit,
+    onCreatePreset: (String, Int) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -61,10 +64,10 @@ fun HowToMeditateScreen(
             Spacer(Modifier.height(8.dp))
             Text(
                 "Practical methods drawn from Sri M's teachings and the Nath tradition. Whether you're sitting for the first time or deepening a long practice — start here.",
-                fontFamily = DotMatrix,
-                fontSize = 13.sp,
-                lineHeight = 20.sp,
-                letterSpacing = 1.sp
+                fontFamily = InterFont,
+                fontSize = 15.sp,
+                lineHeight = 22.sp,
+                letterSpacing = 0.5.sp
             )
 
             Spacer(Modifier.height(24.dp))
@@ -90,6 +93,8 @@ fun HowToMeditateScreen(
                 tradition = "Universal foundation",
                 level = "Beginner",
                 duration = "10 minutes (range: 5–20 min)",
+                durationMins = 10,
+                onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
                         description = "The most universal starting point. Sri M consistently recommends this as the gateway — simply observe the natural breath without controlling it. In the Nath tradition, awareness of breath (prana) is the first step in uniting the individual with the universal. The breath is always present, always available, and requires no special conditions.",
@@ -118,6 +123,8 @@ fun HowToMeditateScreen(
                 tradition = "Sri M (Kriya / Nath lineage)",
                 level = "Beginner",
                 duration = "20 minutes (range: 10–40 min)",
+                durationMins = 20,
+                onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
                         description = "Sri M's specific instruction from On Meditation: mentally chant Hum on the inhalation and Sau on the exhalation. This is the Hamsa mantra — the ajapa japa (mantra chanted without chanting) — which the scriptures say resonates in every living being's breath approximately 21,600 times a day. Becoming conscious of it is the practice. The meaning: Ham = I am; Sa/Sau = That (the universal). Together: \"I am That.\"\n\nThis form aligns with Paramahansa Yogananda's Hong-Sau technique from the same Kriya lineage that deeply influenced Sri M — approaching the mantra from the ego (Hum/I am) toward the universal (Sau/That), which Sri M and Yogananda both considered the natural direction for a practitioner beginning from ordinary consciousness.",
@@ -139,6 +146,8 @@ fun HowToMeditateScreen(
                 tradition = "Nath tradition (shatkarma)",
                 level = "Beginner",
                 duration = "10 minutes (range: 5–20 min)",
+                durationMins = 10,
+                onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
                         description = "One of the six shatkarmas (purificatory practices) in the Nath tradition, and a direct method for developing one-pointed concentration. By holding the gaze on a single point, the restless nature of the mind is gradually stilled. Outer trataka develops into inner trataka as the practice matures.",
@@ -160,6 +169,8 @@ fun HowToMeditateScreen(
                 tradition = "Nath tradition",
                 level = "Intermediate",
                 duration = "30 minutes (range: 15–45 min)",
+                durationMins = 30,
+                onCreatePreset = onCreatePreset,
                 content = {
                     Column {
                         Text(
@@ -231,6 +242,8 @@ fun HowToMeditateScreen(
                 tradition = "Sri M (Ramana Maharshi lineage)",
                 level = "Intermediate",
                 duration = "30 minutes (range: 15–60 min)",
+                durationMins = 30,
+                onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
                         description = "Sri M was deeply influenced by Ramana Maharshi, whose primary method was the inquiry \"Who am I?\" This is not a philosophical question — it is a practice. The question is turned back on itself to dissolve the questioner. Each thought, when traced back to its source, leads to the \"I\" sense — and following that \"I\" inward is the practice.",
@@ -252,6 +265,8 @@ fun HowToMeditateScreen(
                 tradition = "Nath tradition",
                 level = "Intermediate",
                 duration = "20 minutes (range: 10–40 min)",
+                durationMins = 20,
+                onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
                         description = "The Nath tradition speaks of Anahata Nada — the unstruck sound that resonates within. This practice involves withdrawing attention from outer sounds to discover subtler internal resonances. It is one of the most direct paths in Nath yoga for pratyahara (sense withdrawal).",
@@ -273,6 +288,8 @@ fun HowToMeditateScreen(
                 tradition = "Nath tradition",
                 level = "Advanced",
                 duration = "20 minutes (range: 10–30 min)",
+                durationMins = 20,
+                onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
                         description = "An advanced extension of trataka. After establishing steady concentration, attention is directed to the Ajna chakra — the point between and slightly above the eyebrows. In Nath tradition, this is the seat of the guru principle and the meeting point of the three main nadis (ida, pingala, sushumna).\n\nPre-requisite: At least 2–3 months of regular trataka practice. The power of concentration must be established first.",
@@ -282,7 +299,7 @@ fun HowToMeditateScreen(
                             "Observe inner phenomena — Some practitioners see colours, lights, or forms. Treat all appearances as objects of awareness — don't chase or analyse them.",
                             "Withdraw and rest — Release the upward gaze. Rest in simple awareness. The integration after the practice is as important as the practice itself."
                         ),
-                        note = "Sri M cautions against forcing chakra practices: \"These things open naturally as the practice matures and the mind purifies.\" Force creates imbalance; regular practice creates readiness."
+                        note = "Sri M cautions against forcing chakra practices: \"These things open naturally as the practice matures and the mind purifies.\" Force creates imbalance; regular practice create readiness."
                     )
                 }
             )
@@ -303,10 +320,10 @@ fun HowToMeditateScreen(
                 "Sri M (Mumtaz Ali Khan) is a contemporary teacher in the Nath tradition, initiated by the mahayogi Maheshwarnath Babaji in the Himalayas. His teachings blend the non-dual Vedanta of Ramana Maharshi with Kriya yoga and classical Nath practice. His book On Meditation and his autobiography Apprenticed to a Himalayan Master are foundational texts for practitioners seeking to understand the background of these methods.\n\n" +
                 "The Nath tradition is one of India's oldest living yogic lineages, associated with Matsyendranath and Gorakhnath. Its canonical texts — the Hatha Yoga Pradipika, Gheranda Samhita, and Shiva Samhita — systematise breathwork, sound meditation, concentration, and inner body awareness into a complete path.\n\n" +
                 "Both streams agree on one thing: the real teaching is in the practice itself. Read as much as you like, but sit down and breathe.",
-                fontFamily = DotMatrix,
-                fontSize = 13.sp,
-                lineHeight = 20.sp,
-                letterSpacing = 1.sp,
+                fontFamily = InterFont,
+                fontSize = 14.sp,
+                lineHeight = 22.sp,
+                letterSpacing = 0.5.sp,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
             )
 
@@ -351,10 +368,10 @@ private fun BulletPoint(label: String, content: String) {
         )
         Text(
             content,
-            fontFamily = DotMatrix,
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
-            letterSpacing = 1.sp
+            fontFamily = InterFont,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
+            letterSpacing = 0.5.sp
         )
     }
 }
@@ -366,6 +383,8 @@ private fun MethodAccordion(
     tradition: String,
     level: String,
     duration: String,
+    durationMins: Int,
+    onCreatePreset: (String, Int) -> Unit,
     content: @Composable () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -423,24 +442,40 @@ private fun MethodAccordion(
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                     Text(
                         "Tradition: $tradition",
-                        fontFamily = DotMatrix,
-                        fontSize = 11.sp,
+                        fontFamily = InterFont,
+                        fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         "Level: $level",
-                        fontFamily = DotMatrix,
-                        fontSize = 11.sp,
+                        fontFamily = InterFont,
+                        fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         "Duration: $duration",
-                        fontFamily = DotMatrix,
-                        fontSize = 11.sp,
+                        fontFamily = InterFont,
+                        fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(12.dp))
                     content()
+                    Spacer(Modifier.height(16.dp))
+                    Button(
+                        onClick = { onCreatePreset(title, durationMins) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                        )
+                    ) {
+                        Text(
+                            "CREATE ${title.split("—")[0].trim().uppercase()} PRESET",
+                            fontFamily = DotMatrix,
+                            fontSize = 12.sp,
+                            letterSpacing = 1.sp
+                        )
+                    }
                 }
             }
         }
@@ -464,9 +499,9 @@ private fun MethodContent(
         )
         Text(
             description,
-            fontFamily = DotMatrix,
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
+            fontFamily = InterFont,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -480,9 +515,9 @@ private fun MethodContent(
         steps.forEachIndexed { index, step ->
             Text(
                 "${index + 1}. $step",
-                fontFamily = DotMatrix,
-                fontSize = 13.sp,
-                lineHeight = 18.sp,
+                fontFamily = InterFont,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
         }
@@ -496,9 +531,9 @@ private fun MethodContent(
             Text(
                 note,
                 modifier = Modifier.padding(12.dp),
-                fontFamily = DotMatrix,
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
+                fontFamily = InterFont,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
             )
         }
@@ -516,15 +551,15 @@ private fun MethodContent(
                 Spacer(Modifier.height(4.dp))
                 Text(
                     vTitle,
-                    fontFamily = DotMatrix,
-                    fontSize = 12.sp,
+                    fontFamily = InterFont,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     vDesc,
-                    fontFamily = DotMatrix,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
+                    fontFamily = InterFont,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
                 )
             }
         }
@@ -543,9 +578,9 @@ private fun PrincipleItem(title: String, content: String) {
         )
         Text(
             content,
-            fontFamily = DotMatrix,
-            fontSize = 13.sp,
-            lineHeight = 18.sp
+            fontFamily = InterFont,
+            fontSize = 14.sp,
+            lineHeight = 20.sp
         )
     }
 }

@@ -10,6 +10,7 @@ import com.gnaanaa.mtimer.domain.model.Preset
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,6 +23,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     val recentSessions: StateFlow<List<Session>> = sessionRepository.getAllSessions()
+        .map { it.take(4) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val presets: StateFlow<List<Preset>> = presetRepository.getAllPresets()

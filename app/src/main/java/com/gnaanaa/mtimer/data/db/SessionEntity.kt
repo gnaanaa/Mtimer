@@ -10,6 +10,7 @@ import com.google.gson.annotations.SerializedName
 data class SessionEntity(
     @PrimaryKey(autoGenerate = true) @SerializedName("id") val id: Long = 0,
     @SerializedName("presetId") val presetId: String?,
+    @SerializedName("presetName") val presetName: String? = null,
     @SerializedName("startTime") val startTime: Long,
     @SerializedName("endTime") val endTime: Long,
     @SerializedName("durationSeconds") val durationSeconds: Int,
@@ -21,6 +22,7 @@ data class SessionEntity(
 fun SessionEntity.toDomain() = Session(
     id = id,
     presetId = presetId,
+    presetName = presetName,
     startTime = startTime,
     endTime = endTime,
     durationSeconds = durationSeconds,
@@ -32,6 +34,7 @@ fun SessionEntity.toDomain() = Session(
 fun Session.toEntity() = SessionEntity(
     id = id,
     presetId = presetId,
+    presetName = presetName,
     startTime = startTime,
     endTime = endTime,
     durationSeconds = durationSeconds,

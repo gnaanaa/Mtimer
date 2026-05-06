@@ -58,6 +58,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
 import com.gnaanaa.mtimer.ui.home.DotMatrix
+import com.gnaanaa.mtimer.ui.home.InterFont
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -211,9 +212,9 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "To fully revoke access, use the button below to open system settings and remove MTimer's permissions.",
-                            fontFamily = DotMatrix,
-                            fontSize = 10.sp,
-                            lineHeight = 14.sp,
+                            fontFamily = InterFont,
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
@@ -291,9 +292,9 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "Connected for cloud backup of presets and history.",
-                            fontFamily = DotMatrix,
-                            fontSize = 12.sp,
-                            letterSpacing = 1.sp,
+                            fontFamily = InterFont,
+                            fontSize = 13.sp,
+                            letterSpacing = 0.5.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 1.0f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -322,9 +323,9 @@ fun SettingsScreen(
                     } else {
                         Text(
                             text = "Sign in to sync your presets and history across devices via Google Drive.",
-                            fontFamily = DotMatrix,
-                            fontSize = 12.sp,
-                            letterSpacing = 1.sp,
+                            fontFamily = InterFont,
+                            fontSize = 13.sp,
+                            letterSpacing = 0.5.sp,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 1.0f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -416,9 +417,9 @@ private fun SettingsToggleCard(
                     )
                     Text(
                         text = subtitle,
-                        fontFamily = DotMatrix,
-                        fontSize = 12.sp,
-                        letterSpacing = 1.sp,
+                        fontFamily = InterFont,
+                        fontSize = 13.sp,
+                        letterSpacing = 0.5.sp,
                         color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 1.0f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
                     )
                 }

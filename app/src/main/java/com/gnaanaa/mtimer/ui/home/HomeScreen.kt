@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
@@ -78,6 +79,8 @@ val DotMatrixSquare = FontFamily(
     )
 )
 
+val InterFont = FontFamily.SansSerif
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -94,10 +97,6 @@ fun HomeScreen(
 
     var selectedSession by remember { mutableStateOf<Session?>(null) }
     var selectedPreset by remember { mutableStateOf<Preset?>(null) }
-
-    val dateFormat = remember {
-        SimpleDateFormat("MMM dd • HH:mm", Locale.getDefault())
-    }
 
     LaunchedEffect(presets) {
         if (selectedPreset == null && presets.isNotEmpty()) {
@@ -142,7 +141,7 @@ fun HomeScreen(
             StartSessionButton(
                 enabled = selectedPreset != null,
                 selectedPreset = selectedPreset,
-                labelOverride = if (presets.isEmpty()) "CREATE PRESET TO START" else null,
+                labelOverride = if (presets.isEmpty()) "CREATE PRESET >>" else null,
                 alwaysEnabled = presets.isEmpty(),
                 onClick = {
                     if (presets.isEmpty()) {
@@ -199,13 +198,21 @@ fun HomeScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
-                    items(recentSessions.take(5), key = { it.id }) { session ->
+                    items(recentSessions, key = { it.id }) { session ->
+                        val preset = presets.find { it.id == session.presetId }
                         HistoryRow(
                             session = session,
-                            formattedDate = dateFormat.format(Date(session.startTime)).uppercase().alignColons(),
-                            onClick = { selectedSession = session }
+                            presetDurationSeconds = preset?.durationSeconds,
+                            onClick = { selectedSession = session },
+                            onStartAgain = {
+                                preset?.let {
+                                    viewModel.startTimer(it)
+                                    onStartTimer()
+                                }
+                            }
                         )
                     }
                 }
@@ -245,61 +252,73 @@ fun StartSessionButton(
                 else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp)
             )
-            .clickable(enabled = isEffectiveEnabled, onClick = onClick)
-            .padding(horizontal = 24.dp),
+            .clickable(enabled = isEffectiveEnabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+        // Left side: Icon and Duration block
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 24.dp), // Match the horizontal padding
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            // Lotus icon
             Icon(
                 imageVector = Icons.Default.Spa,
                 contentDescription = null,
-                modifier = Modifier.size(36.dp),
+                modifier = Modifier.size(32.dp),
                 tint = if (isEffectiveEnabled)
                     primaryColor
                 else
                     MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
             )
 
-            Spacer(Modifier.width(16.dp))
-
-            // Text block
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            if (labelOverride == null && selectedPreset != null) {
+                val mins = selectedPreset.durationSeconds / 60
                 Text(
-                    labelOverride ?: "START SESSION",
+                    "(${mins}M)",
                     fontFamily = DotMatrix,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 4.sp,
-                    fontSize = 18.sp,
-                    color = if (isEffectiveEnabled) primaryColor else MaterialTheme.colorScheme.onSurfaceVariant
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
+                    color = if (isEffectiveEnabled)
+                        primaryColor.copy(alpha = 0.7f)
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
                 )
-                if (labelOverride == null) {
-                    selectedPreset?.let { preset ->
-                        val label = buildString {
-                            append(preset.name.uppercase())
-                            if (preset.durationSeconds > 0) {
-                                val mins = preset.durationSeconds / 60
-                                append("  (${mins}M)")
-                            }
-                        }
-                        Text(
-                            label,
-                            fontFamily = DotMatrix,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 2.sp,
-                            color = if (isEffectiveEnabled)
-                                MaterialTheme.colorScheme.onBackground.copy(0.8f)
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
-                        )
-                    }
+            }
+        }
+
+        // Center: Text block
+        Column(
+            modifier = Modifier.fillMaxWidth(0.65f), // Occupy the middle 65% of the button width
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                labelOverride ?: "START SESSION",
+                fontFamily = DotMatrix,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 4.sp,
+                fontSize = 18.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = if (isEffectiveEnabled) primaryColor else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (labelOverride == null) {
+                selectedPreset?.let { preset ->
+                    Text(
+                        preset.name.uppercase(),
+                        fontFamily = DotMatrix,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = if (isEffectiveEnabled)
+                            MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
+                    )
                 }
             }
         }
@@ -420,20 +439,42 @@ fun PresetDial(
 
             val isSelected = index == currentIndex
 
-            Text(
-                text = preset.name.uppercase(),
-                fontFamily = DotMatrix,
-                fontSize = if (isSelected) 14.sp else 12.sp,
-                letterSpacing = if (isSelected) 2.sp else 1.sp,
-                modifier = Modifier
-                    .offset(xDp, yDp)
-                    .scale(if (isSelected) 1.25f else 0.85f)
-                    .clickable { onSelected(preset) },
-                color = if (isSelected)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.onBackground.copy(0.8f)
-            )
+            if (isSelected) {
+                Box(
+                    modifier = Modifier
+                        .offset(xDp, yDp)
+                        .width(120.dp)
+                        .scale(1.25f)
+                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = preset.name.uppercase(),
+                        fontFamily = DotMatrix,
+                        fontSize = 14.sp,
+                        letterSpacing = 2.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            } else {
+                Text(
+                    text = preset.name.uppercase(),
+                    fontFamily = DotMatrix,
+                    fontSize = 12.sp,
+                    letterSpacing = 1.sp,
+                    modifier = Modifier
+                        .offset(xDp, yDp)
+                        .scale(0.85f)
+                        .widthIn(max = 100.dp)
+                        .clickable { onSelected(preset) },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                )
+            }
         }
 
         Text(
@@ -447,43 +488,106 @@ fun PresetDial(
 
 // ── History Row ────────────────────────────────────────────────────────────
 @Composable
-fun HistoryRow(session: Session, formattedDate: Any, onClick: () -> Unit) {
+fun HistoryRow(
+    session: Session,
+    presetDurationSeconds: Int?,
+    onClick: () -> Unit,
+    onStartAgain: () -> Unit
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val dateFormat = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
+    val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(58.dp)
+            .border(
+                width = 1.dp,
+                color = primaryColor.copy(alpha = 0.12f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .background(
+                primaryColor.copy(alpha = 0.03f),
+                shape = RoundedCornerShape(12.dp)
+            )
             .clickable(onClick = onClick)
-            .padding(vertical = 10.dp),
+            .padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (formattedDate is AnnotatedString) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = formattedDate,
+                text = (session.presetName ?: "MEDITATION").uppercase(),
                 fontFamily = DotMatrix,
-                fontSize = 13.sp,
-                letterSpacing = 1.sp
+                fontSize = 11.sp,
+                letterSpacing = 1.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onBackground.copy(0.7f)
             )
-        } else {
             Text(
-                text = formattedDate.toString(),
-                fontFamily = DotMatrix,
-                fontSize = 13.sp,
-                letterSpacing = 1.sp
+                text = "${dateFormat.format(Date(session.startTime))} • ${timeFormat.format(Date(session.startTime))}".uppercase(),
+                fontFamily = InterFont,
+                fontSize = 10.sp,
+                letterSpacing = 0.5.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
             )
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = formatDurationAligned(session.durationSeconds),
-                fontFamily = DotMatrix,
-                fontSize = 14.sp
-            )
-            Spacer(Modifier.width(6.dp))
-            Icon(
-                imageVector = if (session.completed) Icons.Default.CheckCircle else Icons.Default.Cancel,
-                contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = if (session.completed) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
-            )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Completed time and status marker
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = formatDurationAligned(session.durationSeconds),
+                    fontFamily = DotMatrix,
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
+                )
+
+                Icon(
+                    imageVector = if (session.completed) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = if (session.completed) Color(0xFF4CAF50).copy(0.8f) else MaterialTheme.colorScheme.error.copy(0.8f)
+                )
+            }
+
+            // Start Again Button with PRESET time at the right end
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(primaryColor.copy(alpha = 0.12f))
+                    .clickable(onClick = onStartAgain)
+                    .padding(horizontal = 8.dp, vertical = 5.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Spa,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = primaryColor
+                    )
+                    val mins = (presetDurationSeconds ?: session.durationSeconds) / 60
+                    Text(
+                        "${mins}M",
+                        fontFamily = DotMatrix,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = primaryColor
+                    )
+                }
+            }
         }
     }
 }
@@ -510,6 +614,7 @@ fun SessionDetailDialog(session: Session, onDismiss: () -> Unit) {
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                DetailRow("PRESET", (session.presetName ?: "MEDITATION").uppercase())
                 DetailRow("DATE", dateFormat.format(Date(session.startTime)).uppercase().alignColons())
                 DetailRow("DURATION", formatDurationAligned(session.durationSeconds))
                 DetailRow("STATUS", if (session.completed) "COMPLETED" else "STOPPED")
@@ -535,9 +640,9 @@ fun DetailRow(label: String, value: Any) {
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
         )
         if (value is AnnotatedString) {
-            Text(text = value, fontFamily = DotMatrix, fontSize = 13.sp)
+            Text(text = value, fontFamily = InterFont, fontSize = 14.sp)
         } else {
-            Text(text = value.toString(), fontFamily = DotMatrix, fontSize = 13.sp)
+            Text(text = value.toString(), fontFamily = InterFont, fontSize = 14.sp)
         }
     }
 }

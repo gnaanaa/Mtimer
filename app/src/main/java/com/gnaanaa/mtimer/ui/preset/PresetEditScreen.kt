@@ -101,6 +101,14 @@ fun PresetEditScreen(
                 endSoundId = existing.endSoundId
             }
             loaded = true
+        } else if (isNew && !loaded) {
+            // Check for pre-fill parameters
+            backStackEntry.arguments?.getString("name")?.let { name = it }
+            backStackEntry.arguments?.getString("duration")?.toIntOrNull()?.let { totalMins ->
+                durationHours = (totalMins / 60).coerceIn(0, 23)
+                durationMins = (totalMins % 60).coerceIn(0, 59)
+            }
+            loaded = true
         }
     }
 

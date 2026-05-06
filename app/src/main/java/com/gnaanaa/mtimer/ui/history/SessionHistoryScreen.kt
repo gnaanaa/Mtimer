@@ -23,9 +23,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gnaanaa.mtimer.domain.model.Session
 import com.gnaanaa.mtimer.ui.home.DotMatrix
+import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.SessionDetailDialog
 import com.gnaanaa.mtimer.ui.home.formatDurationAligned
 import com.gnaanaa.mtimer.ui.home.alignColons
+import androidx.compose.ui.text.style.TextOverflow
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -189,15 +191,28 @@ fun SessionItem(session: Session, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = dateFormat.format(Date(session.startTime)).uppercase().alignColons(),
+                text = (session.presetName ?: "MEDITATION").uppercase(),
                 fontFamily = DotMatrix,
                 fontSize = 12.sp,
                 letterSpacing = 1.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = dateFormat.format(Date(session.startTime)).uppercase().alignColons(),
+                fontFamily = InterFont,
+                fontSize = 12.sp,
+                letterSpacing = 0.5.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.95f)
             )
-            Spacer(modifier = Modifier.height(4.dp))
+        }
+        
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = formatDurationAligned(session.durationSeconds),
                 fontFamily = DotMatrix,
@@ -205,13 +220,15 @@ fun SessionItem(session: Session, onClick: () -> Unit) {
                 letterSpacing = 1.sp,
                 fontWeight = FontWeight.Bold
             )
-        }
 
-        Icon(
-            imageVector = if (session.completed) Icons.Default.CheckCircle else Icons.Default.Cancel,
-            contentDescription = if (session.completed) "COMPLETED" else "STOPPED",
-            modifier = Modifier.size(20.dp),
-            tint = if (session.completed) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
-        )
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Icon(
+                imageVector = if (session.completed) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                contentDescription = if (session.completed) "COMPLETED" else "STOPPED",
+                modifier = Modifier.size(20.dp),
+                tint = if (session.completed) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
+            )
+        }
     }
 }

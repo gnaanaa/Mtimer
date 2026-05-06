@@ -37,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import com.gnaanaa.mtimer.data.datastore.UserPreferencesDataStore
 import com.gnaanaa.mtimer.ui.home.DotMatrix
+import com.gnaanaa.mtimer.ui.home.InterFont
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -134,9 +135,9 @@ fun OnboardingScreen(
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "Track your mindfulness journey across apps via Health Connect and Google Fit.",
-                fontFamily = DotMatrix,
-                fontSize = 14.sp,
-                letterSpacing = 1.sp,
+                fontFamily = InterFont,
+                fontSize = 15.sp,
+                letterSpacing = 0.5.sp,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.9f)
             )

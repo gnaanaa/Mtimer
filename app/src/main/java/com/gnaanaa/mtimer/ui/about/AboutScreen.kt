@@ -14,6 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gnaanaa.mtimer.ui.home.DotMatrix
+import com.gnaanaa.mtimer.ui.home.InterFont
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +63,7 @@ fun AboutScreen(
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
-                    "VERSION 1.0.0",
+                    "VERSION 1.0",
                     fontFamily = DotMatrix,
                     fontSize = 10.sp,
                     letterSpacing = 2.sp,
@@ -73,9 +74,11 @@ fun AboutScreen(
 
             Spacer(Modifier.height(40.dp))
 
-            AboutSection("WHAT THIS IS", "MTimer is a minimal meditation timer built for people who sit seriously. No guided voices, no streaks, no social feeds. Just a timer, a bell, and an honest record of your practice.\n\nConfigure your session, sit down, and begin. MTimer stays out of the way.")
+            AboutSection("WHAT THIS IS", "MTimer is a minimal meditation timer built for people who sit seriously. Drawing inspiration from Sri M’s teachings and the ancient Nath tradition, it provides a focused environment for your daily practice.\n\nNo guided voices, no streaks, no social feeds. Just a timer, a bell, and an honest record of your journey.")
 
-            AboutSection("HOW IT WORKS", "1. SELECT — Choose a preset from the home screen. Each preset defines your sitting time, preparation delay, and interval chimes.\n\n2. SIT — Press 'START SESSION'. MTimer will count down your preparation time (so you can settle in) before the starting bell rings.\n\n3. FINISH — When the timer ends, the final bell rings and your session is automatically saved to your history. If you need to stop early, press 'STOP' — MTimer will still record exactly how many minutes you sat.")
+            AboutSection("HOW TO MEDITATE", "MTimer includes a built-in guide to classical meditation methods drawn from the Nath tradition and Sri M's teachings. From foundational breath awareness to advanced inner gazing, you can learn the techniques directly in the app. Each method in the guide includes a 'CREATE PRESET' button that automatically configures a timer with the recommended duration for that specific practice.")
+
+            AboutSection("HOW IT WORKS", "1. SELECT — Choose a preset from the home screen or the 'HOW TO MEDITATE' guide. Each preset defines your sitting time, preparation delay, and interval chimes.\n\n2. SIT — Press 'START SESSION'. MTimer will count down your preparation time (so you can settle in) before the starting bell rings.\n\n3. FINISH — When the timer ends, the final bell rings and your session is automatically saved to your history. If you need to stop early, press 'STOP' — MTimer will still record exactly how many minutes you sat.")
 
             AboutSection("WHAT IT CAPTURES", "Each completed or stopped session records:\n\n• Date and start time\n• Actual duration — what you sat, not what you planned\n• Completion status\n• Preset used\n• Heart rate, if your device supports it\n\nYour data lives on your device. Always.")
 
@@ -151,10 +154,10 @@ private fun AboutSection(title: String, content: String) {
         Spacer(Modifier.height(8.dp))
         Text(
             text = content,
-            fontFamily = DotMatrix,
-            fontSize = 13.sp,
-            letterSpacing = 1.sp,
-            lineHeight = 20.sp,
+            fontFamily = InterFont,
+            fontSize = 14.sp,
+            letterSpacing = 0.5.sp,
+            lineHeight = 22.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
         )
     }
