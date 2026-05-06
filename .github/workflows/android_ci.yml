@@ -1,0 +1,47 @@
+name: Android DevSecOps CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Run Lint
+      run: ./gradlew lintDebug
+
+    - name: Run Detekt Security Scan
+      run: ./gradlew detekt
+
+    - name: Run Dependency Vulnerability Scan
+      run: ./gradlew dependencyCheckAnalyze
+
+    - name: Run Unit Tests
+      run: ./gradlew testDebugUnitTest
+
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: debug-apk
+        path: app/build/outputs/apk/debug/app-debug.apk

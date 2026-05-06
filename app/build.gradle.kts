@@ -8,6 +8,14 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.detekt)
+    id("org.owasp.dependencycheck")
+}
+
+dependencyCheck {
+    failBuildOnCVSS = 7.0f // Fail on High/Critical vulnerabilities
+    format = "HTML"
+    outputDirectory = "build/reports/dependency-check"
 }
 
 android {
@@ -32,10 +40,13 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = secretsProperties.getProperty("RELEASE_STORE_FILE")?.let { file(it) }
-            storePassword = secretsProperties.getProperty("RELEASE_STORE_PASSWORD")
-            keyAlias = secretsProperties.getProperty("RELEASE_KEY_ALIAS")
-            keyPassword = secretsProperties.getProperty("RELEASE_KEY_PASSWORD")
+            // Priority: Environment Variables (CI) -> secrets.properties (Local)
+            val isCI = System.getenv("CI") == "true"
+            
+            storeFile = if (isCI) file("release.jks") else secretsProperties.getProperty("RELEASE_STORE_FILE")?.let { file(it) }
+            storePassword = System.getenv("RELEASE_STORE_PASSWORD") ?: secretsProperties.getProperty("RELEASE_STORE_PASSWORD")
+            keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: secretsProperties.getProperty("RELEASE_KEY_ALIAS")
+            keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: secretsProperties.getProperty("RELEASE_KEY_PASSWORD")
         }
     }
 

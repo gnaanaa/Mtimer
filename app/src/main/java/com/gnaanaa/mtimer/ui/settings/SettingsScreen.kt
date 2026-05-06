@@ -297,16 +297,27 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 1.0f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        OutlinedButton(
-                            onClick = {
-                                googleSignInClient.signOut().addOnCompleteListener {
-                                    viewModel.updateGoogleAccount(context, null)
-                                }
-                            },
-                            modifier = Modifier.align(Alignment.End),
-                            shape = RoundedCornerShape(12.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("SIGN OUT", fontFamily = DotMatrix, fontSize = 12.sp)
+                            OutlinedButton(
+                                onClick = { viewModel.syncDrive(context) },
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("FORCE CLOUD SYNC", fontFamily = DotMatrix, fontSize = 12.sp)
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    googleSignInClient.signOut().addOnCompleteListener {
+                                        viewModel.updateGoogleAccount(context, null)
+                                    }
+                                },
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("SIGN OUT", fontFamily = DotMatrix, fontSize = 12.sp)
+                            }
                         }
                     } else {
                         Text(

@@ -6,4 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.detekt) apply false
+    id("org.owasp.dependencycheck") version "12.1.0" apply false
 }

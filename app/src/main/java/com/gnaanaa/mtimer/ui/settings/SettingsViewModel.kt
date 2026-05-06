@@ -118,6 +118,10 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun syncDrive(context: Context) {
+        com.gnaanaa.mtimer.data.sync.DriveSyncWorker.enqueue(context)
+    }
+
     val useLightTheme: StateFlow<Boolean> = userPreferencesDataStore.useLightTheme
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 

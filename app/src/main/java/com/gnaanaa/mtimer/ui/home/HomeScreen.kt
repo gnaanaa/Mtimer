@@ -249,51 +249,57 @@ fun StartSessionButton(
             .padding(horizontal = 24.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Lotus icon — left side
-        Icon(
-            imageVector = Icons.Default.Spa,
-            contentDescription = null,
-            modifier = Modifier
-                .size(36.dp)
-                .align(Alignment.CenterStart),
-            tint = if (isEffectiveEnabled)
-                primaryColor
-            else
-                MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
-        )
-
-        // Text block - Centered
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                labelOverride ?: "START SESSION",
-                fontFamily = DotMatrix,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 4.sp,
-                fontSize = 18.sp,
-                color = if (isEffectiveEnabled) primaryColor else MaterialTheme.colorScheme.onSurfaceVariant
+            // Lotus icon
+            Icon(
+                imageVector = Icons.Default.Spa,
+                contentDescription = null,
+                modifier = Modifier.size(36.dp),
+                tint = if (isEffectiveEnabled)
+                    primaryColor
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
             )
-            if (labelOverride == null) {
-                selectedPreset?.let { preset ->
-                    val label = buildString {
-                        append(preset.name.uppercase())
-                        if (preset.durationSeconds > 0) {
-                            val mins = preset.durationSeconds / 60
-                            append("  (${mins}M)")
+
+            Spacer(Modifier.width(16.dp))
+
+            // Text block
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    labelOverride ?: "START SESSION",
+                    fontFamily = DotMatrix,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 4.sp,
+                    fontSize = 18.sp,
+                    color = if (isEffectiveEnabled) primaryColor else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (labelOverride == null) {
+                    selectedPreset?.let { preset ->
+                        val label = buildString {
+                            append(preset.name.uppercase())
+                            if (preset.durationSeconds > 0) {
+                                val mins = preset.durationSeconds / 60
+                                append("  (${mins}M)")
+                            }
                         }
+                        Text(
+                            label,
+                            fontFamily = DotMatrix,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp,
+                            color = if (isEffectiveEnabled)
+                                MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                            else
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
+                        )
                     }
-                    Text(
-                        label,
-                        fontFamily = DotMatrix,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp,
-                        color = if (isEffectiveEnabled) 
-                            MaterialTheme.colorScheme.onBackground.copy(0.8f)
-                        else 
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
-                    )
                 }
             }
         }
