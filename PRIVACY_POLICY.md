@@ -84,7 +84,7 @@ MTimer uses the following third-party services, each governed by their own priva
 
 ## 7. Children's Privacy
 
-MTimer is not directed at children under the age of 13. We do not knowingly collect personal information from children. If you are a parent or guardian and believe your child has provided personal information through the app, please contact us and we will take steps to delete such information.
+Because MTimer does not collect any personal information from any user, it is safe for use by individuals of all ages. We do not knowingly collect, store, or share any personal data from children under the age of 13.
 
 ---
 
