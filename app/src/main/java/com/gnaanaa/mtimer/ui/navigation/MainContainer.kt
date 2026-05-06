@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +22,7 @@ import com.gnaanaa.mtimer.ui.about.AboutScreen
 import com.gnaanaa.mtimer.ui.history.SessionHistoryScreen
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.HomeScreen
+import com.gnaanaa.mtimer.ui.howtomeditate.HowToMeditateScreen
 import com.gnaanaa.mtimer.ui.preset.PresetListScreen
 import com.gnaanaa.mtimer.ui.settings.SettingsScreen
 import kotlinx.coroutines.launch
@@ -76,6 +78,7 @@ fun MainContainer(
                     DrawerMenuItem("HOME", Icons.Default.Home, Screen.Home.route),
                     DrawerMenuItem("HISTORY", Icons.Default.History, Screen.History.route),
                     DrawerMenuItem("PRESETS", Icons.AutoMirrored.Filled.List, Screen.PresetList.route),
+                    DrawerMenuItem("HOW TO MEDITATE", Icons.Default.SelfImprovement, Screen.HowToMeditate.route),
                     DrawerMenuItem("SETTINGS", Icons.Default.Settings, Screen.Settings.route),
                     DrawerMenuItem("ABOUT", Icons.Default.Info, Screen.About.route)
                 )
@@ -148,6 +151,11 @@ fun MainContainer(
                     onNavigateToSettings = { drawerNavController.navigate(Screen.Settings.route) },
                     onNavigateToHistory = { drawerNavController.navigate(Screen.History.route) },
                     onNavigateToAbout = { drawerNavController.navigate(Screen.About.route) },
+                    onOpenDrawer = { scope.launch { drawerState.open() } }
+                )
+            }
+            composable(Screen.HowToMeditate.route) {
+                HowToMeditateScreen(
                     onOpenDrawer = { scope.launch { drawerState.open() } }
                 )
             }

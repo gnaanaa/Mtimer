@@ -19,6 +19,7 @@ sealed class Screen(val route: String) {
     object Settings : Screen("settings")
     object History : Screen("history")
     object About : Screen("about")
+    object HowToMeditate : Screen("how_to_meditate")
     object Main : Screen("main")
     object PresetEdit : Screen("preset_edit/{presetId}") {
         fun createRoute(presetId: String) = "preset_edit/$presetId"
