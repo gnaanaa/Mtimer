@@ -511,40 +511,41 @@ fun HistoryRow(
                 primaryColor.copy(alpha = 0.03f),
                 shape = RoundedCornerShape(12.dp)
             )
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
+            .clip(RoundedCornerShape(12.dp)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(
+        // Main Clickable Area (Left & Center)
+        Row(
             modifier = Modifier
                 .weight(1f)
-                .padding(start = 12.dp)
+                .fillMaxHeight()
+                .clickable(onClick = onClick)
+                .padding(start = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = (session.presetName ?: "MEDITATION").uppercase(),
-                fontFamily = DotMatrix,
-                fontSize = 11.sp,
-                letterSpacing = 1.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onBackground.copy(0.7f)
-            )
-            Text(
-                text = "${dateFormat.format(Date(session.startTime))} • ${timeFormat.format(Date(session.startTime))}".uppercase(),
-                fontFamily = InterFont,
-                fontSize = 10.sp,
-                letterSpacing = 0.5.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
-            )
-        }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = (session.presetName ?: "MEDITATION").uppercase(),
+                    fontFamily = DotMatrix,
+                    fontSize = 11.sp,
+                    letterSpacing = 1.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.7f)
+                )
+                Text(
+                    text = "${dateFormat.format(Date(session.startTime))} • ${timeFormat.format(Date(session.startTime))}".uppercase(),
+                    fontFamily = InterFont,
+                    fontSize = 10.sp,
+                    letterSpacing = 0.5.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
+                )
+            }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
             // Completed time and status marker
             Row(
+                modifier = Modifier.padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -562,35 +563,35 @@ fun HistoryRow(
                     tint = if (session.completed) Color(0xFF4CAF50).copy(0.8f) else MaterialTheme.colorScheme.error.copy(0.8f)
                 )
             }
+        }
 
-            // Start Again Button - Edge to edge, full height
-            Box(
-                modifier = Modifier
-                    .width(64.dp)
-                    .fillMaxHeight()
-                    .background(primaryColor.copy(alpha = 0.12f))
-                    .clickable(onClick = onStartAgain),
-                contentAlignment = Alignment.Center
+        // Start Again Button (Fixed Width, Full Height)
+        Box(
+            modifier = Modifier
+                .width(64.dp)
+                .fillMaxHeight()
+                .background(primaryColor.copy(alpha = 0.12f))
+                .clickable(onClick = onStartAgain),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Spa,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = primaryColor
-                    )
-                    val mins = (presetDurationSeconds ?: session.durationSeconds) / 60
-                    Text(
-                        "${mins}M",
-                        fontFamily = DotMatrix,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = primaryColor
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.Spa,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = primaryColor
+                )
+                val mins = (presetDurationSeconds ?: session.durationSeconds) / 60
+                Text(
+                    "${mins}M",
+                    fontFamily = DotMatrix,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = primaryColor
+                )
             }
         }
     }

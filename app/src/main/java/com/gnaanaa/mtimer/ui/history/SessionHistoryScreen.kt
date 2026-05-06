@@ -10,6 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,17 +33,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun SessionHistoryScreen(
     onBack: () -> Unit,
     onOpenDrawer: () -> Unit,
     viewModel: SessionHistoryViewModel = hiltViewModel()
 ) {
-    val sessions by viewModel.sessions.collectAsState()
+    val groupedSessions by viewModel.groupedSessions.collectAsState()
     val sessionCount by viewModel.sessionCount.collectAsState()
     val totalDuration by viewModel.totalDuration.collectAsState()
     var selectedSession by remember { mutableStateOf<Session?>(null) }
+
+    // State to keep track of expanded/collapsed months
+    val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
 
     Scaffold(
         topBar = {
@@ -61,7 +66,7 @@ fun SessionHistoryScreen(
             )
         }
     ) { padding ->
-        if (sessions.isEmpty()) {
+        if (groupedSessions.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -82,25 +87,77 @@ fun SessionHistoryScreen(
                     .fillMaxSize()
                     .padding(padding),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 item {
                     PracticeSummaryCard(sessionCount, totalDuration)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "RECENT SESSIONS",
-                        fontFamily = DotMatrix,
-                        fontSize = 12.sp,
-                        letterSpacing = 2.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-                items(sessions, key = { it.id }) { session ->
-                    SessionItem(
-                        session = session,
-                        onClick = { selectedSession = session }
-                    )
+
+                groupedSessions.forEach { (monthYear, sessionsInGroup) ->
+                    val isExpanded = expandedStates[monthYear] ?: true
+
+                    stickyHeader {
+                        Surface(
+                            onClick = { expandedStates[monthYear] = !isExpanded },
+                            color = MaterialTheme.colorScheme.background
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text(
+                                        text = monthYear,
+                                        fontFamily = DotMatrix,
+                                        fontSize = 12.sp,
+                                        letterSpacing = 2.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    if (!isExpanded) {
+                                        val totalSeconds = sessionsInGroup.sumOf { it.durationSeconds.toLong() }
+                                        val hours = totalSeconds / 3600
+                                        val minutes = (totalSeconds % 3600) / 60
+                                        val summary = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
+                                        
+                                        Text(
+                                            text = "${sessionsInGroup.size} SESSIONS • $summary",
+                                            fontFamily = InterFont,
+                                            fontSize = 10.sp,
+                                            letterSpacing = 0.5.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
+
+                                Icon(
+                                    imageVector = if (isExpanded) 
+                                        Icons.Default.KeyboardArrowUp 
+                                    else 
+                                        Icons.Default.KeyboardArrowDown,
+                                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                    }
+
+                    if (isExpanded) {
+                        items(sessionsInGroup, key = { it.id }) { session ->
+                            SessionItem(
+                                session = session,
+                                onClick = { selectedSession = session }
+                            )
+                        }
+                        
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
                 }
             }
         }

@@ -8,6 +8,7 @@ import com.gnaanaa.mtimer.data.repository.PresetRepository
 import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.domain.usecase.DeletePresetUseCase
 import com.gnaanaa.mtimer.domain.usecase.SavePresetUseCase
+import com.gnaanaa.mtimer.service.MeditationForegroundService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -84,5 +85,9 @@ class PresetViewModel @Inject constructor(
         viewModelScope.launch {
             deletePresetUseCase(preset)
         }
+    }
+
+    fun startTimer(preset: Preset) {
+        MeditationForegroundService.startTimer(context, preset)
     }
 }

@@ -14,6 +14,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,6 +29,7 @@ fun PresetListScreen(
     onBack: () -> Unit,
     onEditPreset: (String) -> Unit,
     onCreatePreset: () -> Unit,
+    onStartTimer: () -> Unit,
     onOpenDrawer: () -> Unit,
     viewModel: PresetViewModel = hiltViewModel()
 ) {
@@ -96,6 +100,10 @@ fun PresetListScreen(
                     PresetItem(
                         preset = preset,
                         onClick = { onEditPreset(preset.id) },
+                        onStart = {
+                            viewModel.startTimer(preset)
+                            onStartTimer()
+                        },
                         onDelete = { presetToDelete = preset }
                     )
                 }
@@ -137,55 +145,102 @@ fun PresetListScreen(
 fun PresetItem(
     preset: Preset,
     onClick: () -> Unit,
+    onStart: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(64.dp)
             .background(
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.07f),
+                primaryColor.copy(alpha = 0.07f),
                 shape = MaterialTheme.shapes.large
             )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 14.dp),
+            .clip(MaterialTheme.shapes.large),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Lotus icon — mirrors the start button
-        Icon(
-            imageVector = Icons.Default.Spa,
-            contentDescription = null,
-            modifier = Modifier.size(26.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(Modifier.width(16.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                preset.name.uppercase(),
-                fontFamily = DotMatrix,
-                fontSize = 14.sp,
-                letterSpacing = 2.sp
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .clickable(onClick = onClick)
+                .padding(start = 20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Lotus icon
+            Icon(
+                imageVector = Icons.Default.Spa,
+                contentDescription = null,
+                modifier = Modifier.size(26.dp),
+                tint = primaryColor
             )
-            val mins = preset.durationSeconds / 60
-            val secs = preset.durationSeconds % 60
-            val durationLabel = if (secs == 0) "${mins}m" else "${mins}m ${secs}s"
-            Text(
-                durationLabel,
-                fontFamily = DotMatrix,
-                fontSize = 12.sp,
-                letterSpacing = 1.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(0.95f)
-            )
+
+            Spacer(Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    preset.name.uppercase(),
+                    fontFamily = DotMatrix,
+                    fontSize = 14.sp,
+                    letterSpacing = 2.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                val mins = preset.durationSeconds / 60
+                val secs = preset.durationSeconds % 60
+                val durationLabel = if (secs == 0) "${mins}M" else "${mins}M ${secs}S"
+                Text(
+                    durationLabel,
+                    fontFamily = DotMatrix,
+                    fontSize = 12.sp,
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.95f)
+                )
+            }
+
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onBackground.copy(0.6f)
+                )
+            }
         }
 
-        IconButton(onClick = onDelete) {
-            Icon(
-                Icons.Default.Delete,
-                contentDescription = "Delete",
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onBackground.copy(0.75f)
-            )
+        // Start Session Button (Fixed Width, Full Height)
+        Box(
+            modifier = Modifier
+                .width(64.dp)
+                .fillMaxHeight()
+                .background(primaryColor.copy(alpha = 0.12f))
+                .clickable(onClick = onStart),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Spa,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = primaryColor
+                )
+                val mins = preset.durationSeconds / 60
+                Text(
+                    "${mins}M",
+                    fontFamily = DotMatrix,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = primaryColor
+                )
+            }
         }
     }
 }

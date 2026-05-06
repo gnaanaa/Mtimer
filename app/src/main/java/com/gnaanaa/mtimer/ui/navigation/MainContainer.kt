@@ -185,6 +185,7 @@ fun MainContainer(
                     onBack = { drawerNavController.popBackStack() },
                     onEditPreset = { id -> rootNavController.navigate(Screen.PresetEdit.createRoute(id)) },
                     onCreatePreset = { rootNavController.navigate(Screen.PresetEdit.createRoute("new")) },
+                    onStartTimer = onStartTimer,
                     onOpenDrawer = { scope.launch { drawerState.open() } }
                 )
             }

@@ -32,8 +32,8 @@ android {
         applicationId = "com.gnaanaa.mtimer"
         minSdk = 28
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.compose.ui.tooling)
     implementation(libs.compose.material3)
     implementation(libs.compose.icons)
+    implementation("androidx.compose.material:material-icons-extended")
 
     implementation(libs.navigation.compose)
     implementation(libs.accompanist.systemuicontroller)
