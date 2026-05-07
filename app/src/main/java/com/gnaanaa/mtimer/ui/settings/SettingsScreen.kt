@@ -232,7 +232,7 @@ fun SettingsScreen(
 
             SettingsToggleCard(
                 title = "GOOGLE FIT",
-                subtitle = "Log meditation as activity for AIA Vitality and others.",
+                subtitle = "Log meditation as activity for third-party health reward programs.",
                 checked = googleFitEnabled,
                 onCheckedChange = { enabled ->
                     viewModel.toggleGoogleFit(enabled)

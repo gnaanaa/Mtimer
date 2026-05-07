@@ -172,67 +172,22 @@ fun HowToMeditateScreen(
                 durationMins = 30,
                 onCreatePreset = onCreatePreset,
                 content = {
-                    Column {
-                        Text(
-                            "WHAT IT IS",
-                            fontFamily = DotMatrix,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            "A cornerstone practice of the Nath tradition. Ajapa means \"that which is not chanted\" — the Hamsa/Soham mantra flows continuously with the breath without any effort to repeat it. Unlike Hum-Sau, attention here moves with the breath along a specific inner pathway through the body, making it both a breath practice and a subtle-body practice.\n\n" +
-                            "A note on the syllable assignment — two authentic versions exist:\n" +
-                            "The ancient texts are genuinely divided on this, and this is not an error but a documented scriptural divergence:\n\n" +
-                            "• The Gheranda Samhita, Shiva Samhita, and most Yoga-Upanishads (the foundational Nath hatha yoga texts) teach: So/Sa on the inhale, Ham on the exhale — producing the So-Ham mantra (\"I am That\").\n" +
-                            "• The Vijnana Bhairava Tantra specifically states the opposite: Ham on the inhale, Sa on the exhale — producing the Ham-Sa (Hamsa) mantra (\"That I am\").\n\n" +
-                            "Both forms carry the same meaning and are considered equally valid. The difference is one of starting point: So-Ham begins with \"I\" moving toward \"That\"; Hamsa begins with \"That\" entering as \"I.\" Sri M's Hum-Sau teaching (method 2) follows this second form. For Ajapa-Japa as a Nath body-pathway practice, the more widely taught classical form is So on inhale, Ham on exhale, and that is what the steps below follow. If you have been initiated into a specific lineage, follow your teacher's instruction above all else.",
-                            fontFamily = DotMatrix,
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp,
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
-
-                        Text(
-                            "STEP BY STEP",
-                            fontFamily = DotMatrix,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        val steps = listOf(
+                    MethodContent(
+                        description = "A cornerstone practice of the Nath tradition. Ajapa means \"that which is not chanted\" — the Hamsa/Soham mantra flows continuously with the breath without any effort to repeat it. Unlike Hum-Sau, attention here moves with the breath along a specific inner pathway through the body, making it both a breath practice and a subtle-body practice.\n\n" +
+                                "A note on the syllable assignment — two authentic versions exist:\n" +
+                                "The ancient texts are genuinely divided on this, and this is not an error but a documented scriptural divergence:\n\n" +
+                                "• The Gheranda Samhita, Shiva Samhita, and most Yoga-Upanishads (the foundational Nath hatha yoga texts) teach: So/Sa on the inhale, Ham on the exhale — producing the So-Ham mantra (\"I am That\").\n" +
+                                "• The Vijnana Bhairava Tantra specifically states the opposite: Ham on the inhale, Sa on the exhale — producing the Ham-Sa (Hamsa) mantra (\"That I am\").\n\n" +
+                                "Both forms carry the same meaning and are considered equally valid. The difference is one of starting point: So-Ham begins with \"I\" moving toward \"That\"; Hamsa begins with \"That\" entering as \"I.\" Sri M's Hum-Sau teaching (method 2) follows this second form. For Ajapa-Japa as a Nath body-pathway practice, the more widely taught classical form is So on inhale, Ham on exhale, and that is what the steps below follow. If you have been initiated into a specific lineage, follow your teacher's instruction above all else.",
+                        steps = listOf(
                             "Ground in breath awareness first — Spend five minutes in simple breath awareness before entering this practice.",
                             "Locate the pathway — In Nath practice, the breath is understood to travel from the navel centre (or lower belly) upward on the in-breath, and descend from the throat downward on the out-breath. Feel this movement.",
                             "'So' on the inhale — As the breath enters, mentally hear \"So\" while feeling the breath rise from the lower belly toward the head.",
                             "'Ham' on the exhale — As the breath leaves, mentally hear \"Ham\" as it descends from head toward the belly. Together: So-Ham — \"I am That.\"",
                             "Let it run spontaneously — The goal is not deliberate repetition but listening — becoming aware of a mantra already happening. Eventually, awareness rests as the witness of the breath-mantra."
-                        )
-                        steps.forEachIndexed { index, step ->
-                            Text(
-                                "${index + 1}. $step",
-                                fontFamily = DotMatrix,
-                                fontSize = 13.sp,
-                                lineHeight = 18.sp,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-
-                        Spacer(Modifier.height(8.dp))
-                        Surface(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                "The Nath texts say this mantra repeats 21,600 times daily in every living being — the practice is simply becoming conscious of it. The textual divergence on syllable assignment has been debated for centuries; what matters far more than which version you choose is that you settle on one form and stay with it. Switching between versions mid-practice defeats the purpose. Advanced practitioners extend awareness of the pathway into the spinal channel (sushumna).",
-                                modifier = Modifier.padding(12.dp),
-                                fontFamily = DotMatrix,
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp,
-                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                            )
-                        }
-                    }
+                        ),
+                        note = "The Nath texts say this mantra repeats 21,600 times daily in every living being — the practice is simply becoming conscious of it. The textual divergence on syllable assignment has been debated for centuries; what matters far more than which version you choose is that you settle on one form and stay with it. Switching between versions mid-practice defeats the purpose. Advanced practitioners extend awareness of the pathway into the spinal channel (sushumna)."
+                    )
                 }
             )
 

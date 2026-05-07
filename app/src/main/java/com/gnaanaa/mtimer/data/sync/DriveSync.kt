@@ -66,11 +66,14 @@ class DriveSync @Inject constructor(
         ).setApplicationName("MTimer").build()
     }
 
-    suspend fun syncPresets() = withContext(Dispatchers.IO) {
+    suspend fun syncPresets(): Pair<Int, Int> = withContext(Dispatchers.IO) {
         val service = getDriveService() ?: run {
             Log.w(TAG, "No Google Account signed in, skipping Drive sync")
-            return@withContext
+            return@withContext 0 to 0
         }
+
+        var restoredSessions = 0
+        var restoredPresets = 0
 
         try {
             // 1. Get local state
@@ -97,6 +100,7 @@ class DriveSync @Inject constructor(
                     if (remote.startTime !in localSessionTimes) {
                         // Reset ID to 0 so Room auto-generates a new local ID
                         sessionDao.insertSession(remote.copy(id = 0))
+                        restoredSessions++
                         Log.d(TAG, "Restored session history from cloud: ${remote.startTime}")
                     }
                 }
@@ -108,6 +112,7 @@ class DriveSync @Inject constructor(
                 if (localPresets.isEmpty()) {
                     remoteData.presets?.forEach { remote ->
                         presetDao.insertPreset(remote.toDomain().toEntity())
+                        restoredPresets++
                         Log.d(TAG, "Fresh restore of preset from cloud: ${remote.name}")
                     }
                 }
@@ -126,7 +131,8 @@ class DriveSync @Inject constructor(
                 createBackupFile(service, jsonToUpload)
             }
             
-            Log.i(TAG, "Drive sync/backup completed successfully")
+            Log.i(TAG, "Drive sync/backup completed successfully. Restored: $restoredPresets presets, $restoredSessions sessions.")
+            return@withContext restoredPresets to restoredSessions
         } catch (e: GoogleJsonResponseException) {
             if (e.statusCode == 403) {
                 Log.e(TAG, "Google Drive API access denied. Enable it in Cloud Console.")

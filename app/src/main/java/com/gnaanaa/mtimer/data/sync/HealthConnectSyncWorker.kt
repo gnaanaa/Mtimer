@@ -65,7 +65,7 @@ class HealthConnectSyncWorker @AssistedInject constructor(
                     emptyList()
                 }
 
-                // Prioritize Google Fit for AIA Vitality
+                // Prioritize Google Fit for compatibility with certain health apps
                 var fitSuccess = false
                 if (isGoogleFitEnabled) {
                     try {
@@ -91,7 +91,7 @@ class HealthConnectSyncWorker @AssistedInject constructor(
                                 presetName = presetName
                             )
                         } else {
-                            android.util.Log.d("HealthConnect", "Skipping HC session record as Google Fit sync was successful (AIA Priority)")
+                            android.util.Log.d("HealthConnect", "Skipping HC session record as Google Fit sync was successful (third-party compatibility priority)")
                         }
                     }
                 } catch (e: Exception) {

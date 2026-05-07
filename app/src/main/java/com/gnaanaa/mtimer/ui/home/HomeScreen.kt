@@ -174,10 +174,10 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "HISTORY",
+                    "RECENT SESSIONS",
                     fontFamily = DotMatrix,
                     fontSize = 12.sp,
-                    letterSpacing = 3.sp
+                    letterSpacing = 2.sp
                 )
             }
 
@@ -501,7 +501,7 @@ fun HistoryRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(58.dp)
+            .height(69.dp)
             .border(
                 width = 1.dp,
                 color = primaryColor.copy(alpha = 0.12f),
@@ -521,14 +521,14 @@ fun HistoryRow(
                 .weight(1f)
                 .fillMaxHeight()
                 .clickable(onClick = onClick)
-                .padding(start = 12.dp),
+                .padding(start = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = (session.presetName ?: "MEDITATION").uppercase(),
                     fontFamily = DotMatrix,
-                    fontSize = 11.sp,
+                    fontSize = 13.sp,
                     letterSpacing = 1.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -537,7 +537,7 @@ fun HistoryRow(
                 Text(
                     text = "${dateFormat.format(Date(session.startTime))} • ${timeFormat.format(Date(session.startTime))}".uppercase(),
                     fontFamily = InterFont,
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     letterSpacing = 0.5.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
                 )
@@ -545,21 +545,21 @@ fun HistoryRow(
 
             // Completed time and status marker
             Row(
-                modifier = Modifier.padding(horizontal = 10.dp),
+                modifier = Modifier.padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
                     text = formatDurationAligned(session.durationSeconds),
                     fontFamily = DotMatrix,
-                    fontSize = 13.sp,
+                    fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
                 )
 
                 Icon(
                     imageVector = if (session.completed) Icons.Default.CheckCircle else Icons.Default.Cancel,
                     contentDescription = null,
-                    modifier = Modifier.size(14.dp),
+                    modifier = Modifier.size(16.dp),
                     tint = if (session.completed) Color(0xFF4CAF50).copy(0.8f) else MaterialTheme.colorScheme.error.copy(0.8f)
                 )
             }
@@ -568,7 +568,7 @@ fun HistoryRow(
         // Start Again Button (Fixed Width, Full Height)
         Box(
             modifier = Modifier
-                .width(64.dp)
+                .width(69.dp)
                 .fillMaxHeight()
                 .background(primaryColor.copy(alpha = 0.12f))
                 .clickable(onClick = onStartAgain),
@@ -581,14 +581,14 @@ fun HistoryRow(
                 Icon(
                     imageVector = Icons.Default.Spa,
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(20.dp),
                     tint = primaryColor
                 )
                 val mins = (presetDurationSeconds ?: session.durationSeconds) / 60
                 Text(
                     "${mins}M",
                     fontFamily = DotMatrix,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = primaryColor
                 )
