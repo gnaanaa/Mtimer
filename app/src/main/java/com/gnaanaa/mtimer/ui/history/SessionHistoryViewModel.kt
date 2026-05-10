@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gnaanaa.mtimer.data.repository.SessionRepository
 import com.gnaanaa.mtimer.domain.model.Session
+import com.gnaanaa.mtimer.domain.usecase.GetWeeklyChartDataUseCase
+import com.gnaanaa.mtimer.domain.usecase.WeeklyChartData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,10 +17,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SessionHistoryViewModel @Inject constructor(
-    private val sessionRepository: SessionRepository
+    private val sessionRepository: SessionRepository,
+    private val getWeeklyChartDataUseCase: GetWeeklyChartDataUseCase
 ) : ViewModel() {
 
     private val monthYearFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+
+    val chartData: StateFlow<WeeklyChartData?> = getWeeklyChartDataUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
 
     val groupedSessions: StateFlow<Map<String, List<Session>>> = sessionRepository.getAllSessions()
         .map { sessions ->

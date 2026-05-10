@@ -43,6 +43,7 @@ fun SessionHistoryScreen(
     val groupedSessions by viewModel.groupedSessions.collectAsState()
     val sessionCount by viewModel.sessionCount.collectAsState()
     val totalDuration by viewModel.totalDuration.collectAsState()
+    val chartData by viewModel.chartData.collectAsState()
     var selectedSession by remember { mutableStateOf<Session?>(null) }
 
     // State to keep track of expanded/collapsed months
@@ -91,6 +92,22 @@ fun SessionHistoryScreen(
             ) {
                 item {
                     PracticeSummaryCard(sessionCount, totalDuration)
+                    
+                    chartData?.let { data ->
+                        Spacer(modifier = Modifier.height(24.dp))
+                        WeeklyStatsRow(
+                            thisWeek = data.thisWeekMinutes,
+                            bestWeek = data.bestWeekMinutes,
+                            avg = data.averageMinutes
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        WeeklyMinutesChart(
+                            minutes = data.weeklyMinutes,
+                            labels = data.labels,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
@@ -165,6 +182,40 @@ fun SessionHistoryScreen(
 
     selectedSession?.let {
         SessionDetailDialog(it) { selectedSession = null }
+    }
+}
+
+@Composable
+fun WeeklyStatsRow(thisWeek: Int, bestWeek: Int, avg: Int) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        StatItem("THIS WEEK", "${thisWeek}M")
+        StatItem("BEST WEEK", "${bestWeek}M")
+        StatItem("12W AVG", "${avg}M")
+    }
+}
+
+@Composable
+fun StatItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            fontFamily = DotMatrix,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = label,
+            fontFamily = DotMatrix,
+            fontSize = 9.sp,
+            letterSpacing = 1.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        )
     }
 }
 
