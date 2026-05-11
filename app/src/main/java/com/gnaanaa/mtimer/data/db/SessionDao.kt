@@ -35,7 +35,7 @@ interface SessionDao {
     fun getTotalDuration(): Flow<Long?>
 
     @Query("""
-        SELECT date(startTime / 1000, 'unixepoch', 'weekday 1', '-7 days') as weekStart, 
+        SELECT date(startTime / 1000, 'unixepoch', 'localtime', '-6 days', 'weekday 1') as weekStart,
                SUM(durationSeconds) as totalSeconds 
         FROM sessions 
         WHERE completed = 1 

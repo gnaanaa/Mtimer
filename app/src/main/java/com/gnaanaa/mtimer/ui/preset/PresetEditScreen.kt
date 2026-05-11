@@ -34,6 +34,8 @@ import androidx.navigation.NavBackStackEntry
 import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.service.SoundPlayer
 import com.gnaanaa.mtimer.ui.home.DotMatrix
+import com.gnaanaa.mtimer.ui.home.InterFont
+import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 import kotlinx.coroutines.launch
 
 private val SOUND_OPTIONS = listOf(
@@ -143,9 +145,10 @@ fun PresetEditScreen(
                         )
                         Text(
                             if (isNew) "CONFIGURE YOUR SESSION" else name.uppercase(),
-                            fontFamily    = DotMatrix,
+                            fontFamily    = InterFont,
                             fontSize      = 12.sp,
-                            letterSpacing = 2.sp,
+                            fontWeight    = FontWeight.Bold,
+                            letterSpacing = 1.sp,
                             color         = MaterialTheme.colorScheme.onBackground.copy(0.7f)
                         )
                     }
@@ -202,14 +205,15 @@ fun PresetEditScreen(
                     placeholder   = {
                         Text(
                             "e.g. MORNING CALM",
-                            fontFamily = DotMatrix,
+                            fontFamily = InterFont,
                             fontSize   = 14.sp,
                             color      = MaterialTheme.colorScheme.onBackground.copy(0.6f)
                         )
                     },
                     textStyle  = LocalTextStyle.current.copy(
-                        fontFamily    = DotMatrix,
-                        letterSpacing = 2.sp
+                        fontFamily    = InterFont,
+                        fontWeight    = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
                     ),
                     modifier   = Modifier.fillMaxWidth(),
                     singleLine = true,
@@ -326,9 +330,9 @@ fun PresetEditScreen(
 private fun SectionLabel(text: String) {
     Text(
         text          = text,
-        fontFamily    = DotMatrix,
-        fontSize      = 12.sp,
-        letterSpacing = 3.sp,
+        fontFamily    = InterFont,
+        fontSize      = 13.sp,
+        letterSpacing = 1.sp,
         fontWeight    = FontWeight.Bold,
         color         = MaterialTheme.colorScheme.primary // Bolder and brighter (using primary color)
     )
@@ -390,7 +394,7 @@ private fun SpinnerPicker(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = label, fontFamily = DotMatrix, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Text(text = label, fontFamily = InterFont, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
         Spacer(Modifier.height(4.dp))
 
         Box(
@@ -424,8 +428,8 @@ private fun SpinnerPicker(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = display(values[index]),
-                            fontFamily = DotMatrix,
+                            text = display(values[index]).styleDottedDigits(),
+                            fontFamily = InterFont, // Base font, digits dotted
                             fontSize = if (isSelected) 18.sp else 14.sp,
                             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(0.7f),
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
@@ -461,8 +465,9 @@ private fun SoundPicker(
             readOnly      = true,
             trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             textStyle     = LocalTextStyle.current.copy(
-                fontFamily    = DotMatrix,
-                letterSpacing = 2.sp,
+                fontFamily    = InterFont,
+                fontWeight    = FontWeight.Bold,
+                letterSpacing = 0.5.sp,
                 fontSize      = 14.sp
             ),
             modifier = Modifier
@@ -480,9 +485,10 @@ private fun SoundPicker(
                     text = {
                         Text(
                             displayName.uppercase(),
-                            fontFamily    = DotMatrix,
+                            fontFamily    = InterFont,
+                            fontWeight    = FontWeight.Bold,
                             fontSize      = 13.sp,
-                            letterSpacing = 1.sp
+                            letterSpacing = 0.5.sp
                         )
                     },
                     onClick = { onSelected(id); expanded = false }
@@ -496,9 +502,10 @@ private fun SoundPicker(
                         text = {
                             Text(
                                 soundName.uppercase(),
-                                fontFamily    = DotMatrix,
+                                fontFamily    = InterFont,
+                                fontWeight    = FontWeight.Bold,
                                 fontSize      = 13.sp,
-                                letterSpacing = 1.sp
+                                letterSpacing = 0.5.sp
                             )
                         },
                         onClick = { onSelected(soundName); expanded = false }
@@ -518,9 +525,10 @@ private fun SoundPicker(
                         Spacer(Modifier.width(8.dp))
                         Text(
                             "IMPORT SOUND...",
-                            fontFamily    = DotMatrix,
+                            fontFamily    = InterFont,
+                            fontWeight    = FontWeight.Bold,
                             fontSize      = 13.sp,
-                            letterSpacing = 1.sp
+                            letterSpacing = 0.5.sp
                         )
                     }
                 },

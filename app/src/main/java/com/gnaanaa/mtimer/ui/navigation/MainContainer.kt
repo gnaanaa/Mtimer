@@ -144,7 +144,7 @@ fun MainContainer(
                                 fontFamily = DotMatrix,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 letterSpacing = 2.sp,
-                                fontSize = 14.sp
+                                fontSize = 16.sp
                             )
                         }
                     }

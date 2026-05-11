@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
+import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,10 +67,11 @@ fun AboutScreen(
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
-                    "VERSION 1.0",
-                    fontFamily = DotMatrix,
-                    fontSize = 10.sp,
-                    letterSpacing = 2.sp,
+                    text = "VERSION 1.0".styleDottedDigits(),
+                    fontFamily = InterFont,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -106,10 +108,10 @@ fun AboutScreen(
             // Simplified Privacy Section with Link
             Text(
                 "PRIVACY",
-                fontFamily = DotMatrix,
-                fontSize = 20.sp,
+                fontFamily = InterFont,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 4.sp,
+                letterSpacing = 2.sp,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -137,9 +139,10 @@ fun AboutScreen(
             ) {
                 Text(
                     "VIEW FULL PRIVACY POLICY",
-                    fontFamily = DotMatrix,
+                    fontFamily = InterFont,
                     fontSize = 12.sp,
-                    letterSpacing = 2.sp
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
                 )
             }
 
@@ -153,10 +156,10 @@ private fun AboutSection(title: String, content: String) {
     Column(modifier = Modifier.padding(bottom = 32.dp)) {
         Text(
             text = title,
-            fontFamily = DotMatrix,
-            fontSize = 13.sp,
+            fontFamily = InterFont,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 3.sp,
+            letterSpacing = 1.sp,
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(Modifier.height(8.dp))

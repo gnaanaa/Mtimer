@@ -59,6 +59,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
+import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -224,7 +225,7 @@ fun SettingsScreen(
                             modifier = Modifier.height(32.dp),
                             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp)
                         ) {
-                            Text("MANAGE PERMISSIONS", fontFamily = DotMatrix, fontSize = 10.sp)
+                            Text("MANAGE PERMISSIONS", fontFamily = InterFont, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -277,14 +278,15 @@ fun SettingsScreen(
                             Column {
                                 Text(
                                     text = (googleAccount?.displayName ?: "USER").uppercase(),
-                                    fontFamily = DotMatrix,
+                                    fontFamily = InterFont,
                                     fontSize = 14.sp,
-                                    letterSpacing = 1.sp
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.5.sp
                                 )
                                 Text(
-                                    text = googleAccount?.email ?: "",
-                                    fontFamily = DotMatrix,
-                                    fontSize = 11.sp,
+                                    text = (googleAccount?.email ?: "").styleDottedDigits(),
+                                    fontFamily = InterFont,
+                                    fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.95f)
                                 )
                             }
@@ -307,7 +309,7 @@ fun SettingsScreen(
                                 onClick = { viewModel.syncDrive(context) },
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("FORCE CLOUD SYNC", fontFamily = DotMatrix, fontSize = 12.sp)
+                                Text("FORCE CLOUD SYNC", fontFamily = InterFont, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                             OutlinedButton(
                                 onClick = {
@@ -317,7 +319,7 @@ fun SettingsScreen(
                                 },
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Text("SIGN OUT", fontFamily = DotMatrix, fontSize = 12.sp)
+                                Text("SIGN OUT", fontFamily = InterFont, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     } else {
@@ -336,7 +338,7 @@ fun SettingsScreen(
                             modifier = Modifier.align(Alignment.End),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("SIGN IN", fontFamily = DotMatrix, fontSize = 12.sp)
+                            Text("SIGN IN", fontFamily = InterFont, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -355,7 +357,7 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("EXPORT", fontFamily = DotMatrix, fontSize = 12.sp)
+                    Text("EXPORT", fontFamily = InterFont, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
                 OutlinedButton(
                     onClick = { importLauncher.launch(arrayOf("application/json", "application/octet-stream")) },
@@ -364,7 +366,7 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("IMPORT", fontFamily = DotMatrix, fontSize = 12.sp)
+                    Text("IMPORT", fontFamily = InterFont, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -377,10 +379,10 @@ fun SettingsScreen(
 private fun SettingsSectionLabel(text: String) {
     Text(
         text = text,
-        fontFamily = DotMatrix,
-        fontSize = 12.sp,
-        letterSpacing = 3.sp,
+        fontFamily = InterFont,
+        fontSize = 13.sp,
         fontWeight = FontWeight.Bold,
+        letterSpacing = 1.sp,
         color = MaterialTheme.colorScheme.primary, // Brighter and bolder
         modifier = Modifier.padding(top = 8.dp)
     )
@@ -410,9 +412,10 @@ private fun SettingsToggleCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = title,
-                        fontFamily = DotMatrix,
-                        fontSize = 14.sp,
-                        letterSpacing = 1.sp,
+                        fontFamily = InterFont,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp,
                         color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                     )
                     Text(

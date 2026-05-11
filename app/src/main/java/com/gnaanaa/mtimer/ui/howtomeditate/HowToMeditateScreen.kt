@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
+import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,10 +56,10 @@ fun HowToMeditateScreen(
         ) {
             Text(
                 "STILL THE MIND, KNOW YOURSELF",
-                fontFamily = DotMatrix,
+                fontFamily = InterFont,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
+                letterSpacing = 1.sp,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(Modifier.height(8.dp))
@@ -285,7 +286,7 @@ fun HowToMeditateScreen(
             Spacer(Modifier.height(32.dp))
             Text(
                 "\"The breath is the bridge between the conscious and the unconscious.\"\n— Sri M",
-                fontFamily = DotMatrix,
+                fontFamily = InterFont,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -301,10 +302,10 @@ fun HowToMeditateScreen(
 private fun SectionTitle(text: String) {
     Text(
         text = text,
-        fontFamily = DotMatrix,
-        fontSize = 16.sp,
-        fontWeight = FontWeight.ExtraBold,
-        letterSpacing = 4.sp,
+        fontFamily = InterFont,
+        fontSize = 15.sp,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 1.sp,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(bottom = 16.dp)
     )
@@ -315,10 +316,10 @@ private fun BulletPoint(label: String, content: String) {
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(
             label,
-            fontFamily = DotMatrix,
-            fontSize = 12.sp,
+            fontFamily = InterFont,
+            fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp,
+            letterSpacing = 0.5.sp,
             color = MaterialTheme.colorScheme.secondary
         )
         Text(
@@ -375,12 +376,12 @@ private fun MethodAccordion(
                 )
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    text = "$number. ${title.uppercase()}",
-                    fontFamily = DotMatrix,
+                    text = "$number. ${title.uppercase()}".styleDottedDigits(),
+                    fontFamily = InterFont,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
-                    letterSpacing = 1.sp
+                    letterSpacing = 0.5.sp
                 )
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
@@ -408,7 +409,7 @@ private fun MethodAccordion(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        "Duration: $duration",
+                        text = "Duration: $duration".styleDottedDigits(),
                         fontFamily = InterFont,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -426,8 +427,9 @@ private fun MethodAccordion(
                     ) {
                         Text(
                             "CREATE ${title.split("—")[0].trim().uppercase()} PRESET",
-                            fontFamily = DotMatrix,
+                            fontFamily = InterFont,
                             fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
                     }
@@ -447,9 +449,10 @@ private fun MethodContent(
     Column {
         Text(
             "WHAT IT IS",
-            fontFamily = DotMatrix,
+            fontFamily = InterFont,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 1.sp,
             color = MaterialTheme.colorScheme.primary
         )
         Text(
@@ -462,14 +465,15 @@ private fun MethodContent(
 
         Text(
             "STEP BY STEP",
-            fontFamily = DotMatrix,
+            fontFamily = InterFont,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 1.sp,
             color = MaterialTheme.colorScheme.primary
         )
         steps.forEachIndexed { index, step ->
             Text(
-                "${index + 1}. $step",
+                text = "${index + 1}. $step".styleDottedDigits(),
                 fontFamily = InterFont,
                 fontSize = 14.sp,
                 lineHeight = 20.sp,
@@ -497,9 +501,10 @@ private fun MethodContent(
             Spacer(Modifier.height(12.dp))
             Text(
                 "VARIATIONS TO EXPLORE",
-                fontFamily = DotMatrix,
+                fontFamily = InterFont,
                 fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.sp,
                 color = MaterialTheme.colorScheme.primary
             )
             variations.forEach { (vTitle, vDesc) ->
@@ -526,8 +531,8 @@ private fun PrincipleItem(title: String, content: String) {
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(
             title,
-            fontFamily = DotMatrix,
-            fontSize = 13.sp,
+            fontFamily = InterFont,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.secondary
         )

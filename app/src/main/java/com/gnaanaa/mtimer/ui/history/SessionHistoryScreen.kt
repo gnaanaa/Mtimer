@@ -29,6 +29,7 @@ import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.SessionDetailDialog
 import com.gnaanaa.mtimer.ui.home.formatDurationAligned
 import com.gnaanaa.mtimer.ui.home.alignColons
+import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 import androidx.compose.ui.text.style.TextOverflow
 import java.text.SimpleDateFormat
 import java.util.*
@@ -129,10 +130,10 @@ fun SessionHistoryScreen(
                                 Column {
                                     Text(
                                         text = monthYear,
-                                        fontFamily = DotMatrix,
-                                        fontSize = 12.sp,
-                                        letterSpacing = 2.sp,
+                                        fontFamily = InterFont,
+                                        fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
+                                        letterSpacing = 1.sp,
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                     if (!isExpanded) {
@@ -142,9 +143,9 @@ fun SessionHistoryScreen(
                                         val summary = if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
                                         
                                         Text(
-                                            text = "${sessionsInGroup.size} SESSIONS • $summary",
+                                            text = "${sessionsInGroup.size} SESSIONS • $summary".styleDottedDigits(),
                                             fontFamily = InterFont,
-                                            fontSize = 10.sp,
+                                            fontSize = 11.sp,
                                             letterSpacing = 0.5.sp,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                         )
@@ -193,27 +194,38 @@ fun WeeklyStatsRow(thisWeek: Int, bestWeek: Int, avg: Int) {
             .padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        StatItem("THIS WEEK", "${thisWeek}M")
-        StatItem("BEST WEEK", "${bestWeek}M")
-        StatItem("12W AVG", "${avg}M")
+        StatItem("THIS WEEK", "${thisWeek}M".styleDottedDigits())
+        StatItem("BEST WEEK", "${bestWeek}M".styleDottedDigits())
+        StatItem("12W AVG", "${avg}M".styleDottedDigits())
     }
 }
 
 @Composable
-fun StatItem(label: String, value: String) {
+fun StatItem(label: String, value: Any) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value,
-            fontFamily = DotMatrix,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        if (value is androidx.compose.ui.text.AnnotatedString) {
+            Text(
+                text = value,
+                fontFamily = InterFont,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        } else {
+            Text(
+                text = value.toString(),
+                fontFamily = InterFont,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
         Text(
             text = label,
-            fontFamily = DotMatrix,
-            fontSize = 9.sp,
-            letterSpacing = 1.sp,
+            fontFamily = InterFont,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Medium,
+            letterSpacing = 0.5.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
     }
@@ -237,9 +249,10 @@ fun PracticeSummaryCard(count: Int, totalSeconds: Long) {
         ) {
             Text(
                 text = "LIFETIME PRACTICE",
-                fontFamily = DotMatrix,
-                fontSize = 12.sp,
-                letterSpacing = 2.sp,
+                fontFamily = InterFont,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(12.dp))
@@ -250,33 +263,35 @@ fun PracticeSummaryCard(count: Int, totalSeconds: Long) {
             ) {
                 Column {
                     Text(
-                        text = "${hours}h ${minutes}m",
-                        fontFamily = DotMatrix,
+                        text = "${hours}h ${minutes}m".styleDottedDigits(),
+                        fontFamily = InterFont,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "TOTAL TIME",
-                        fontFamily = DotMatrix,
-                        fontSize = 10.sp,
-                        letterSpacing = 1.sp,
+                        fontFamily = InterFont,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        letterSpacing = 0.5.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = count.toString(),
-                        fontFamily = DotMatrix,
+                        text = count.toString().styleDottedDigits(),
+                        fontFamily = InterFont,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "SESSIONS",
-                        fontFamily = DotMatrix,
-                        fontSize = 10.sp,
-                        letterSpacing = 1.sp,
+                        fontFamily = InterFont,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        letterSpacing = 0.5.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -302,9 +317,10 @@ fun SessionItem(session: Session, onClick: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = (session.presetName ?: "MEDITATION").uppercase(),
-                fontFamily = DotMatrix,
-                fontSize = 12.sp,
-                letterSpacing = 1.sp,
+                fontFamily = InterFont,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.5.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.primary
@@ -312,7 +328,7 @@ fun SessionItem(session: Session, onClick: () -> Unit) {
             Text(
                 text = dateFormat.format(Date(session.startTime)).uppercase().alignColons(),
                 fontFamily = InterFont,
-                fontSize = 12.sp,
+                fontSize = 11.sp,
                 letterSpacing = 0.5.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.95f)
             )
@@ -323,10 +339,10 @@ fun SessionItem(session: Session, onClick: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = formatDurationAligned(session.durationSeconds),
-                fontFamily = DotMatrix,
+                fontFamily = InterFont,
                 fontSize = 18.sp,
-                letterSpacing = 1.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
             )
 
             Spacer(modifier = Modifier.width(12.dp))

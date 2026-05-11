@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gnaanaa.mtimer.ui.home.DotMatrix
@@ -34,8 +35,9 @@ fun WeeklyMinutesChart(
         ) {
             Text(
                 "CONTINUE SITTING TO SEE PROGRESS CHART",
-                fontFamily = DotMatrix,
+                fontFamily = InterFont,
                 fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
             )
         }
