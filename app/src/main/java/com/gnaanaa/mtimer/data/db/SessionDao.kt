@@ -6,6 +6,11 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
+data class WeeklyStats(
+    val weekStart: String,
+    val totalSeconds: Long
+)
+
 @Dao
 interface SessionDao {
     @Query("SELECT * FROM sessions ORDER BY startTime DESC")
@@ -28,4 +33,14 @@ interface SessionDao {
 
     @Query("SELECT SUM(durationSeconds) FROM sessions")
     fun getTotalDuration(): Flow<Long?>
+
+    @Query("""
+        SELECT date(startTime / 1000, 'unixepoch', 'localtime', '-6 days', 'weekday 1') as weekStart,
+               SUM(durationSeconds) as totalSeconds 
+        FROM sessions 
+        WHERE completed = 1 
+        GROUP BY weekStart 
+        ORDER BY weekStart DESC
+    """)
+    fun getWeeklyStats(): Flow<List<WeeklyStats>>
 }

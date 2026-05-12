@@ -92,8 +92,9 @@ fun HomeScreen(
     onOpenDrawer: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val recentSessions by viewModel.recentSessions.collectAsState()
-    val presets by viewModel.presets.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val recentSessions = uiState.recentSessions
+    val presets = uiState.presets
 
     var selectedSession by remember { mutableStateOf<Session?>(null) }
     var selectedPreset by remember { mutableStateOf<Preset?>(null) }
@@ -116,9 +117,9 @@ fun HomeScreen(
                         )
                         Text(
                             "RETURN TO YOURSELF, DAILY.",
-                            fontFamily = DotMatrix,
+                            fontFamily = InterFont,
                             fontSize = 12.sp,
-                            letterSpacing = 2.sp,
+                            letterSpacing = 1.sp,
                             color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
                         )
                     }
@@ -132,88 +133,102 @@ fun HomeScreen(
         }
     ) { padding ->
 
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-
-            StartSessionButton(
-                enabled = selectedPreset != null,
-                selectedPreset = selectedPreset,
-                labelOverride = if (presets.isEmpty()) "CREATE PRESET >>" else null,
-                alwaysEnabled = presets.isEmpty(),
-                onClick = {
-                    if (presets.isEmpty()) {
-                        onNavigateToPresets()
-                    } else {
-                        selectedPreset?.let {
-                            viewModel.startTimer(it)
-                            onStartTimer()
-                        }
-                    }
-                }
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            // ── Rotary Dial with spring-snap ───────────────────────────────
-            PresetDial(
-                presets = presets,
-                selectedPreset = selectedPreset,
-                onSelected = { selectedPreset = it }
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            Row(
+        if (uiState.isLoading) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(padding)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "RECENT SESSIONS",
-                    fontFamily = DotMatrix,
-                    fontSize = 12.sp,
-                    letterSpacing = 2.sp
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp
                 )
             }
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+            ) {
 
-            if (recentSessions.isEmpty()) {
-                Box(
+                StartSessionButton(
+                    enabled = selectedPreset != null,
+                    selectedPreset = selectedPreset,
+                    labelOverride = if (presets.isEmpty()) "CREATE PRESET >>" else null,
+                    alwaysEnabled = presets.isEmpty(),
+                    onClick = {
+                        if (presets.isEmpty()) {
+                            onNavigateToPresets()
+                        } else {
+                            selectedPreset?.let {
+                                viewModel.startTimer(it)
+                                onStartTimer()
+                            }
+                        }
+                    }
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                // ── Rotary Dial with spring-snap ───────────────────────────────
+                PresetDial(
+                    presets = presets,
+                    selectedPreset = selectedPreset,
+                    onSelected = { selectedPreset = it }
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "NO SESSIONS YET",
+                        "RECENT SESSIONS",
                         fontFamily = DotMatrix,
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                        letterSpacing = 2.sp
                     )
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
-                ) {
-                    items(recentSessions, key = { it.id }) { session ->
-                        val preset = presets.find { it.id == session.presetId }
-                        HistoryRow(
-                            session = session,
-                            presetDurationSeconds = preset?.durationSeconds,
-                            onClick = { selectedSession = session },
-                            onStartAgain = {
-                                preset?.let {
-                                    viewModel.startTimer(it)
-                                    onStartTimer()
-                                }
-                            }
+
+                if (recentSessions.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "NO SESSIONS YET",
+                            fontFamily = DotMatrix,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
                         )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 16.dp)
+                    ) {
+                        items(recentSessions, key = { it.id }) { session ->
+                            val preset = presets.find { it.id == session.presetId }
+                            HistoryRow(
+                                session = session,
+                                presetDurationSeconds = preset?.durationSeconds,
+                                onClick = { selectedSession = session },
+                                onStartAgain = {
+                                    preset?.let {
+                                        viewModel.startTimer(it)
+                                        onStartTimer()
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -276,11 +291,11 @@ fun StartSessionButton(
             if (labelOverride == null && selectedPreset != null) {
                 val mins = selectedPreset.durationSeconds / 60
                 Text(
-                    "(${mins}M)",
-                    fontFamily = DotMatrix,
-                    fontSize = 10.sp,
+                    text = "(${mins}M)".styleDottedDigits(),
+                    fontFamily = InterFont,
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
+                    letterSpacing = 0.5.sp,
                     color = if (isEffectiveEnabled)
                         primaryColor.copy(alpha = 0.7f)
                     else
@@ -296,9 +311,9 @@ fun StartSessionButton(
         ) {
             Text(
                 labelOverride ?: "START SESSION",
-                fontFamily = DotMatrix,
+                fontFamily = InterFont,
                 fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 4.sp,
+                letterSpacing = 2.sp,
                 fontSize = 18.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -308,10 +323,10 @@ fun StartSessionButton(
                 selectedPreset?.let { preset ->
                     Text(
                         preset.name.uppercase(),
-                        fontFamily = DotMatrix,
+                        fontFamily = InterFont,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp,
+                        letterSpacing = 1.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         color = if (isEffectiveEnabled)
@@ -451,9 +466,10 @@ fun PresetDial(
                 ) {
                     Text(
                         text = preset.name.uppercase(),
-                        fontFamily = DotMatrix,
+                        fontFamily = InterFont,
                         fontSize = 14.sp,
-                        letterSpacing = 2.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         color = MaterialTheme.colorScheme.primary
@@ -462,9 +478,9 @@ fun PresetDial(
             } else {
                 Text(
                     text = preset.name.uppercase(),
-                    fontFamily = DotMatrix,
+                    fontFamily = InterFont,
                     fontSize = 12.sp,
-                    letterSpacing = 1.sp,
+                    letterSpacing = 0.5.sp,
                     modifier = Modifier
                         .offset(xDp, yDp)
                         .scale(0.85f)
@@ -479,7 +495,7 @@ fun PresetDial(
 
         Text(
             "→",
-            fontFamily = DotMatrix,
+            fontFamily = InterFont,
             fontSize = 22.sp,
             color = MaterialTheme.colorScheme.primary
         )
@@ -527,9 +543,10 @@ fun HistoryRow(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = (session.presetName ?: "MEDITATION").uppercase(),
-                    fontFamily = DotMatrix,
+                    fontFamily = InterFont,
                     fontSize = 13.sp,
-                    letterSpacing = 1.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.7f)
@@ -551,8 +568,9 @@ fun HistoryRow(
             ) {
                 Text(
                     text = formatDurationAligned(session.durationSeconds),
-                    fontFamily = DotMatrix,
+                    fontFamily = InterFont, // Base font, digits overridden by styleDottedDigits
                     fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
                 )
 
@@ -586,8 +604,8 @@ fun HistoryRow(
                 )
                 val mins = (presetDurationSeconds ?: session.durationSeconds) / 60
                 Text(
-                    "${mins}M",
-                    fontFamily = DotMatrix,
+                    text = "${mins}M".styleDottedDigits(),
+                    fontFamily = InterFont,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = primaryColor
@@ -620,7 +638,7 @@ fun SessionDetailDialog(session: Session, onDismiss: () -> Unit) {
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 DetailRow("PRESET", (session.presetName ?: "MEDITATION").uppercase())
-                DetailRow("DATE", dateFormat.format(Date(session.startTime)).uppercase().alignColons())
+                DetailRow("DATE", dateFormat.format(Date(session.startTime)).uppercase().styleDottedDigits())
                 DetailRow("DURATION", formatDurationAligned(session.durationSeconds))
                 DetailRow("STATUS", if (session.completed) "COMPLETED" else "STOPPED")
                 if (session.healthConnectSynced) {
@@ -645,9 +663,9 @@ fun DetailRow(label: String, value: Any) {
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
         )
         if (value is AnnotatedString) {
-            Text(text = value, fontFamily = InterFont, fontSize = 14.sp)
+            Text(text = value, fontFamily = InterFont, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         } else {
-            Text(text = value.toString(), fontFamily = InterFont, fontSize = 14.sp)
+            Text(text = value.toString().styleDottedDigits(), fontFamily = InterFont, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -656,18 +674,27 @@ fun DetailRow(label: String, value: Any) {
 fun formatDurationAligned(seconds: Int): AnnotatedString {
     val m = seconds / 60
     val s = seconds % 60
-    return "%02d:%02d".format(m, s).alignColons()
+    return "%02d:%02d".format(m, s).styleDottedDigits()
 }
 
-fun String.alignColons(): AnnotatedString {
+fun String.alignColons(): AnnotatedString = styleDottedDigits()
+
+/**
+ * Styles all digits and colons with DotMatrix font and applies a slight baseline shift to colons.
+ */
+fun String.styleDottedDigits(): AnnotatedString {
     return buildAnnotatedString {
-        val parts = this@alignColons.split(":")
-        for (i in parts.indices) {
-            append(parts[i])
-            if (i < parts.lastIndex) {
-                withStyle(SpanStyle(baselineShift = BaselineShift(0.15f))) {
-                    append(":")
+        this@styleDottedDigits.forEach { char ->
+            if (char.isDigit()) {
+                withStyle(SpanStyle(fontFamily = DotMatrix, fontWeight = FontWeight.ExtraBold)) {
+                    append(char)
                 }
+            } else if (char == ':') {
+                withStyle(SpanStyle(fontFamily = DotMatrix, fontWeight = FontWeight.ExtraBold, baselineShift = BaselineShift(0.15f))) {
+                    append(char)
+                }
+            } else {
+                append(char)
             }
         }
     }

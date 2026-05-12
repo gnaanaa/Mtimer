@@ -2,6 +2,7 @@ package com.gnaanaa.mtimer.data.repository
 
 import android.content.Context
 import com.gnaanaa.mtimer.data.db.SessionDao
+import com.gnaanaa.mtimer.data.db.WeeklyStats
 import com.gnaanaa.mtimer.data.db.toDomain
 import com.gnaanaa.mtimer.data.db.toEntity
 import com.gnaanaa.mtimer.data.sync.DriveSyncWorker
@@ -47,5 +48,9 @@ class SessionRepositoryImpl @Inject constructor(
 
     override fun getTotalDuration(): Flow<Long> {
         return sessionDao.getTotalDuration().map { it ?: 0L }
+    }
+
+    override fun getWeeklyStats(): Flow<List<WeeklyStats>> {
+        return sessionDao.getWeeklyStats()
     }
 }

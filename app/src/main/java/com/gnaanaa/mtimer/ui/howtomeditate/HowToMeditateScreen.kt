@@ -22,11 +22,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
+import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,16 +54,16 @@ fun HowToMeditateScreen(
                 .padding(16.dp)
         ) {
             Text(
-                "STILL THE MIND, KNOW YOURSELF",
-                fontFamily = DotMatrix,
+                "A PRACTICAL GUIDE FOR EVERY LEVEL",
+                fontFamily = InterFont,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
+                letterSpacing = 1.sp,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Practical methods drawn from Sri M's teachings and the Nath tradition. Whether you're sitting for the first time or deepening a long practice — start here.",
+                "These are time-tested methods drawn from living yogic traditions in India — some over a thousand years old. They have been adapted here for clarity and accessibility, without diluting their depth. No prior belief, background, or flexibility required.",
                 fontFamily = InterFont,
                 fontSize = 15.sp,
                 lineHeight = 22.sp,
@@ -76,10 +76,11 @@ fun HowToMeditateScreen(
 
             SectionTitle("BEFORE YOU BEGIN")
             
-            BulletPoint("PLACE", "A clean, quiet spot. Same place each time helps the mind settle faster.")
-            BulletPoint("POSTURE", "Spine upright, relaxed. Cross-legged on the floor or seated on a chair — both work. Hands rest on knees, palms facing up or down.")
-            BulletPoint("TIME", "Early morning (brahma muhurta, roughly 4–6 AM) or dusk are traditionally considered ideal. Consistency matters more than duration.")
-            BulletPoint("ATTITUDE", "No forcing. Let the practice unfold. Effort without tension is the key.")
+            BulletPoint("PLACE", "A clean, quiet corner — indoors is fine. Using the same spot each time helps the mind recognise the signal and settle faster. It doesn't need to be special; it just needs to be consistent.")
+            BulletPoint("POSTURE", "Spine upright, body relaxed. Sitting on a chair with feet flat on the floor works just as well as sitting cross-legged. What matters is that your back can be straight without being rigid, and that you won't need to shift around. If lying down, you'll likely fall asleep — save that for rest, not practice.")
+            BulletPoint("TIME", "Early morning — before the day's noise begins — and early evening are both good windows. The world is quieter, and so are you. That said, the best time is whichever time you'll actually keep. Consistency across weeks matters far more than the hour on the clock.")
+            BulletPoint("DURATION", "Start shorter than you think you need. Ten focused minutes beats forty restless ones. Build gradually — the capacity to sit deepens on its own with regular practice.")
+            BulletPoint("ATTITUDE", "This is not a performance and there is no grade. Nothing special needs to happen. The instruction is simply to sit, pay attention, and return when you've drifted. That's the whole practice.")
 
             Spacer(Modifier.height(24.dp))
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
@@ -89,29 +90,29 @@ fun HowToMeditateScreen(
             
             MethodAccordion(
                 number = 1,
-                title = "Breath Awareness (Prana Dhyan)",
-                tradition = "Universal foundation",
+                title = "Watching the Breath",
+                alsoKnownAs = "Breath awareness, Prana Dhyan",
                 level = "Beginner",
-                duration = "10 minutes (range: 5–20 min)",
+                duration = "10 min (range: 5–20 min)",
                 durationMins = 10,
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
-                        description = "The most universal starting point. Sri M consistently recommends this as the gateway — simply observe the natural breath without controlling it. In the Nath tradition, awareness of breath (prana) is the first step in uniting the individual with the universal. The breath is always present, always available, and requires no special conditions.",
+                        description = "The breath is always happening. You don't have to create it, sustain it, or control it — it runs on its own. That makes it the most reliable object of attention available to you, at any moment, without any equipment or setup.\n\nThis practice asks only one thing: notice the breath without interfering with it. What sounds simple is in fact quite deep — because the moment you pay close attention to the breath, the mind tends to quiet down on its own. You're not forcing stillness; you're just watching something that's already there.\n\nThis is the recommended starting point for anyone new to meditation, and a practice that experienced meditators return to throughout their lives.",
                         steps = listOf(
-                            "Settle into posture — Sit comfortably with spine erect. Rest hands on knees, palms facing up or down. Close your eyes gently.",
-                            "Natural breath — Don't change your breathing. Simply notice it — the slight cool touch at the nostrils on the in-breath, the warmth on the out-breath.",
-                            "Name and release — If a thought arises, mentally note \"thinking\" and return to the breath. No frustration needed — this noticing is the practice itself.",
-                            "Deepen the awareness — After a few minutes, let attention ride the breath into the body — feel the chest or belly rise and fall. Stay receptive.",
-                            "Close — At the end, sit quietly for a minute. Bring awareness to the room before opening eyes."
+                            "Settle — Sit comfortably, spine upright. Rest your hands on your knees or in your lap. Close your eyes gently.",
+                            "Do nothing with the breath — Don't slow it, deepen it, or change it in any way. Just let it breathe itself. Notice what's actually there — the slight coolness at the nostrils on the inhale, the faint warmth on the exhale.",
+                            "When a thought appears — Mentally note \"thinking\" — quietly, without judgment — and return your attention to the next breath. You'll do this many times per session. That's not failure; that returning is the practice.",
+                            "Widen if you like — After a few minutes, let your attention move with the breath into the body. Feel the chest or belly rise and fall. Stay receptive rather than analytical.",
+                            "Close gently — When the session ends, don't jump up. Sit quietly for a minute. Let the room come back to you before opening your eyes."
                         ),
-                        note = "Sri M often says: \"The breath is the bridge between the conscious and the unconscious.\" Even one minute of genuine breath awareness is better than ten minutes of restless sitting.",
+                        note = "The breath sits right on the border between what we can control and what happens on its own — which is exactly why watching it is so useful. It connects the conscious and the automatic. Even one minute of genuine breath awareness, without doing anything else, is more valuable than ten minutes of unfocused sitting.",
                         variations = listOf(
-                            "A. Body-scan breath awareness" to "After settling the breath, slowly move attention through the body in sync with each inhale and exhale — feet, legs, belly, chest, hands, shoulders, face. Each out-breath releases tension in that area. One full round takes 5–10 minutes. This is particularly useful for practitioners who carry physical tension and struggle to sit still.",
-                            "B. Counting breaths" to "For a more anchored practice when the mind is very restless: count each exhale from 1 to 10, then restart. If you lose count, simply begin again at 1. This is a classic Zen adaptation of breath awareness and requires no belief system — just attention. Sri M endorses counting as a useful training wheel for beginners.",
-                            "C. Touch-point awareness (Nath variation)" to "Instead of counting or labeling, bring all attention to a single point — the tip of the nostrils or the upper lip — and notice only the sensation of breath passing that point. No following the breath into the body. Just that one touch. This is close to the Nath concept of dharana (concentration) applied to prana, and it steadies the mind more forcefully than general breath observation.",
-                            "D. Breath with visualisation (Sri M's green light method)" to "Sri M describes a vivid variation: as you inhale, visualise breathing in a beautiful, calming green light — like the colour of a paddy field — filling every part of the body. As you exhale, visualise all negativity and limitation leaving through the nostrils, carried away by the wind. After several rounds, rest in the inner stillness that remains. This method is especially effective when emotional heaviness or anxiety is present.",
-                            "E. Kumbhaka — breath retention (intermediate)" to "Once the breath has settled naturally through regular practice, a gentle retention (kumbhaka) can be introduced. Inhale — pause — exhale. Sri M's instruction: hold the in-breath for roughly half a minute, without strain. The pause between breaths is, in both Sri M's and Nath teachings, a point of expanded stillness — a momentary gap where the usual mental movement quietens. Do not force; let the retention shorten or lengthen on its own."
+                            "A. Body-scan with breath" to "After settling the breath, slowly move your attention through the body — feet, legs, belly, chest, hands, shoulders, face — staying with each area for a few breaths. Let each exhale release any tension you find there. One full round takes 5–10 minutes. Particularly useful if you carry a lot of physical tension and find it hard to sit still.",
+                            "B. Counting breaths" to "When the mind is very restless, give it a small job: count each exhale from 1 to 10, then start again. If you lose count, simply restart at 1 — no self-criticism, just back to 1. This technique appears across multiple traditions and works because it gives the analytical mind just enough to do without taking over. Use it when you need it; set it aside when the breath alone is sufficient.",
+                            "C. Single-point touch awareness" to "Instead of following the breath through the body, narrow your attention to one precise point — the tip of the nostrils or the upper lip — and notice only the sensation of air passing that spot. Nothing else. This trains concentration more sharply than general breath observation and is a good stepping stone toward the mantra practices below.",
+                            "D. Breathing in light" to "As you inhale, visualise drawing in a calm, clear light — any colour that feels settling (green, gold, white). Let it fill the body completely. As you exhale, let go of whatever feels heavy — tension, worry, fatigue — carried out on the breath. After several rounds, rest in whatever stillness remains. This variation is especially effective when anxiety or emotional weight is present.",
+                            "E. Breath with a pause (intermediate)" to "Once the breath has settled naturally across a few weeks of practice, you can gently introduce a pause after the inhale: breathe in, hold briefly without strain, breathe out. Don't count seconds — let the pause be as long as it is comfortable, nothing more. The stillness between breaths is, across many traditions, considered a window of unusual quiet. You're not manufacturing that quiet; you're simply noticing the gap that's already there."
                         )
                     )
                 }
@@ -119,162 +120,166 @@ fun HowToMeditateScreen(
 
             MethodAccordion(
                 number = 2,
-                title = "Hum-Sau Mantra Meditation",
-                tradition = "Sri M (Kriya / Nath lineage)",
+                title = "Mantra with the Breath (Hum-Sau)",
+                alsoKnownAs = "Breath mantra, the unchanted mantra, Ajapa Japa",
                 level = "Beginner",
-                duration = "20 minutes (range: 10–40 min)",
+                duration = "20 min (range: 10–40 min)",
                 durationMins = 20,
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
-                        description = "Sri M's specific instruction from On Meditation: mentally chant Hum on the inhalation and Sau on the exhalation. This is the Hamsa mantra — the ajapa japa (mantra chanted without chanting) — which the scriptures say resonates in every living being's breath approximately 21,600 times a day. Becoming conscious of it is the practice. The meaning: Ham = I am; Sa/Sau = That (the universal). Together: \"I am That.\"\n\nThis form aligns with Paramahansa Yogananda's Hong-Sau technique from the same Kriya lineage that deeply influenced Sri M — approaching the mantra from the ego (Hum/I am) toward the universal (Sau/That), which Sri M and Yogananda both considered the natural direction for a practitioner beginning from ordinary consciousness.",
+                        description = "A mantra is a sound used as an object of attention in meditation. This practice pairs two sounds with the natural rhythm of breathing — one on the inhale, one on the exhale — so that the mantra and the breath become one movement. The mind has less room to wander when it's riding something that never stops.\n\nThe sounds used here are Hum (inhale) and Sau (exhale). These are not invented — they reflect the subtle sound the breath makes as it moves, something the ancient yogic texts describe as already happening in every living being roughly 21,600 times a day. The practice isn't creating the mantra; it's becoming aware of something already there.\n\nHum-Sau is one form of a family of breath mantras that includes the well-known So-Ham (\"I am That\"). Both point in the same direction — toward the recognition that what you are at the deepest level and what the universe is at its deepest level are not separate things. You don't need to hold or accept that idea for the practice to work. The sound and the breath do the work on their own.",
                         steps = listOf(
-                            "Sit and settle — Comfortable posture, eyes closed. Take three slow, deliberate breaths to signal the start of the practice.",
-                            "Hear 'Hum' on the in-breath — As you breathe in, mentally hear the sound \"Hum\" (like a soft humming). Don't force — let it arise as you inhale.",
-                            "Hear 'Sau' on the out-breath — As you breathe out, mentally hear \"Sau\" (rhymes with \"saw\"). There is no chanting aloud.",
-                            "Let it become natural — After a few rounds, stop \"doing\" the mantra — just listen for it within the breath. Let it run on its own.",
-                            "Rest in the gap — Notice the small pause between breaths. Sri M describes this as a momentary touch of stillness — don't grasp it, just notice."
+                            "Sit and settle — Comfortable posture, eyes closed. Take three natural breaths to mark the beginning of the practice.",
+                            "Inhale with \"Hum\" — As you breathe in, mentally hear the sound \"Hum\" — soft, like a quiet humming. Don't force it; let it arise with the breath.",
+                            "Exhale with \"Sau\" — As you breathe out, hear \"Sau\" (rhymes with \"saw\") accompanying the breath out. Still silent — no sound aloud.",
+                            "Let go of doing it — After several rounds, stop actively placing the mantra. Just listen for it within the breath. Let it run on its own rhythm.",
+                            "Notice the pause — There's a small natural gap between the exhale ending and the next inhale beginning. Don't try to extend it — just notice it. It tends to be unusually quiet."
                         ),
-                        note = "Sri M's instruction is clear: \"Breathe in, mentally chant Hum, hold it for half a minute, don't stress it, and exhale... mentally chant Sau and allow it to go.\" If the mind wanders mid-mantra, simply pick it up at the next breath. There is no penalty. Hum-Sau naturally calms mental chatter because it occupies the same rhythm as breathing."
+                        note = "If the mind wanders and you lose the mantra, pick it up at the next breath. There is no penalty, no falling behind. Hum-Sau works partly because it occupies the same rhythm as breathing — the mind has less room to wander when attention is riding something that never stops."
                     )
                 }
             )
 
             MethodAccordion(
                 number = 3,
-                title = "Trataka — Steady Gazing",
-                tradition = "Nath tradition (shatkarma)",
+                title = "Steady Gazing",
+                alsoKnownAs = "Fixed-point gazing, candle meditation, Trataka",
                 level = "Beginner",
-                duration = "10 minutes (range: 5–20 min)",
+                duration = "10 min (range: 5–20 min)",
                 durationMins = 10,
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
-                        description = "One of the six shatkarmas (purificatory practices) in the Nath tradition, and a direct method for developing one-pointed concentration. By holding the gaze on a single point, the restless nature of the mind is gradually stilled. Outer trataka develops into inner trataka as the practice matures.",
+                        description = "The mind tends to follow the eyes. When the eyes are completely still, the mind has less to chase. This practice uses that connection deliberately — holding a steady, relaxed gaze on a single object trains the attention to stay in one place without forcing it.\n\nOver time, the practice moves inward: after gazing at the external flame or point, you close your eyes and hold the image internally. The transition from outer object to inner image is the beginning of turning attention on itself — which is where all deeper meditation practices eventually go.\n\nThis is a particularly useful method for people who find breath-based practices too abstract. Having something concrete to look at gives the mind a clear, manageable task.",
                         steps = listOf(
-                            "Set up — Place a candle flame at eye level, about an arm's length away. Alternatively, a small dark dot on white paper works. Dim the room.",
-                            "Open-eyed gazing — Look at the flame (or point) without blinking for as long as comfortable. Don't strain — let tears come if they do.",
-                            "Close and internalize — When eyes tire, close them and hold the after-image in the mind's eye. Keep attention steady on this inner image.",
-                            "Alternate — Open eyes when the image fades. Gaze again. Repeat this cycle several times in one session.",
-                            "Transition to stillness — After the final cycle, close eyes and simply rest in stillness — no object, no image. Just awareness."
+                            "Set up — Place a lit candle at eye level, roughly an arm's length away. A small dark circle on white paper works equally well. Dim the room if possible.",
+                            "Gaze without forcing — Look at the flame (or point) with a relaxed, steady gaze. Try not to blink, but don't strain. If tears come, let them — that's a normal response. When eyes water or tire, that's the signal to close.",
+                            "Close and hold the image — When you close your eyes, an after-image of the flame will appear in the mind's eye. Keep your attention on it. Let it be whatever colour or shape it naturally takes.",
+                            "Cycle — When the image fades, open your eyes and gaze at the flame again. Repeat this several times through the session.",
+                            "Rest in stillness — For the final cycle, close your eyes and release the image entirely. Simply sit in whatever quality of stillness or openness is present. Don't look for anything."
                         ),
-                        note = "The Nath tradition holds that trataka purifies the eyes and develops the capacity for inner vision (antara drishti). Begin with 5-minute sessions to avoid eye strain and increase gradually."
+                        note = "Begin with 5 minutes and increase gradually over weeks to avoid eye strain. The practice becomes noticeably more effective with repetition — what feels effortful at first becomes quite natural after a few weeks of daily sitting."
                     )
                 }
             )
 
             MethodAccordion(
                 number = 4,
-                title = "Ajapa-Japa — The Unchanted Mantra",
-                tradition = "Nath tradition",
+                title = "Breath Mantra with Inner Pathway (So-Ham)",
+                alsoKnownAs = "The spontaneous mantra with body awareness, Ajapa Japa",
                 level = "Intermediate",
-                duration = "30 minutes (range: 15–45 min)",
+                duration = "30 min (range: 15–45 min)",
                 durationMins = 30,
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
-                        description = "A cornerstone practice of the Nath tradition. Ajapa means \"that which is not chanted\" — the Hamsa/Soham mantra flows continuously with the breath without any effort to repeat it. Unlike Hum-Sau, attention here moves with the breath along a specific inner pathway through the body, making it both a breath practice and a subtle-body practice.\n\n" +
-                                "A note on the syllable assignment — two authentic versions exist:\n" +
-                                "The ancient texts are genuinely divided on this, and this is not an error but a documented scriptural divergence:\n\n" +
-                                "• The Gheranda Samhita, Shiva Samhita, and most Yoga-Upanishads (the foundational Nath hatha yoga texts) teach: So/Sa on the inhale, Ham on the exhale — producing the So-Ham mantra (\"I am That\").\n" +
-                                "• The Vijnana Bhairava Tantra specifically states the opposite: Ham on the inhale, Sa on the exhale — producing the Ham-Sa (Hamsa) mantra (\"That I am\").\n\n" +
-                                "Both forms carry the same meaning and are considered equally valid. The difference is one of starting point: So-Ham begins with \"I\" moving toward \"That\"; Hamsa begins with \"That\" entering as \"I.\" Sri M's Hum-Sau teaching (method 2) follows this second form. For Ajapa-Japa as a Nath body-pathway practice, the more widely taught classical form is So on inhale, Ham on exhale, and that is what the steps below follow. If you have been initiated into a specific lineage, follow your teacher's instruction above all else.",
+                        description = "This builds on the breath mantra practice (method 2). The sounds here are So (inhale) and Ham (exhale). But rather than simply pairing sound with breath, attention now moves with the breath along a felt pathway through the body — rising from the lower belly toward the head on the inhale, descending from the head back toward the belly on the exhale.\n\nThis makes it both a breath practice and an inner body practice. You're training the mind to follow movement inside, which naturally deepens concentration and builds toward the more interior practices that follow.\n\nA note on the sounds: The ancient texts give differing instructions on which syllable goes with which breath, and both versions are considered valid within their respective sources. The form used here — So on the inhale, Ham on the exhale — follows the most widely taught classical texts on this practice. If you have been taught a different form by a teacher, follow your teacher. What matters most is choosing one form and staying with it. Switching creates confusion, not depth.",
                         steps = listOf(
-                            "Ground in breath awareness first — Spend five minutes in simple breath awareness before entering this practice.",
-                            "Locate the pathway — In Nath practice, the breath is understood to travel from the navel centre (or lower belly) upward on the in-breath, and descend from the throat downward on the out-breath. Feel this movement.",
-                            "'So' on the inhale — As the breath enters, mentally hear \"So\" while feeling the breath rise from the lower belly toward the head.",
-                            "'Ham' on the exhale — As the breath leaves, mentally hear \"Ham\" as it descends from head toward the belly. Together: So-Ham — \"I am That.\"",
-                            "Let it run spontaneously — The goal is not deliberate repetition but listening — becoming aware of a mantra already happening. Eventually, awareness rests as the witness of the breath-mantra."
+                            "Ground first — Begin with 5 minutes of simple breath awareness before entering this practice. Let the surface of the mind settle.",
+                            "Feel the pathway — Notice that the breath seems to move through the body: something rises on the inhale, something descends on the exhale. You don't need to visualise this anatomically — just feel the direction of movement.",
+                            "\"So\" rises with the inhale — As the breath comes in, mentally hear \"So\" while sensing the breath rise from the lower belly toward the head.",
+                            "\"Ham\" descends with the exhale — As the breath goes out, hear \"Ham\" while sensing the movement descend from the head back toward the belly.",
+                            "Let it run itself — As with Hum-Sau, the goal is not to keep actively repeating — it's to listen for something already moving. Eventually the attention simply rides the breath-mantra without effort, as a quiet witness."
                         ),
-                        note = "The Nath texts say this mantra repeats 21,600 times daily in every living being — the practice is simply becoming conscious of it. The textual divergence on syllable assignment has been debated for centuries; what matters far more than which version you choose is that you settle on one form and stay with it. Switching between versions mid-practice defeats the purpose. Advanced practitioners extend awareness of the pathway into the spinal channel (sushumna)."
+                        note = "This practice is most effective after a few months of regular breath awareness or Hum-Sau. The \"pathway\" aspect may feel conceptual at first — that's fine. Keep practicing and the felt sense of it tends to emerge on its own without being constructed."
                     )
                 }
             )
 
             MethodAccordion(
                 number = 5,
-                title = "Self-Enquiry (Atma Vichara)",
-                tradition = "Sri M (Ramana Maharshi lineage)",
+                title = "Self-Inquiry — Who Is Thinking?",
+                alsoKnownAs = "The question that dissolves itself, Atma Vichara",
                 level = "Intermediate",
-                duration = "30 minutes (range: 15–60 min)",
+                duration = "30 min (range: 15–60 min)",
                 durationMins = 30,
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
-                        description = "Sri M was deeply influenced by Ramana Maharshi, whose primary method was the inquiry \"Who am I?\" This is not a philosophical question — it is a practice. The question is turned back on itself to dissolve the questioner. Each thought, when traced back to its source, leads to the \"I\" sense — and following that \"I\" inward is the practice.",
+                        description = "Every thought has a thinker. Every experience has someone who is experiencing it. This practice asks: who is that?\n\nNot as a philosophical puzzle — as a direct investigation. Rather than following thoughts outward into their content, you turn attention back toward where thoughts come from. You're looking for the \"I\" that is behind every experience — and the looking itself is the practice.\n\nThe method is deceptively simple: when a thought arises, ask \"who is thinking this?\" The question points back to the source. Follow that pointer inward. You're not looking for a verbal answer — there isn't one. The question is a tool that gradually quiets the usual mental activity by redirecting it toward its own root.\n\nThis is not suitable as a first practice. It requires a mind that is already somewhat settled — not because it's complicated, but because an unsettled mind will simply generate more thoughts in response to the question. Build a stable foundation in breath awareness or mantra practice first, then come to this.",
                         steps = listOf(
-                            "Sit quietly, eyes closed — Begin with 5 minutes of breath awareness to calm the surface of the mind.",
-                            "Ask \"Who am I?\" — Not aloud, not with the intellect — pose this as an inward attention. Direct the mind's focus toward its own source.",
-                            "Follow the 'I' back — When a thought arises, ask: who is thinking this? Each thought points back to the thinker. Keep following it inward.",
-                            "Rest in the question — Don't expect a verbal answer. The question itself is the practice. If the mind wanders, gently re-ask. Each return deepens it.",
-                            "Sit in the aftermath — After 15–20 minutes, release the inquiry. Sit in whatever quality of stillness or openness has emerged."
+                            "Settle the mind first — Begin with at least 5–10 minutes of breath awareness. The inquiry goes nowhere on a turbulent mind.",
+                            "Ask the question inwardly — Not aloud, not analytically. Pose \"Who am I?\" or more practically \"Who is thinking this?\" as a direction of attention, not a question awaiting a verbal answer.",
+                            "Follow each thought back — When a thought arises, don't follow its content. Ask instead: who is having this thought? Each thought points back to a thinker. Trace that pointer inward.",
+                            "Rest when the question dissolves — At some point the question may seem to disappear — not because you've found an answer, but because the questioner has become quiet. Rest there. This is the fruit of the practice.",
+                            "Release and sit — After 20–30 minutes, let go of the inquiry. Sit in whatever openness or stillness has gathered. Don't analyse it; just be in it."
                         ),
-                        note = "Sri M emphasises: \"This is not for beginners to rush into. Establish a stable breath-awareness or Hum-Sau practice first. The Self-enquiry becomes effective when the mind has thinned.\" Give it months of preparation before expecting depth."
+                        note = "This practice becomes genuinely effective when the mind has been quieted by months of simpler practice. It's not about thinking harder — it's about the question outlasting the usual mental activity. Build a stable foundation in breath awareness or mantra practice first. Then come to this."
                     )
                 }
             )
 
             MethodAccordion(
                 number = 6,
-                title = "Nada Yoga — Listening to Inner Sound",
-                tradition = "Nath tradition",
+                title = "Listening Inward",
+                alsoKnownAs = "Inner sound meditation, Nada Yoga",
                 level = "Intermediate",
-                duration = "20 minutes (range: 10–40 min)",
+                duration = "20 min (range: 10–40 min)",
                 durationMins = 20,
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
-                        description = "The Nath tradition speaks of Anahata Nada — the unstruck sound that resonates within. This practice involves withdrawing attention from outer sounds to discover subtler internal resonances. It is one of the most direct paths in Nath yoga for pratyahara (sense withdrawal).",
+                        description = "There are sounds present inside the body and nervous system that we almost never hear — not because they're faint, but because the outer world is louder and our attention points outward. This practice reverses that: you gently close off outer hearing and simply listen to what's within.\n\nWhat most people discover, once external sound is reduced, is a background resonance — a faint ringing, humming, buzzing, or rushing tone that is almost always present once you turn toward it. This is recognised across many contemplative traditions as a genuinely useful object of meditation: attending to increasingly subtle layers of inner sound is one of the most natural routes to deep, effortless inner absorption.\n\nNo special sensitivity or musical hearing is required. Anyone can do this.",
                         steps = listOf(
-                            "Block outer sound — Sit with eyes closed. Gently press earflaps (tragus) with thumbs or use soft earplugs. Hearing naturally turns inward.",
-                            "Listen neutrally — Do not look for any particular sound. Just listen to whatever is present inwardly. You may notice a ringing, humming, buzzing, or rushing sound.",
-                            "Choose the subtlest — Over time, you may notice layers of sound — gross to subtle. Nath texts recommend attending to the most subtle sound you can perceive, and staying with it.",
-                            "Merge attention into the sound — Let awareness become the listening — not a person listening to a sound, but pure listening itself.",
-                            "Release and rest — After the session, release the ears and sit in open awareness."
+                            "Seal the ears gently — Sit with eyes closed. Press the small flap of cartilage at the entrance of each ear (the tragus) inward with your thumbs, or use soft foam earplugs. Outer sounds recede; inner sounds become audible.",
+                            "Simply listen — Don't look for anything specific. Just listen openly to whatever is there. You may notice a tone, a hum, a ringing — perhaps several sounds layered.",
+                            "Move toward the subtler — If you notice several sounds, gently let your attention settle on the most subtle one you can hear. Don't strain for it — stay receptive. The subtler the sound you can track, the deeper the absorption tends to go.",
+                            "Become the listening — Rather than \"a person listening to a sound,\" let the boundary soften. Pure listening, with no separate listener. If that's too abstract, just stay with the sound. The absorption happens on its own.",
+                            "Release and sit open — At the end of the session, unplug the ears. Sit for a minute in open awareness before moving. Notice how ordinary sounds seem different on the other side of this practice."
                         ),
-                        note = "The Hatha Yoga Pradipika (core Nath text) names 10 inner sounds from gross to subtle. Don't worry about identifying them. Simply listen with full presence — the practice itself is transformative."
+                        note = "Classical texts on this practice describe many layers of inner sound, from coarse to extremely subtle. Don't worry about identifying or progressing through them. Simply listen with full presence. This practice rewards patience and consistency more than any particular technique."
                     )
                 }
             )
 
             MethodAccordion(
                 number = 7,
-                title = "Inner Gazing at Ajna (Third Eye)",
-                tradition = "Nath tradition",
+                title = "Inner Concentration (Advanced)",
+                alsoKnownAs = "Inner gazing, third-eye concentration, Ajna meditation",
                 level = "Advanced",
-                duration = "20 minutes (range: 10–30 min)",
+                duration = "20 min (range: 10–30 min)",
                 durationMins = 20,
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
-                        description = "An advanced extension of trataka. After establishing steady concentration, attention is directed to the Ajna chakra — the point between and slightly above the eyebrows. In Nath tradition, this is the seat of the guru principle and the meeting point of the three main nadis (ida, pingala, sushumna).\n\nPre-requisite: At least 2–3 months of regular trataka practice. The power of concentration must be established first.",
+                        description = "Once steady gazing has built genuine one-pointed concentration — where attention can hold on a single object without constant slipping — that same capacity can be turned fully inward, with no external object at all.\n\nThe \"object\" in this practice is the point between and slightly above the eyebrows — a location that, once you can hold attention steadily, functions as a natural gathering point for concentrated awareness. With eyes closed, the gaze is turned softly toward this inner point. You're not looking at anything visible; you're pointing attention toward a location within and holding it there with a relaxed, steady focus.\n\nWhat happens next varies: some people notice subtle light or colour, some feel a sense of pressure, some simply experience deepening quiet. Whatever arises, the instruction is the same — observe it without chasing it. Don't jump to this practice prematurely. Straining before the concentration is built produces headaches, not depth.",
                         steps = listOf(
-                            "Sit, eyes closed — After a settling breath practice, gently turn the eyes upward and inward toward the point between the eyebrows. This is a soft, internal gaze — no straining.",
-                            "Hold without force — Any strain creates headache. The gaze should feel like you are simply \"looking\" toward that area from within. Hold for as long as comfortable.",
-                            "Observe inner phenomena — Some practitioners see colours, lights, or forms. Treat all appearances as objects of awareness — don't chase or analyse them.",
-                            "Withdraw and rest — Release the upward gaze. Rest in simple awareness. The integration after the practice is as important as the practice itself."
+                            "Begin with breath settling — Spend 5–10 minutes in simple breath awareness before turning inward. Let ordinary mental noise settle first.",
+                            "Turn the gaze inward and upward — With eyes closed, gently direct the eyes upward and inward, toward the midpoint between the eyebrows. This should feel like a natural soft look, not a strain — like resting your gaze on a distant horizon.",
+                            "Hold without gripping — Light and steady is the quality to aim for. If you feel strain or the beginning of a headache, ease off immediately. This is a sign of too much effort, not too little.",
+                            "Observe without chasing — Lights, colours, or subtle imagery may appear. Don't pursue them or try to make them sharper. Simply observe whatever arises, and return to the inner point when attention drifts.",
+                            "Release and integrate — After the session, let the inner gaze go completely. Sit in open, ordinary awareness. The period immediately after — when you're doing nothing in particular — is often when the deeper effects are felt most clearly. Don't rush past it."
                         ),
-                        note = "Sri M cautions against forcing chakra practices: \"These things open naturally as the practice matures and the mind purifies.\" Force creates imbalance; regular practice create readiness."
+                        note = "Force produces nothing here. The capacity for this practice opens gradually through regular, patient work with simpler methods. Think of it as the natural destination of a progression that begins with watching the breath. Each method prepares the ground for the next. Steadiness built through months of earlier practice is what makes this one work — not willpower applied directly to it."
                     )
                 }
             )
 
             Spacer(Modifier.height(32.dp))
-            SectionTitle("UNIVERSAL PRINCIPLES")
+            SectionTitle("PRINCIPLES THAT APPLY TO EVERY METHOD")
+            Text(
+                "Regardless of which practice you sit with, these hold.",
+                fontFamily = InterFont,
+                fontSize = 15.sp,
+                lineHeight = 22.sp,
+                letterSpacing = 0.5.sp,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
             
-            PrincipleItem("Witness without judging.", "Thoughts will arise. Notice them, let them go. You are not the thought; you are the one observing it.")
-            PrincipleItem("Return, don't restart.", "Every time you notice you've drifted, gently come back. That moment of return is the practice, not a failure.")
-            PrincipleItem("Regularity over intensity.", "Twenty quiet minutes each day builds more than two hours once a week.")
-            PrincipleItem("The breath is always there.", "Whatever method you use, the breath is a reliable anchor when the mind gets restless.")
-            PrincipleItem("Expect nothing, receive everything.", "Meditation is not a performance. The sessions where \"nothing seems to happen\" are often doing the deepest work.")
+            PrincipleItem("You are not your thoughts.", "Thoughts will arise during meditation — always. That's not a problem to solve. The practice is to notice them without being swept away. You are the one watching the thoughts, not the thoughts themselves. This distinction, felt even once, changes things.")
+            PrincipleItem("Every return is the practice.", "The moment you notice you've drifted and come back — to the breath, the mantra, the question — that moment of return is the meditation. It's not an interruption of the practice; it is the practice. Each return builds the capacity to return faster next time.")
+            PrincipleItem("Regularity beats intensity.", "Twenty quiet minutes each day will build more than two hours once a week. The mind changes through repetition over time, not through occasional long sessions. Show up consistently. Depth comes on its own.")
+            PrincipleItem("The breath is always your anchor.", "Whatever method you're using, if you get lost or overwhelmed, return to simply watching the breath. It's always available, always works, and requires nothing from you except attention.")
+            PrincipleItem("Nothing happening is still something happening.", "Sessions where it feels like \"nothing is going on\" are not wasted. The quietening of the mind is often invisible from the inside. The effects of regular practice tend to show up in daily life — slightly more patience, a bit less reactivity, a little more space between stimulus and response — before they show up dramatically in the session itself.")
 
             Spacer(Modifier.height(32.dp))
-            SectionTitle("A NOTE ON LINEAGE")
+            SectionTitle("WHERE THESE METHODS COME FROM")
             Text(
-                "The methods here draw from two interconnected streams:\n\n" +
-                "Sri M (Mumtaz Ali Khan) is a contemporary teacher in the Nath tradition, initiated by the mahayogi Maheshwarnath Babaji in the Himalayas. His teachings blend the non-dual Vedanta of Ramana Maharshi with Kriya yoga and classical Nath practice. His book On Meditation and his autobiography Apprenticed to a Himalayan Master are foundational texts for practitioners seeking to understand the background of these methods.\n\n" +
-                "The Nath tradition is one of India's oldest living yogic lineages, associated with Matsyendranath and Gorakhnath. Its canonical texts — the Hatha Yoga Pradipika, Gheranda Samhita, and Shiva Samhita — systematise breathwork, sound meditation, concentration, and inner body awareness into a complete path.\n\n" +
-                "Both streams agree on one thing: the real teaching is in the practice itself. Read as much as you like, but sit down and breathe.",
+                "The practices in this guide are drawn primarily from two interconnected streams: the teachings of Sri M (a contemporary teacher in the living Nath yogic lineage, and author of On Meditation and Apprenticed to a Himalayan Master), and the classical texts of the Nath tradition — among them the Hatha Yoga Pradipika, Gheranda Samhita, and Vingnana Bhairava Tantra. These methods are over a thousand years old in origin and have been transmitted through unbroken teacher lineages to the present day.\n\n" +
+                "These methods belong to no single religion and require no particular belief to practise. They have been used by people of every background. What they require is regular practice, some patience, and genuine curiosity about what the mind actually is.\n\n" +
+                "Where the classical sources themselves disagree — as they do, for instance, on the precise syllable assignment of certain breath mantras — this guide notes the disagreement plainly rather than papering over it. The uncertainty is real and has been debated for centuries. It doesn't prevent the practice from working.\n\n" +
+                "Read what's useful. Set aside what isn't. Then sit down and breathe.",
                 fontFamily = InterFont,
                 fontSize = 14.sp,
                 lineHeight = 22.sp,
@@ -284,10 +289,11 @@ fun HowToMeditateScreen(
 
             Spacer(Modifier.height(32.dp))
             Text(
-                "\"The breath is the bridge between the conscious and the unconscious.\"\n— Sri M",
-                fontFamily = DotMatrix,
+                "\"The breath sits right at the border between what we can control and what happens on its own. That's exactly why watching it is so useful.\"",
+                fontFamily = InterFont,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.primary
@@ -301,10 +307,10 @@ fun HowToMeditateScreen(
 private fun SectionTitle(text: String) {
     Text(
         text = text,
-        fontFamily = DotMatrix,
-        fontSize = 16.sp,
+        fontFamily = InterFont,
+        fontSize = 15.sp,
         fontWeight = FontWeight.ExtraBold,
-        letterSpacing = 4.sp,
+        letterSpacing = 1.sp,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(bottom = 16.dp)
     )
@@ -315,14 +321,14 @@ private fun BulletPoint(label: String, content: String) {
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(
             label,
-            fontFamily = DotMatrix,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 2.sp,
+            fontFamily = InterFont,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 0.5.sp,
             color = MaterialTheme.colorScheme.secondary
         )
         Text(
-            content,
+            text = content.styleDottedDigits(),
             fontFamily = InterFont,
             fontSize = 14.sp,
             lineHeight = 20.sp,
@@ -335,7 +341,7 @@ private fun BulletPoint(label: String, content: String) {
 private fun MethodAccordion(
     number: Int,
     title: String,
-    tradition: String,
+    alsoKnownAs: String,
     level: String,
     duration: String,
     durationMins: Int,
@@ -375,12 +381,12 @@ private fun MethodAccordion(
                 )
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    text = "$number. ${title.uppercase()}",
-                    fontFamily = DotMatrix,
+                    text = "$number. ${title.uppercase()}".styleDottedDigits(),
+                    fontFamily = InterFont,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
-                    letterSpacing = 1.sp
+                    letterSpacing = 0.5.sp
                 )
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
@@ -396,7 +402,7 @@ private fun MethodAccordion(
             ) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                     Text(
-                        "Tradition: $tradition",
+                        "Also known as: $alsoKnownAs",
                         fontFamily = InterFont,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -408,7 +414,7 @@ private fun MethodAccordion(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        "Duration: $duration",
+                        text = "Recommended duration: $duration".styleDottedDigits(),
                         fontFamily = InterFont,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -425,9 +431,10 @@ private fun MethodAccordion(
                         )
                     ) {
                         Text(
-                            "CREATE ${title.split("—")[0].trim().uppercase()} PRESET",
-                            fontFamily = DotMatrix,
+                            text = "CREATE ${title.split("(")[0].trim().uppercase()} PRESET".styleDottedDigits(),
+                            fontFamily = InterFont,
                             fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp
                         )
                     }
@@ -447,13 +454,14 @@ private fun MethodContent(
     Column {
         Text(
             "WHAT IT IS",
-            fontFamily = DotMatrix,
+            fontFamily = InterFont,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 1.sp,
             color = MaterialTheme.colorScheme.primary
         )
         Text(
-            description,
+            text = description.styleDottedDigits(),
             fontFamily = InterFont,
             fontSize = 14.sp,
             lineHeight = 20.sp,
@@ -462,14 +470,15 @@ private fun MethodContent(
 
         Text(
             "STEP BY STEP",
-            fontFamily = DotMatrix,
+            fontFamily = InterFont,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 1.sp,
             color = MaterialTheme.colorScheme.primary
         )
         steps.forEachIndexed { index, step ->
             Text(
-                "${index + 1}. $step",
+                text = "${index + 1}. $step".styleDottedDigits(),
                 fontFamily = InterFont,
                 fontSize = 14.sp,
                 lineHeight = 20.sp,
@@ -483,35 +492,47 @@ private fun MethodContent(
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                note,
-                modifier = Modifier.padding(12.dp),
-                fontFamily = InterFont,
-                fontSize = 13.sp,
-                lineHeight = 18.sp,
-                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-            )
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    "GUIDANCE NOTE",
+                    fontFamily = InterFont,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 0.5.sp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                Text(
+                    text = note.styleDottedDigits(),
+                    fontFamily = InterFont,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+            }
         }
 
         if (variations.isNotEmpty()) {
             Spacer(Modifier.height(12.dp))
             Text(
                 "VARIATIONS TO EXPLORE",
-                fontFamily = DotMatrix,
+                fontFamily = InterFont,
                 fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.sp,
                 color = MaterialTheme.colorScheme.primary
             )
             variations.forEach { (vTitle, vDesc) ->
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(8.dp))
                 Text(
-                    vTitle,
+                    text = vTitle.uppercase().styleDottedDigits(),
                     fontFamily = InterFont,
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondary
                 )
                 Text(
-                    vDesc,
+                    text = vDesc.styleDottedDigits(),
                     fontFamily = InterFont,
                     fontSize = 14.sp,
                     lineHeight = 20.sp
@@ -525,14 +546,14 @@ private fun MethodContent(
 private fun PrincipleItem(title: String, content: String) {
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(
-            title,
-            fontFamily = DotMatrix,
-            fontSize = 13.sp,
+            text = title.styleDottedDigits(),
+            fontFamily = InterFont,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.secondary
         )
         Text(
-            content,
+            text = content.styleDottedDigits(),
             fontFamily = InterFont,
             fontSize = 14.sp,
             lineHeight = 20.sp

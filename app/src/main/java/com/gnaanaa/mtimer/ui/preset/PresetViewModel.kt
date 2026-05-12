@@ -16,12 +16,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
+
+data class PresetUiState(
+    val isLoading: Boolean = true,
+    val presets: List<Preset> = emptyList()
+)
 
 @HiltViewModel
 class PresetViewModel @Inject constructor(
@@ -31,8 +37,13 @@ class PresetViewModel @Inject constructor(
     private val deletePresetUseCase: DeletePresetUseCase
 ) : ViewModel() {
 
-    val presets: StateFlow<List<Preset>> = repository.getAllPresets()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val uiState: StateFlow<PresetUiState> = repository.getAllPresets()
+        .map { PresetUiState(isLoading = false, presets = it) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = PresetUiState(isLoading = false) // Start without loader
+        )
 
     private val _customSounds = MutableStateFlow<List<String>>(emptyList())
     val customSounds = _customSounds.asStateFlow()

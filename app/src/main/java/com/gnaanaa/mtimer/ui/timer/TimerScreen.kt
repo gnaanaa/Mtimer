@@ -43,8 +43,11 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import com.gnaanaa.mtimer.ui.home.DotMatrix
+import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.alignColons
+import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 import com.gnaanaa.mtimer.domain.model.TimerState
+import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun TimerScreen(
@@ -117,13 +120,14 @@ fun TimerScreen(
             if (!isZenMode) {
                 Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = labelText.uppercase(),
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontFamily = DotMatrix,
-                    fontSize = 16.sp,
-                    letterSpacing = 2.sp
-                )
+            Text(
+                text = labelText.uppercase().styleDottedDigits(),
+                color = Color.White.copy(alpha = 0.9f),
+                fontFamily = InterFont,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                letterSpacing = 1.sp
+            )
             }
         }
 

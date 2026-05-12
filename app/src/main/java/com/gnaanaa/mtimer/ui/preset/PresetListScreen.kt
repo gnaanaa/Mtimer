@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.ui.home.DotMatrix
+import com.gnaanaa.mtimer.ui.home.InterFont
+import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,7 +35,8 @@ fun PresetListScreen(
     onOpenDrawer: () -> Unit,
     viewModel: PresetViewModel = hiltViewModel()
 ) {
-    val presets by viewModel.presets.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val presets = uiState.presets
     var presetToDelete by remember { mutableStateOf<Preset?>(null) }
 
     Scaffold(
@@ -47,10 +50,11 @@ fun PresetListScreen(
                             letterSpacing = 4.sp
                         )
                         Text(
-                            "${presets.size} CONFIGURED",
-                            fontFamily = DotMatrix,
+                            text = "${presets.size} CONFIGURED".styleDottedDigits(),
+                            fontFamily = InterFont,
                             fontSize = 12.sp,
-                            letterSpacing = 2.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp,
                             color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
                         )
                     }
@@ -72,7 +76,7 @@ fun PresetListScreen(
             }
         }
     ) { padding ->
-        if (presets.isEmpty()) {
+        if (presets.isEmpty() && !uiState.isLoading) {
             Box(
                 modifier = Modifier
                     .padding(padding)
@@ -81,9 +85,10 @@ fun PresetListScreen(
             ) {
                 Text(
                     "NO PRESETS YET",
-                    fontFamily = DotMatrix,
-                    fontSize = 12.sp,
-                    letterSpacing = 3.sp,
+                    fontFamily = InterFont,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
                 )
             }
@@ -114,12 +119,12 @@ fun PresetListScreen(
     presetToDelete?.let { preset ->
         AlertDialog(
             onDismissRequest = { presetToDelete = null },
-            title = { Text("DELETE PRESET", fontFamily = DotMatrix, letterSpacing = 2.sp) },
+            title = { Text("DELETE PRESET", fontFamily = InterFont, fontWeight = FontWeight.Bold, letterSpacing = 1.sp) },
             text = { 
                 Text(
                     "Are you sure you want to delete \"${preset.name}\"?",
-                    fontFamily = DotMatrix,
-                    letterSpacing = 1.sp
+                    fontFamily = InterFont,
+                    fontSize = 14.sp
                 ) 
             },
             confirmButton = {
@@ -129,12 +134,12 @@ fun PresetListScreen(
                         presetToDelete = null
                     }
                 ) {
-                    Text("DELETE", color = MaterialTheme.colorScheme.error, fontFamily = DotMatrix, letterSpacing = 2.sp)
+                    Text("DELETE", color = MaterialTheme.colorScheme.error, fontFamily = InterFont, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { presetToDelete = null }) {
-                    Text("CANCEL", fontFamily = DotMatrix, letterSpacing = 2.sp)
+                    Text("CANCEL", fontFamily = InterFont, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 }
             }
         )
@@ -182,9 +187,10 @@ fun PresetItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     preset.name.uppercase(),
-                    fontFamily = DotMatrix,
+                    fontFamily = InterFont,
                     fontSize = 14.sp,
-                    letterSpacing = 2.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -192,9 +198,10 @@ fun PresetItem(
                 val secs = preset.durationSeconds % 60
                 val durationLabel = if (secs == 0) "${mins}M" else "${mins}M ${secs}S"
                 Text(
-                    durationLabel,
-                    fontFamily = DotMatrix,
+                    text = durationLabel.styleDottedDigits(),
+                    fontFamily = InterFont, // Base font, digits dotted
                     fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
                     color = MaterialTheme.colorScheme.onBackground.copy(0.95f)
                 )
@@ -234,8 +241,8 @@ fun PresetItem(
                 )
                 val mins = preset.durationSeconds / 60
                 Text(
-                    "${mins}M",
-                    fontFamily = DotMatrix,
+                    text = "${mins}M".styleDottedDigits(),
+                    fontFamily = InterFont,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = primaryColor
