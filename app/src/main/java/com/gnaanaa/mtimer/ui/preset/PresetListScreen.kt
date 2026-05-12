@@ -35,7 +35,8 @@ fun PresetListScreen(
     onOpenDrawer: () -> Unit,
     viewModel: PresetViewModel = hiltViewModel()
 ) {
-    val presets by viewModel.presets.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val presets = uiState.presets
     var presetToDelete by remember { mutableStateOf<Preset?>(null) }
 
     Scaffold(
@@ -75,7 +76,7 @@ fun PresetListScreen(
             }
         }
     ) { padding ->
-        if (presets.isEmpty()) {
+        if (presets.isEmpty() && !uiState.isLoading) {
             Box(
                 modifier = Modifier
                     .padding(padding)

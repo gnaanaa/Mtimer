@@ -92,8 +92,9 @@ fun HomeScreen(
     onOpenDrawer: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val recentSessions by viewModel.recentSessions.collectAsState()
-    val presets by viewModel.presets.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val recentSessions = uiState.recentSessions
+    val presets = uiState.presets
 
     var selectedSession by remember { mutableStateOf<Session?>(null) }
     var selectedPreset by remember { mutableStateOf<Preset?>(null) }
@@ -132,88 +133,102 @@ fun HomeScreen(
         }
     ) { padding ->
 
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-
-            StartSessionButton(
-                enabled = selectedPreset != null,
-                selectedPreset = selectedPreset,
-                labelOverride = if (presets.isEmpty()) "CREATE PRESET >>" else null,
-                alwaysEnabled = presets.isEmpty(),
-                onClick = {
-                    if (presets.isEmpty()) {
-                        onNavigateToPresets()
-                    } else {
-                        selectedPreset?.let {
-                            viewModel.startTimer(it)
-                            onStartTimer()
-                        }
-                    }
-                }
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            // ── Rotary Dial with spring-snap ───────────────────────────────
-            PresetDial(
-                presets = presets,
-                selectedPreset = selectedPreset,
-                onSelected = { selectedPreset = it }
-            )
-
-            Spacer(Modifier.height(16.dp))
-
-            Row(
+        if (uiState.isLoading) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(padding)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "RECENT SESSIONS",
-                    fontFamily = DotMatrix,
-                    fontSize = 12.sp,
-                    letterSpacing = 2.sp
+                CircularProgressIndicator(
+                    color = MaterialTheme.colorScheme.primary,
+                    strokeWidth = 2.dp
                 )
             }
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+            ) {
 
-            if (recentSessions.isEmpty()) {
-                Box(
+                StartSessionButton(
+                    enabled = selectedPreset != null,
+                    selectedPreset = selectedPreset,
+                    labelOverride = if (presets.isEmpty()) "CREATE PRESET >>" else null,
+                    alwaysEnabled = presets.isEmpty(),
+                    onClick = {
+                        if (presets.isEmpty()) {
+                            onNavigateToPresets()
+                        } else {
+                            selectedPreset?.let {
+                                viewModel.startTimer(it)
+                                onStartTimer()
+                            }
+                        }
+                    }
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                // ── Rotary Dial with spring-snap ───────────────────────────────
+                PresetDial(
+                    presets = presets,
+                    selectedPreset = selectedPreset,
+                    onSelected = { selectedPreset = it }
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "NO SESSIONS YET",
+                        "RECENT SESSIONS",
                         fontFamily = DotMatrix,
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                        letterSpacing = 2.sp
                     )
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
-                ) {
-                    items(recentSessions, key = { it.id }) { session ->
-                        val preset = presets.find { it.id == session.presetId }
-                        HistoryRow(
-                            session = session,
-                            presetDurationSeconds = preset?.durationSeconds,
-                            onClick = { selectedSession = session },
-                            onStartAgain = {
-                                preset?.let {
-                                    viewModel.startTimer(it)
-                                    onStartTimer()
-                                }
-                            }
+
+                if (recentSessions.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "NO SESSIONS YET",
+                            fontFamily = DotMatrix,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
                         )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 16.dp)
+                    ) {
+                        items(recentSessions, key = { it.id }) { session ->
+                            val preset = presets.find { it.id == session.presetId }
+                            HistoryRow(
+                                session = session,
+                                presetDurationSeconds = preset?.durationSeconds,
+                                onClick = { selectedSession = session },
+                                onStartAgain = {
+                                    preset?.let {
+                                        viewModel.startTimer(it)
+                                        onStartTimer()
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }

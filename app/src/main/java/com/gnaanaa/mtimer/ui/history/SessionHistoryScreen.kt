@@ -41,10 +41,11 @@ fun SessionHistoryScreen(
     onOpenDrawer: () -> Unit,
     viewModel: SessionHistoryViewModel = hiltViewModel()
 ) {
-    val groupedSessions by viewModel.groupedSessions.collectAsState()
-    val sessionCount by viewModel.sessionCount.collectAsState()
-    val totalDuration by viewModel.totalDuration.collectAsState()
-    val chartData by viewModel.chartData.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val groupedSessions = uiState.groupedSessions
+    val sessionCount = uiState.sessionCount
+    val totalDuration = uiState.totalDuration
+    val chartData = uiState.chartData
     var selectedSession by remember { mutableStateOf<Session?>(null) }
 
     // State to keep track of expanded/collapsed months
@@ -68,7 +69,7 @@ fun SessionHistoryScreen(
             )
         }
     ) { padding ->
-        if (groupedSessions.isEmpty()) {
+        if (groupedSessions.isEmpty() && !uiState.isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
