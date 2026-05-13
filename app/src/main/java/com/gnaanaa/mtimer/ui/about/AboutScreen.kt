@@ -215,8 +215,8 @@ private fun SupportSection(
             TipButton(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Cake,
-                price = productDetails["tip_5"]?.oneTimePurchaseOfferDetails?.formattedPrice ?: "$6",
-                onClick = { onSupport("tip_5") }
+                price = productDetails["tip_6"]?.oneTimePurchaseOfferDetails?.formattedPrice ?: "$6",
+                onClick = { onSupport("tip_6") }
             )
         }
     }

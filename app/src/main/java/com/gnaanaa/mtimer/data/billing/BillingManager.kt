@@ -62,7 +62,7 @@ class BillingManager @Inject constructor(
                 .setProductType(BillingClient.ProductType.INAPP)
                 .build(),
             QueryProductDetailsParams.Product.newBuilder()
-                .setProductId("tip_5")
+                .setProductId("tip_6")
                 .setProductType(BillingClient.ProductType.INAPP)
                 .build()
         )
