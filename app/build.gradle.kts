@@ -32,8 +32,8 @@ android {
         applicationId = "com.gnaanaa.mtimer"
         minSdk = 28
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -118,6 +118,10 @@ dependencies {
     implementation(libs.work.runtime)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.fitness)
+    implementation(libs.play.review)
+    implementation(libs.play.review.ktx)
+    implementation(libs.play.billing)
+    implementation(libs.play.billing.ktx)
     implementation(libs.google.api.client)
     implementation(libs.google.drive.api)
     implementation(libs.google.http.client.gson)

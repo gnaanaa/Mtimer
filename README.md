@@ -53,4 +53,5 @@ MTimer is a bold, minimalist meditation timer designed for Android. It focuses o
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+- The source code is licensed under the [MIT License](LICENSE).
+- The **written content** (meditation methods, practice descriptions, and instructional text) is licensed under [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
