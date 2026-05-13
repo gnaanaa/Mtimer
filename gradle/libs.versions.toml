@@ -21,6 +21,8 @@ google-api-client = "2.2.0"
 google-drive-api = "v3-rev20230822-2.0.0"
 google-http-client = "1.43.3"
 coil = "2.7.0"
+play-review = "2.0.1"
+play-billing = "6.2.1"
 junit = "4.13.2"
 mockk = "1.13.12"
 androidx-test-ext-junit = "1.2.1"
@@ -57,6 +59,10 @@ google-drive-api = { group = "com.google.apis", name = "google-api-services-driv
 google-http-client-gson = { group = "com.google.http-client", name = "google-http-client-gson", version.ref = "google-http-client" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+play-review = { group = "com.google.android.play", name = "review", version.ref = "play-review" }
+play-review-ktx = { group = "com.google.android.play", name = "review-ktx", version.ref = "play-review" }
+play-billing = { group = "com.android.billingclient", name = "billing", version.ref = "play-billing" }
+play-billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "play-billing" }
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }

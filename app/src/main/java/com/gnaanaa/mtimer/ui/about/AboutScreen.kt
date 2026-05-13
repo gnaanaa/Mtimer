@@ -2,29 +2,57 @@ package com.gnaanaa.mtimer.ui.about
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import android.app.Activity
+import com.android.billingclient.api.ProductDetails
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
     onBack: () -> Unit,
-    onOpenDrawer: () -> Unit
+    onOpenDrawer: () -> Unit,
+    scrollToSupport: Boolean = false,
+    viewModel: AboutViewModel = hiltViewModel()
 ) {
     val uriHandler = LocalUriHandler.current
+    val scrollState = rememberScrollState()
+    val productDetails by viewModel.productDetails.collectAsState()
+    val purchaseSuccess by viewModel.purchaseSuccess.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(scrollToSupport) {
+        if (scrollToSupport) {
+            kotlinx.coroutines.delay(200)
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
+    }
+
+    LaunchedEffect(purchaseSuccess) {
+        if (purchaseSuccess) {
+            android.widget.Toast.makeText(context, "Thank you. It genuinely helps.", android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -42,7 +70,7 @@ fun AboutScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(24.dp),
             horizontalAlignment = Alignment.Start
         ) {
@@ -97,34 +125,9 @@ fun AboutScreen(
 
             AboutSection("PERMISSIONS", "MTimer requests only what it needs:\n\n• Health Connect: Write MindfulnessRecord\n• Health Connect: Read/Write Heart Rate\n• Google Fit: Activity (Optional)\n• Google Drive: Backup (Optional)\n• Notifications: Session reminders\n\nNo location. No contacts. No microphone. No camera.")
 
-            AboutSection("OPEN SOURCE", "MTimer is released under the MIT License.\n\nCopyright © 2025\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files, to deal in the software without restriction — including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies — subject to the following condition: the above copyright notice and this permission notice shall be included in all copies or substantial portions of the software.\n\nThe software is provided as is, without warranty of any kind.")
+            AboutSection("OPEN SOURCE", "MTimer is released under the MIT License.\n\nCopyright © 2025\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files, to deal in the software without restriction — including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies — subject to the following condition: the above copyright notice and this permission notice shall be included in all copies or substantial portions of the software.\n\nThe software is provided as is, without warranty of any kind.\n\n---\n\nThe written content in this app — including the meditation methods, practice descriptions, and instructional text — is licensed under Creative Commons Attribution 4.0 International (CC BY 4.0). You are free to share and adapt the written content for any purpose, including commercially, as long as you give appropriate credit.")
 
-            AboutSection("CONTACT", "Ideas, bugs, or feedback — open an issue or get in touch.\n(https://github.com/gnaanaa/Mtimer)")
-
-            Spacer(Modifier.height(16.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-            Spacer(Modifier.height(40.dp))
-
-            // Simplified Privacy Section with Link
-            Text(
-                "PRIVACY",
-                fontFamily = InterFont,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            
-            Text(
-                "MTimer prioritizes your privacy. We do not operate servers, collect personal data, or use trackers. All your meditation data stays on your device or in accounts you explicitly control (Google Drive, Health Connect).",
-                fontFamily = InterFont,
-                fontSize = 14.sp,
-                letterSpacing = 0.5.sp,
-                lineHeight = 22.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            AboutSection("PRIVACY", "MTimer prioritizes your privacy. We do not operate servers, collect personal data, or use trackers. All your meditation data stays on your device or in accounts you explicitly control (Google Drive, Health Connect).")
 
             Button(
                 onClick = { 
@@ -147,6 +150,108 @@ fun AboutScreen(
             }
 
             Spacer(Modifier.height(48.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+            Spacer(Modifier.height(32.dp))
+
+            AboutSection("CONTACT", "Ideas, bugs, or feedback — open an issue or get in touch.\n(https://github.com/gnaanaa/Mtimer)")
+
+            Spacer(Modifier.height(16.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+            Spacer(Modifier.height(32.dp))
+
+            SupportSection(
+                productDetails = productDetails,
+                onSupport = { productId ->
+                    (context as? Activity)?.let { viewModel.supportApp(it, productId) }
+                }
+            )
+
+            Spacer(Modifier.height(48.dp))
+        }
+    }
+}
+
+@Composable
+private fun SupportSection(
+    productDetails: Map<String, ProductDetails>,
+    onSupport: (String) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "SUPPORT THIS APP",
+            fontFamily = InterFont,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Text(
+            text = "This app has no ads and no subscription. If it's been useful to you, a small tip helps keep it going.",
+            fontFamily = InterFont,
+            fontSize = 14.sp,
+            letterSpacing = 0.5.sp,
+            lineHeight = 22.sp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            TipButton(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Favorite,
+                price = productDetails["tip_1"]?.oneTimePurchaseOfferDetails?.formattedPrice ?: "$1",
+                onClick = { onSupport("tip_1") }
+            )
+            TipButton(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.LocalCafe,
+                price = productDetails["tip_3"]?.oneTimePurchaseOfferDetails?.formattedPrice ?: "$3",
+                onClick = { onSupport("tip_3") }
+            )
+            TipButton(
+                modifier = Modifier.weight(1f),
+                icon = Icons.Default.Cake,
+                price = productDetails["tip_5"]?.oneTimePurchaseOfferDetails?.formattedPrice ?: "$6",
+                onClick = { onSupport("tip_5") }
+            )
+        }
+    }
+}
+
+@Composable
+private fun TipButton(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    price: String,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.height(68.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+            contentColor = MaterialTheme.colorScheme.primary
+        ),
+        contentPadding = PaddingValues(4.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = price.styleDottedDigits(),
+                fontFamily = InterFont,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
