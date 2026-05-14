@@ -103,12 +103,6 @@ suspend fun hasAllPermissions(context: Context): Boolean {
         HealthPermission.getWritePermission(HeartRateRecord::class)
     )
     
-    // Background and history permissions are only for Android 14+ (Framework)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-        corePermissions.add("android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND")
-        corePermissions.add("android.permission.health.READ_HEALTH_DATA_HISTORY")
-    }
-    
     return granted.containsAll(corePermissions)
 }
 

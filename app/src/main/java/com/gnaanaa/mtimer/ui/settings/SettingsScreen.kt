@@ -87,14 +87,6 @@ fun SettingsScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Sync DataStore state with actual System Permission state
-    LaunchedEffect(healthConnectGranted) {
-        if (!healthConnectGranted && healthConnectEnabled) {
-            android.util.Log.d("HealthConnectUI", "Permissions revoked via system, disabling feature in app.")
-            viewModel.toggleHealthConnect(context, false)
-        }
-    }
-
     LaunchedEffect(importStatus) {
         importStatus?.let {
             android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_LONG).show()
@@ -128,8 +120,12 @@ fun SettingsScreen(
 
     val permissionsLauncher = rememberLauncherForActivityResult(
         PermissionController.createRequestPermissionResultContract()
-    ) {
+    ) { granted ->
         viewModel.checkPermissions(context)
+        // If user just came back from granting permissions, the feature should be enabled
+        if (granted.isNotEmpty()) {
+            viewModel.toggleHealthConnect(context, true)
+        }
     }
 
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -200,11 +196,17 @@ fun SettingsScreen(
                 subtitle = "Share mindfulness data with other health apps.",
                 checked = healthConnectEnabled,
                 onCheckedChange = { enabled ->
-                    android.util.Log.d("HealthConnectUI", "Toggle changed to: $enabled")
-                    viewModel.toggleHealthConnect(context, enabled)
-                    if (enabled && !healthConnectGranted) {
-                        android.util.Log.d("HealthConnectUI", "Requesting permissions...")
-                        permissionsLauncher.launch(viewModel.permissions)
+                    if (enabled) {
+                        // When turning ON, always check/request permissions first.
+                        // The launcher callback or checkPermissions will handle the DataStore sync.
+                        if (healthConnectGranted) {
+                            viewModel.toggleHealthConnect(context, true)
+                        } else {
+                            permissionsLauncher.launch(viewModel.permissions)
+                        }
+                    } else {
+                        // When turning OFF, just update DataStore.
+                        viewModel.toggleHealthConnect(context, false)
                     }
                 },
                 enabled = viewModel.isHealthConnectAvailable,

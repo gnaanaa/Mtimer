@@ -16,3 +16,4 @@ local.properties
 secrets.properties
 /app/release/
 .kotlin/
+app/src/main/assets/adi-registration.properties
