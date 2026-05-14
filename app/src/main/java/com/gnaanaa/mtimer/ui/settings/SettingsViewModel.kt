@@ -115,6 +115,12 @@ class SettingsViewModel @Inject constructor(
         if (account != null) {
             // Trigger sync when signed in
             com.gnaanaa.mtimer.data.sync.DriveSyncWorker.enqueue(context)
+        } else {
+            // If signed out, we should also disable Google Fit sync to avoid permission issues
+            // and ensure clean state, as Google Fit requires an account.
+            viewModelScope.launch {
+                userPreferencesDataStore.setGoogleFitEnabled(false)
+            }
         }
     }
 
