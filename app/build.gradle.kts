@@ -32,8 +32,8 @@ android {
         applicationId = "com.gnaanaa.mtimer"
         minSdk = 28
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.1.0"
+        versionCode = 7
+        versionName = "1.1.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -58,6 +58,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            ndk {
+                debugSymbolLevel = "full"
+            }
         }
     }
 
@@ -79,6 +82,9 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/DEPENDENCIES"
+        }
+        jniLibs {
+            keepDebugSymbols.add("**/*.so")
         }
     }
 }

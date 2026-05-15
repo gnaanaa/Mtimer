@@ -621,6 +621,10 @@ fun SessionDetailDialog(session: Session, onDismiss: () -> Unit) {
     val dateFormat = remember {
         SimpleDateFormat("EEEE, MMM dd yyyy", Locale.getDefault())
     }
+    val timeFormat = remember {
+        SimpleDateFormat("HH:mm", Locale.getDefault())
+    }
+    
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -639,6 +643,13 @@ fun SessionDetailDialog(session: Session, onDismiss: () -> Unit) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 DetailRow("PRESET", (session.presetName ?: "MEDITATION").uppercase())
                 DetailRow("DATE", dateFormat.format(Date(session.startTime)).uppercase().styleDottedDigits())
+                
+                val startStr = timeFormat.format(Date(session.startTime))
+                val endStr = if (session.endTime > 0) timeFormat.format(Date(session.endTime)) else "--:--"
+                
+                DetailRow("START TIME", startStr.styleDottedDigits())
+                DetailRow("FINISH TIME", endStr.styleDottedDigits())
+
                 DetailRow("DURATION", formatDurationAligned(session.durationSeconds))
                 DetailRow("STATUS", if (session.completed) "COMPLETED" else "STOPPED")
                 if (session.healthConnectSynced) {

@@ -57,9 +57,7 @@ class SettingsViewModel @Inject constructor(
         HealthPermission.getWritePermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(MindfulnessSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
-        HealthPermission.getWritePermission(HeartRateRecord::class),
-        "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND",
-        "android.permission.health.READ_HEALTH_DATA_HISTORY"
+        HealthPermission.getWritePermission(HeartRateRecord::class)
     )
 
     private val _importStatus = MutableStateFlow<String?>(null)
@@ -89,12 +87,9 @@ class SettingsViewModel @Inject constructor(
                 val hasPerms = hasAllPermissions(context)
                 _healthConnectPermissionsGranted.value = hasPerms
                 
-                // Sync toggle with permission reality
+                // If permissions are lost, ensure the toggle is also turned off
                 val currentEnabled = userPreferencesDataStore.isHealthConnectEnabled.stateIn(viewModelScope).value
-                if (hasPerms && !currentEnabled) {
-                    android.util.Log.d("HealthConnect", "ViewModel: Auto-enabling as permissions are now granted")
-                    userPreferencesDataStore.setHealthConnectEnabled(true)
-                } else if (!hasPerms && currentEnabled) {
+                if (!hasPerms && currentEnabled) {
                     android.util.Log.d("HealthConnect", "ViewModel: Auto-disabling due to missing permissions")
                     userPreferencesDataStore.setHealthConnectEnabled(false)
                 }
