@@ -231,10 +231,18 @@ fun PresetItem(
                 .width(64.dp)
                 .fillMaxHeight()
                 .background(startGreen.copy(alpha = 0.15f))
-                .border(1.dp, startGreen.copy(alpha = 0.3f), RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
                 .clickable(onClick = onStart),
             contentAlignment = Alignment.Center
         ) {
+            // Left Border
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(1.dp)
+                    .align(Alignment.CenterStart)
+                    .background(startGreen.copy(alpha = 0.2f))
+            )
+
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
