@@ -265,7 +265,7 @@ fun StartSessionButton(
                 shape = RoundedCornerShape(16.dp)
             )
             .background(
-                if (isEffectiveEnabled) startGreen.copy(alpha = 0.08f)
+                if (isEffectiveEnabled) startGreen.copy(alpha = 0.15f)
                 else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp)
             )
@@ -319,7 +319,7 @@ fun StartSessionButton(
                 fontSize = 18.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = if (isEffectiveEnabled) startGreen else MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (isEffectiveEnabled) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (labelOverride == null) {
                 selectedPreset?.let { preset ->
