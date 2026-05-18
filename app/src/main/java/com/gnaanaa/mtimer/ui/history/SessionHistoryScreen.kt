@@ -73,6 +73,7 @@ fun SessionHistoryScreen(
         if (groupedSessions.isEmpty() && !uiState.isLoading) {
             Box(
                 modifier = Modifier
+                    .padding(padding)
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
@@ -87,6 +88,7 @@ fun SessionHistoryScreen(
         } else {
             LazyColumn(
                 modifier = Modifier
+                    .padding(padding)
                     .fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)

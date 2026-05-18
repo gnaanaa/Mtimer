@@ -137,6 +137,7 @@ fun HomeScreen(
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier
+                    .padding(padding)
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
@@ -148,6 +149,7 @@ fun HomeScreen(
         } else {
             Column(
                 modifier = Modifier
+                    .padding(padding)
                     .fillMaxSize()
             ) {
 
