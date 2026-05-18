@@ -52,6 +52,7 @@ fun SessionHistoryScreen(
     val expandedStates = remember { mutableStateMapOf<String, Boolean>() }
 
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
@@ -72,8 +73,7 @@ fun SessionHistoryScreen(
         if (groupedSessions.isEmpty() && !uiState.isLoading) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+                    .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -87,8 +87,7 @@ fun SessionHistoryScreen(
         } else {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+                    .fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {

@@ -40,6 +40,7 @@ fun PresetListScreen(
     var presetToDelete by remember { mutableStateOf<Preset?>(null) }
 
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
@@ -79,7 +80,6 @@ fun PresetListScreen(
         if (presets.isEmpty() && !uiState.isLoading) {
             Box(
                 modifier = Modifier
-                    .padding(padding)
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
@@ -95,7 +95,6 @@ fun PresetListScreen(
         } else {
             LazyColumn(
                 modifier = Modifier
-                    .padding(padding)
                     .fillMaxSize()
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),

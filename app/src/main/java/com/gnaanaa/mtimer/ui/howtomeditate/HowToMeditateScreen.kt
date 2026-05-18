@@ -35,6 +35,7 @@ fun HowToMeditateScreen(
     onCreatePreset: (String, Int) -> Unit
 ) {
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = { Text("HOW TO MEDITATE", fontFamily = DotMatrix, letterSpacing = 2.sp) },
@@ -48,10 +49,9 @@ fun HowToMeditateScreen(
     ) { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
         ) {
             Text(
                 "A PRACTICAL GUIDE FOR EVERY LEVEL",

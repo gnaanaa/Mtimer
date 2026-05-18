@@ -134,6 +134,7 @@ fun PresetEditScreen(
     }
 
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
@@ -189,9 +190,8 @@ fun PresetEditScreen(
 
         Column(
             modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 16.dp)
                 .fillMaxSize()
+                .padding(horizontal = 16.dp)
                 .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
