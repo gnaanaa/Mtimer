@@ -252,6 +252,7 @@ fun StartSessionButton(
 ) {
     val isEffectiveEnabled = enabled || alwaysEnabled
     val primaryColor = MaterialTheme.colorScheme.primary
+    val startGreen = Color(0xFF4CAF50)
 
     Box(
         modifier = Modifier
@@ -260,11 +261,11 @@ fun StartSessionButton(
             .height(84.dp)
             .border(
                 width = 2.dp,
-                color = if (isEffectiveEnabled) primaryColor.copy(alpha = 0.3f) else Color.Transparent,
+                color = if (isEffectiveEnabled) startGreen.copy(alpha = 0.4f) else Color.Transparent,
                 shape = RoundedCornerShape(16.dp)
             )
             .background(
-                if (isEffectiveEnabled) primaryColor.copy(alpha = 0.08f)
+                if (isEffectiveEnabled) startGreen.copy(alpha = 0.08f)
                 else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp)
             )
@@ -284,7 +285,7 @@ fun StartSessionButton(
                 contentDescription = null,
                 modifier = Modifier.size(32.dp),
                 tint = if (isEffectiveEnabled)
-                    primaryColor
+                    startGreen
                 else
                     MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
             )
@@ -298,7 +299,7 @@ fun StartSessionButton(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp,
                     color = if (isEffectiveEnabled)
-                        primaryColor.copy(alpha = 0.7f)
+                        startGreen.copy(alpha = 0.8f)
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
                 )
@@ -318,7 +319,7 @@ fun StartSessionButton(
                 fontSize = 18.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = if (isEffectiveEnabled) primaryColor else MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (isEffectiveEnabled) startGreen else MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (labelOverride == null) {
                 selectedPreset?.let { preset ->
@@ -585,11 +586,13 @@ fun HistoryRow(
         }
 
         // Start Again Button (Fixed Width, Full Height)
+        val startGreen = Color(0xFF4CAF50)
         Box(
             modifier = Modifier
                 .width(69.dp)
                 .fillMaxHeight()
-                .background(primaryColor.copy(alpha = 0.12f))
+                .background(startGreen.copy(alpha = 0.15f))
+                .border(1.dp, startGreen.copy(alpha = 0.3f), RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
                 .clickable(onClick = onStartAgain),
             contentAlignment = Alignment.Center
         ) {
@@ -601,7 +604,7 @@ fun HistoryRow(
                     imageVector = Icons.Default.Spa,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = primaryColor
+                    tint = startGreen
                 )
                 val mins = (presetDurationSeconds ?: session.durationSeconds) / 60
                 Text(
@@ -609,7 +612,7 @@ fun HistoryRow(
                     fontFamily = InterFont,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = primaryColor
+                    color = startGreen
                 )
             }
         }

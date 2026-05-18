@@ -1,10 +1,12 @@
 package com.gnaanaa.mtimer.ui.preset
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -15,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -222,11 +225,13 @@ fun PresetItem(
         }
 
         // Start Session Button (Fixed Width, Full Height)
+        val startGreen = Color(0xFF4CAF50)
         Box(
             modifier = Modifier
                 .width(64.dp)
                 .fillMaxHeight()
-                .background(primaryColor.copy(alpha = 0.12f))
+                .background(startGreen.copy(alpha = 0.15f))
+                .border(1.dp, startGreen.copy(alpha = 0.3f), RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
                 .clickable(onClick = onStart),
             contentAlignment = Alignment.Center
         ) {
@@ -238,7 +243,7 @@ fun PresetItem(
                     imageVector = Icons.Default.Spa,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
-                    tint = primaryColor
+                    tint = startGreen
                 )
                 val mins = preset.durationSeconds / 60
                 Text(
@@ -246,7 +251,7 @@ fun PresetItem(
                     fontFamily = InterFont,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = primaryColor
+                    color = startGreen
                 )
             }
         }
