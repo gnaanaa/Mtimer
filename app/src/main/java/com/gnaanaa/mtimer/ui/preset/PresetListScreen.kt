@@ -40,6 +40,7 @@ fun PresetListScreen(
     var presetToDelete by remember { mutableStateOf<Preset?>(null) }
 
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {
