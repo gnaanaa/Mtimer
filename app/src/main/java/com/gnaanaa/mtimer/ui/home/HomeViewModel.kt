@@ -17,6 +17,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.gnaanaa.mtimer.data.sync.fetchHeartRateRange
+import androidx.health.connect.client.records.HeartRateRecord
+import java.time.Instant
+import dagger.hilt.android.qualifiers.ApplicationContext
+import android.content.Context
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+
 data class HomeUiState(
     val isLoading: Boolean = true,
     val presets: List<Preset> = emptyList(),
@@ -25,10 +33,14 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val sessionRepository: SessionRepository,
     private val presetRepository: PresetRepository,
     private val startTimerUseCase: StartTimerUseCase
 ) : ViewModel() {
+
+    private val _heartRateSamples = MutableStateFlow<List<HeartRateRecord.Sample>>(emptyList())
+    val heartRateSamples = _heartRateSamples.asStateFlow()
 
     val uiState: StateFlow<HomeUiState> = combine(
         presetRepository.getAllPresets(),
@@ -48,5 +60,21 @@ class HomeViewModel @Inject constructor(
 
     fun startTimer(preset: Preset) {
         startTimerUseCase(preset)
+    }
+
+    fun fetchHeartRate(session: Session) {
+        viewModelScope.launch {
+            val start = Instant.ofEpochMilli(session.startTime)
+            val end = if (session.endTime > session.startTime) {
+                Instant.ofEpochMilli(session.endTime)
+            } else {
+                start.plusSeconds(session.durationSeconds.toLong())
+            }
+            _heartRateSamples.value = fetchHeartRateRange(context, start, end)
+        }
+    }
+
+    fun clearHeartRate() {
+        _heartRateSamples.value = emptyList()
     }
 }

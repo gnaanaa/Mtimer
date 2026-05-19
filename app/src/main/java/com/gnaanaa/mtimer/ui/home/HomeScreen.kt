@@ -49,6 +49,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
+import com.gnaanaa.mtimer.ui.history.HeartRateChart
+import androidx.health.connect.client.records.HeartRateRecord
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -93,6 +95,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val heartRateSamples by viewModel.heartRateSamples.collectAsState()
     val recentSessions = uiState.recentSessions
     val presets = uiState.presets
 
@@ -221,7 +224,10 @@ fun HomeScreen(
                             HistoryRow(
                                 session = session,
                                 presetDurationSeconds = preset?.durationSeconds,
-                                onClick = { selectedSession = session },
+                                onClick = { 
+                                    selectedSession = session
+                                    viewModel.fetchHeartRate(session)
+                                },
                                 onStartAgain = {
                                     preset?.let {
                                         viewModel.startTimer(it)
@@ -237,7 +243,14 @@ fun HomeScreen(
     }
 
     selectedSession?.let {
-        SessionDetailDialog(it) { selectedSession = null }
+        SessionDetailDialog(
+            session = it, 
+            heartRateSamples = heartRateSamples,
+            onDismiss = { 
+                selectedSession = null
+                viewModel.clearHeartRate()
+            }
+        )
     }
 }
 
@@ -251,8 +264,11 @@ fun StartSessionButton(
     onClick: () -> Unit
 ) {
     val isEffectiveEnabled = enabled || alwaysEnabled
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+    
     val primaryColor = MaterialTheme.colorScheme.primary
-    val startGreen = Color(0xFF4CAF50)
+    val meditationGreen = Color(0xFF4CAF50)
+    val accentColor = if (isDark) meditationGreen else primaryColor
 
     Box(
         modifier = Modifier
@@ -261,11 +277,11 @@ fun StartSessionButton(
             .height(84.dp)
             .border(
                 width = 2.dp,
-                color = if (isEffectiveEnabled) startGreen.copy(alpha = 0.4f) else Color.Transparent,
+                color = if (isEffectiveEnabled) accentColor.copy(alpha = 0.4f) else Color.Transparent,
                 shape = RoundedCornerShape(16.dp)
             )
             .background(
-                if (isEffectiveEnabled) startGreen.copy(alpha = 0.15f)
+                if (isEffectiveEnabled) accentColor.copy(alpha = 0.15f)
                 else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp)
             )
@@ -285,7 +301,7 @@ fun StartSessionButton(
                 contentDescription = null,
                 modifier = Modifier.size(32.dp),
                 tint = if (isEffectiveEnabled)
-                    startGreen
+                    accentColor
                 else
                     MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
             )
@@ -293,13 +309,13 @@ fun StartSessionButton(
             if (labelOverride == null && selectedPreset != null) {
                 val mins = selectedPreset.durationSeconds / 60
                 Text(
-                    text = "(${mins}M)".styleDottedDigits(),
+                    text = "${mins}M".styleDottedDigits(),
                     fontFamily = InterFont,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 0.5.sp,
                     color = if (isEffectiveEnabled)
-                        startGreen.copy(alpha = 0.8f)
+                        accentColor
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
                 )
@@ -319,7 +335,7 @@ fun StartSessionButton(
                 fontSize = 18.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = if (isEffectiveEnabled) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (isEffectiveEnabled) (if (isDark) Color.White else accentColor) else MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (labelOverride == null) {
                 selectedPreset?.let { preset ->
@@ -586,13 +602,16 @@ fun HistoryRow(
         }
 
         // Start Again Button (Fixed Width, Full Height)
-        val startGreen = Color(0xFF4CAF50)
+        val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+        val meditationGreen = Color(0xFF4CAF50)
+        val accentColor = if (isDark) meditationGreen else primaryColor
+
         Box(
             modifier = Modifier
                 .width(69.dp)
                 .fillMaxHeight()
-                .background(startGreen.copy(alpha = 0.15f))
-                .border(1.dp, startGreen.copy(alpha = 0.3f), RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
+                .background(accentColor.copy(alpha = 0.15f))
+                .border(1.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
                 .clickable(onClick = onStartAgain),
             contentAlignment = Alignment.Center
         ) {
@@ -604,15 +623,15 @@ fun HistoryRow(
                     imageVector = Icons.Default.Spa,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = startGreen
+                    tint = accentColor
                 )
                 val mins = (presetDurationSeconds ?: session.durationSeconds) / 60
                 Text(
                     text = "${mins}M".styleDottedDigits(),
                     fontFamily = InterFont,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = startGreen
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = accentColor
                 )
             }
         }
@@ -621,7 +640,11 @@ fun HistoryRow(
 
 // ── Session Detail Dialog ──────────────────────────────────────────────────
 @Composable
-fun SessionDetailDialog(session: Session, onDismiss: () -> Unit) {
+fun SessionDetailDialog(
+    session: Session, 
+    heartRateSamples: List<HeartRateRecord.Sample> = emptyList(),
+    onDismiss: () -> Unit
+) {
     val dateFormat = remember {
         SimpleDateFormat("EEEE, MMM dd yyyy", Locale.getDefault())
     }
@@ -658,6 +681,11 @@ fun SessionDetailDialog(session: Session, onDismiss: () -> Unit) {
                 DetailRow("STATUS", if (session.completed) "COMPLETED" else "STOPPED")
                 if (session.healthConnectSynced) {
                     DetailRow("SYNC", "HEALTH CONNECT ✓")
+                }
+
+                if (heartRateSamples.isNotEmpty()) {
+                    Spacer(Modifier.height(16.dp))
+                    HeartRateChart(samples = heartRateSamples)
                 }
             }
         }

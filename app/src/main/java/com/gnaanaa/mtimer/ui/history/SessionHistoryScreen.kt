@@ -31,6 +31,7 @@ import com.gnaanaa.mtimer.ui.home.formatDurationAligned
 import com.gnaanaa.mtimer.ui.home.alignColons
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.health.connect.client.records.HeartRateRecord
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -42,6 +43,7 @@ fun SessionHistoryScreen(
     viewModel: SessionHistoryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val heartRateSamples by viewModel.heartRateSamples.collectAsState()
     val groupedSessions = uiState.groupedSessions
     val sessionCount = uiState.sessionCount
     val totalDuration = uiState.totalDuration
@@ -170,7 +172,10 @@ fun SessionHistoryScreen(
                         items(sessionsInGroup, key = { it.id }) { session ->
                             SessionItem(
                                 session = session,
-                                onClick = { selectedSession = session }
+                                onClick = { 
+                                    selectedSession = session
+                                    viewModel.fetchHeartRate(session)
+                                }
                             )
                         }
                         
@@ -184,7 +189,14 @@ fun SessionHistoryScreen(
     }
 
     selectedSession?.let {
-        SessionDetailDialog(it) { selectedSession = null }
+        SessionDetailDialog(
+            session = it, 
+            heartRateSamples = heartRateSamples,
+            onDismiss = { 
+                selectedSession = null
+                viewModel.clearHeartRate()
+            }
+        )
     }
 }
 

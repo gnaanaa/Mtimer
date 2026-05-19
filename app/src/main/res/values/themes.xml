@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Mtimer" parent="android:Theme.Material.NoActionBar" />
+    <style name="Theme.Mtimer" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Google Play Console requires edge-to-edge support for SDK 35 -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
 </resources>

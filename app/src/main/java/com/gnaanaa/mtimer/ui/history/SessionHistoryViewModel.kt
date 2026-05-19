@@ -16,6 +16,15 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
+import com.gnaanaa.mtimer.data.sync.fetchHeartRateRange
+import androidx.health.connect.client.records.HeartRateRecord
+import java.time.Instant
+import dagger.hilt.android.qualifiers.ApplicationContext
+import android.content.Context
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
 data class HistoryUiState(
     val isLoading: Boolean = true,
     val sessionCount: Int = 0,
@@ -26,11 +35,15 @@ data class HistoryUiState(
 
 @HiltViewModel
 class SessionHistoryViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val sessionRepository: SessionRepository,
     private val getWeeklyChartDataUseCase: GetWeeklyChartDataUseCase
 ) : ViewModel() {
 
     private val monthYearFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+
+    private val _heartRateSamples = MutableStateFlow<List<HeartRateRecord.Sample>>(emptyList())
+    val heartRateSamples = _heartRateSamples.asStateFlow()
 
     val uiState: StateFlow<HistoryUiState> = combine(
         sessionRepository.getSessionCount(),
@@ -54,4 +67,20 @@ class SessionHistoryViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = HistoryUiState(isLoading = false) // Start without loader
     )
+
+    fun fetchHeartRate(session: Session) {
+        viewModelScope.launch {
+            val start = Instant.ofEpochMilli(session.startTime)
+            val end = if (session.endTime > session.startTime) {
+                Instant.ofEpochMilli(session.endTime)
+            } else {
+                start.plusSeconds(session.durationSeconds.toLong())
+            }
+            _heartRateSamples.value = fetchHeartRateRange(context, start, end)
+        }
+    }
+
+    fun clearHeartRate() {
+        _heartRateSamples.value = emptyList()
+    }
 }

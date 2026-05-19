@@ -95,7 +95,7 @@ fun AboutScreen(
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Text(
-                    text = "VERSION 1.1.6".styleDottedDigits(),
+                    text = "VERSION 1.1.7".styleDottedDigits(),
                     fontFamily = InterFont,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,

@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -160,6 +161,9 @@ fun PresetEditScreen(
                     }
                 },
                 actions = {
+                    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+                    val accentColor = if (isDark) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary
+
                     IconButton(onClick = {
                         val totalSeconds = (durationHours * 3600) + (durationMins * 60)
                         if (totalSeconds <= 0) {
@@ -180,7 +184,11 @@ fun PresetEditScreen(
                         viewModel.savePreset(preset)
                         onBack()
                     }) {
-                        Icon(Icons.Default.Check, contentDescription = "Save")
+                        Icon(
+                            imageVector = Icons.Default.Check, 
+                            contentDescription = "Save",
+                            tint = if (isDark) accentColor else LocalContentColor.current
+                        )
                     }
                 }
             )

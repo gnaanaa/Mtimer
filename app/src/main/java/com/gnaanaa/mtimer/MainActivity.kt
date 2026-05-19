@@ -85,8 +85,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+                        modifier = Modifier.fillMaxSize()
                     ) { innerPadding ->
                         MTimerNavGraph(
                             navController = navController,
