@@ -45,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -226,7 +227,9 @@ fun SettingsScreen(
                             onClick = { viewModel.openHC(context) },
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier.height(32.dp),
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF007BFF).copy(alpha = 0.5f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF007BFF))
                         ) {
                             Text("MANAGE PERMISSIONS", fontFamily = InterFont, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
@@ -308,11 +311,18 @@ fun SettingsScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            val electricBlue = Color(0xFF007BFF)
+                            val softRed = Color(0xFFEF5350)
+                            
                             OutlinedButton(
                                 onClick = { viewModel.syncDrive(context) },
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(32.dp),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, electricBlue.copy(alpha = 0.5f)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = electricBlue)
                             ) {
-                                Text("FORCE CLOUD SYNC", fontFamily = InterFont, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("FORCE CLOUD SYNC", fontFamily = InterFont, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             OutlinedButton(
                                 onClick = {
@@ -320,9 +330,13 @@ fun SettingsScreen(
                                         viewModel.updateGoogleAccount(context, null)
                                     }
                                 },
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(32.dp),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, softRed.copy(alpha = 0.5f)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = softRed)
                             ) {
-                                Text("SIGN OUT", fontFamily = InterFont, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                Text("SIGN OUT", fontFamily = InterFont, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     } else {
@@ -334,14 +348,17 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 1.0f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
+                        val meditationGreen = Color(0xFF4CAF50)
                         Button(
                             onClick = {
                                 googleSignInLauncher.launch(googleSignInClient.signInIntent)
                             },
-                            modifier = Modifier.align(Alignment.End),
-                            shape = RoundedCornerShape(12.dp)
+                            modifier = Modifier.align(Alignment.End).height(32.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = meditationGreen)
                         ) {
-                            Text("SIGN IN", fontFamily = InterFont, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("SIGN IN", fontFamily = InterFont, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -355,21 +372,23 @@ fun SettingsScreen(
             ) {
                 OutlinedButton(
                     onClick = { exportLauncher.launch("mtimer_backup.json") },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier.weight(1f).height(32.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp)
                 ) {
-                    Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("EXPORT", fontFamily = InterFont, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("EXPORT", fontFamily = InterFont, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
                 OutlinedButton(
                     onClick = { importLauncher.launch(arrayOf("application/json", "application/octet-stream")) },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier.weight(1f).height(32.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp)
                 ) {
-                    Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("IMPORT", fontFamily = InterFont, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("IMPORT", fontFamily = InterFont, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
 

@@ -6,11 +6,14 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,11 +30,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -67,29 +71,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.*
-
-@Composable
-fun rememberVibrator(): (Int) -> Unit {
-    val context = LocalContext.current
-    val vibrator = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
-            vibratorManager.defaultVibrator
-        } else {
-            @Suppress("DEPRECATION")
-            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        }
-    }
-
-    return remember(vibrator) {
-        { durationMillis ->
-            if (vibrator.hasVibrator()) {
-                vibrator.vibrate(VibrationEffect.createOneShot(durationMillis.toLong(), VibrationEffect.DEFAULT_AMPLITUDE))
-            }
-        }
-    }
-}
-
 
 @OptIn(ExperimentalTextApi::class)
 val DotMatrix = FontFamily(
@@ -393,7 +374,8 @@ fun PresetDial(
     onSelected: (Preset) -> Unit,
     onStart: () -> Unit
 ) {
-    val vibrate = rememberVibrator()
+    val haptic = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
     val step = if (presets.isEmpty()) 0f else 360f / presets.size
     val rotation = remember { Animatable(0f) }
 
@@ -404,39 +386,40 @@ fun PresetDial(
         derivedStateOf { indexFromRotation(rotation.value) }
     }
 
+    suspend fun animateToTarget(targetIndex: Int) {
+        if (targetIndex == -1) return
+        val rawTarget = -targetIndex * step
+        val currentRot = rotation.value
+        val turns = ((currentRot - rawTarget) / 360f).roundToInt()
+        val targetRotation = rawTarget + turns * 360f
+        rotation.animateTo(
+            targetValue = targetRotation,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            )
+        )
+    }
+
     // Haptic feedback when the index changes during rotation
     LaunchedEffect(currentIndex) {
         if (rotation.isRunning || rotation.value != 0f) {
-            vibrate(15) // Short tick
-        }
-    }
-
-    LaunchedEffect(currentIndex, presets) {
-        if (presets.isNotEmpty() && currentIndex < presets.size) {
-            onSelected(presets[currentIndex])
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) // Light tick
         }
     }
 
     LaunchedEffect(selectedPreset, presets) {
         val targetIndex = presets.indexOf(selectedPreset)
-        if (targetIndex != -1 && targetIndex != indexFromRotation(rotation.value)) {
-            val rawTarget = -targetIndex * step
-            val currentRot = rotation.value
-            val turns = ((currentRot - rawTarget) / 360f).roundToInt()
-            val targetRotation = rawTarget + turns * 360f
-            rotation.animateTo(
-                targetValue = targetRotation,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessMediumLow
-                )
-            )
-        }
+        animateToTarget(targetIndex)
     }
 
     val density = LocalDensity.current
     val radiusDp = 110.dp
     val radiusPx = with(density) { radiusDp.toPx() }
+
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+    val meditationGreen = Color(0xFF4CAF50)
+    val accentColor = if (isDark) meditationGreen else MaterialTheme.colorScheme.primary
 
     Box(
         modifier = Modifier
@@ -458,81 +441,167 @@ fun PresetDial(
                         val up = waitForUpOrCancellation()
                         if (up != null) {
                             onStart()
-                            vibrate(30) // Success thump
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress) // Success thump
                         }
                     } else {
                         // Dial Rotation Detection
-                        vibrate(10) // Touch start tick
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) // Touch start tick
                         var prevAngle = atan2(
                             down.position.y - centerY,
                             down.position.x - centerX
                         ).toDegrees()
 
-                        coroutineScope {
-                            launch { rotation.stop() }
+                        scope.launch { rotation.stop() }
 
-                            var moved = false
-                            do {
-                                val event = awaitPointerEvent()
-                                val pointer = event.changes.firstOrNull() ?: break
-                                
-                                if (event.type == PointerEventType.Move) {
-                                    moved = true
-                                    val curAngle = atan2(
-                                        pointer.position.y - centerY,
-                                        pointer.position.x - centerX
-                                    ).toDegrees()
-
-                                    var delta = curAngle - prevAngle
-                                    if (delta > 180f) delta -= 360f
-                                    if (delta < -180f) delta += 360f
-
-                                    launch { rotation.snapTo(rotation.value + delta) }
-                                    prevAngle = curAngle
-                                }
-                                
-                                pointer.consume()
-                                if (!pointer.pressed) break
-                            } while (true)
-
-                            if (!moved) {
-                                // Tap on the dial area (but not a drag)
-                                // Calculate which preset was tapped
-                                val tapAngle = atan2(
-                                    down.position.y - centerY,
-                                    down.position.x - centerX
+                        var moved = false
+                        do {
+                            val event = awaitPointerEvent()
+                            val pointer = event.changes.firstOrNull() ?: break
+                            
+                            if (event.type == PointerEventType.Move) {
+                                moved = true
+                                val curAngle = atan2(
+                                    pointer.position.y - centerY,
+                                    pointer.position.x - centerX
                                 ).toDegrees()
+
+                                var delta = curAngle - prevAngle
+                                if (delta > 180f) delta -= 360f
+                                if (delta < -180f) delta += 360f
+
+                                val newRotation = rotation.value + delta
+                                scope.launch { rotation.snapTo(newRotation) }
                                 
-                                // Adjust angle to match current rotation
-                                val normalizedTapAngle = (tapAngle - rotation.value).mod(360f)
-                                val tappedIndex = (normalizedTapAngle / step).roundToInt().mod(presets.size)
-                                onSelected(presets[tappedIndex])
-                                vibrate(25)
-                            } else {
-                                val snappedIndex = indexFromRotation(rotation.value)
-                                vibrate(30) // Snap thump
+                                val newIndex = ((-newRotation / step).roundToInt()).mod(presets.size)
+                                onSelected(presets[newIndex])
 
-                                val rawTarget = -snappedIndex * step
-                                val currentRot = rotation.value
-                                val turns = ((currentRot - rawTarget) / 360f).roundToInt()
-                                val targetRotation = rawTarget + turns * 360f
-
-                                launch {
-                                    rotation.animateTo(
-                                        targetValue = targetRotation,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessMediumLow
-                                        )
-                                    )
-                                }
+                                prevAngle = curAngle
                             }
+                            
+                            pointer.consume()
+                            if (!pointer.pressed) break
+                        } while (true)
+
+                        if (!moved) {
+                            // Tap on the dial area (but not a drag)
+                            // Calculate which preset was tapped
+                            val tapAngle = atan2(
+                                down.position.y - centerY,
+                                down.position.x - centerX
+                            ).toDegrees()
+                            
+                            val targetIndex = ((tapAngle - rotation.value).mod(360f) / step).roundToInt().mod(presets.size)
+                            onSelected(presets[targetIndex])
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        } else {
+                            val snappedIndex = indexFromRotation(rotation.value)
+                            onSelected(presets[snappedIndex])
+                            scope.launch { animateToTarget(snappedIndex) }
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress) // Snap thump
                         }
                     }
                 }
             },
         contentAlignment = Alignment.Center
     ) {
+        // ── Constellation Background ──────────────────────────────────────
+        val constellationColor = if (isDark) Color(0xFFFFD54F) else Color(0xFF008080) // Yellow in Dark, Teal in Light
+        val baseAlpha = if (isDark) 0.35f else 0.25f // Increased visibility
+        val gridColor = constellationColor.copy(alpha = baseAlpha)
+
+        if (presets.size >= 3) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val cx = size.width / 2f
+                val cy = size.height / 2f
+                
+                val points = presets.mapIndexed { index, _ ->
+                    val worldAngleDeg = rotation.value + index * step
+                    val rad = Math.toRadians(worldAngleDeg.toDouble())
+                    Offset(
+                        x = cx + (radiusPx * cos(rad)).toFloat(),
+                        y = cy + (radiusPx * sin(rad)).toFloat()
+                    )
+                }
+
+                // Draw Concentric Geometry (Background)
+                val ringStep = 36.dp.toPx()
+                val polygonSides = 12
+                for (i in 0..2) {
+                    val r = radiusPx + (i * ringStep)
+                    
+                    // Middle geometry (i=1) rotates in the opposite direction
+                    val currentRingRotation = if (i == 1) -rotation.value else rotation.value
+                    
+                    if (i == 1) {
+                        // Middle one is a Polygon
+                        val polyPoints = (0 until polygonSides).map { j ->
+                            val angle = Math.toRadians((j * (360f / polygonSides)).toDouble() + currentRingRotation.toDouble())
+                            Offset(
+                                x = cx + (r * cos(angle)).toFloat(),
+                                y = cy + (r * sin(angle)).toFloat()
+                            )
+                        }
+                        // Draw Polygon edges
+                        for (j in polyPoints.indices) {
+                            val p1 = polyPoints[j]
+                            val p2 = polyPoints[(j + 1) % polyPoints.size]
+                            drawLine(
+                                color = gridColor,
+                                start = p1,
+                                end = p2,
+                                strokeWidth = 1.dp.toPx()
+                            )
+                        }
+                    } else {
+                        // Inner (i=0) and Outermost (i=2) are Circles
+                        drawCircle(
+                            color = gridColor,
+                            radius = r,
+                            center = Offset(cx, cy),
+                            style = Stroke(width = 0.5.dp.toPx())
+                        )
+                    }
+                }
+
+                // Draw Cross-Connections (Triangles/Star pattern)
+                // Connect each point to its "near opposite" neighbors.
+                // For N points, offset of approx N/2. 
+                // We'll use (index + N/2 - 1) and (index + N/2 + 1) to create triangles across the center.
+                if (presets.size >= 4) {
+                    val offset1 = (presets.size / 2) - 1
+                    val offset2 = (presets.size / 2) + 1
+                    
+                    for (i in points.indices) {
+                        val pTarget1 = points[(i + offset1) % points.size]
+                        val pTarget2 = points[(i + offset2) % points.size]
+                        
+                        drawLine(
+                            color = gridColor.copy(alpha = gridColor.alpha * 0.75f), // Reduced from 0.8f by 5% (relative)
+                            start = points[i],
+                            end = pTarget1,
+                            strokeWidth = 0.8.dp.toPx()
+                        )
+                        drawLine(
+                            color = gridColor.copy(alpha = gridColor.alpha * 0.75f),
+                            start = points[i],
+                            end = pTarget2,
+                            strokeWidth = 0.8.dp.toPx()
+                        )
+                    }
+                } else if (presets.size == 3) {
+                    // For exactly 3, we just have the spokes or center connection
+                    points.forEach { p ->
+                        drawLine(
+                            color = gridColor.copy(alpha = gridColor.alpha * 0.75f),
+                            start = p,
+                            end = Offset(cx, cy),
+                            strokeWidth = 0.8.dp.toPx()
+                        )
+                    }
+                }
+            }
+        }
+
         // ── Dial Items (Presets) ──────────────────────────────────────────
 
         presets.forEachIndexed { index, preset ->
@@ -550,7 +619,9 @@ fun PresetDial(
                         .offset(xDp, yDp)
                         .width(130.dp)
                         .scale(1.15f)
-                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                        .zIndex(1f) // Bring selected preset to the front
+                        .background(MaterialTheme.colorScheme.background, RoundedCornerShape(4.dp)) // Matches theme background
+                        .border(BorderStroke(2.dp, accentColor.copy(alpha = 0.7f)), RoundedCornerShape(4.dp))
                         .padding(horizontal = 4.dp, vertical = 2.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -562,7 +633,8 @@ fun PresetDial(
                         letterSpacing = 1.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.basicMarquee()
                     )
                 }
             } else {
@@ -583,16 +655,11 @@ fun PresetDial(
         }
 
         // ── Central Start Button ──────────────────────────────────────────
-        val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
-        val meditationGreen = Color(0xFF4CAF50)
-        val accentColor = if (isDark) meditationGreen else MaterialTheme.colorScheme.primary
-        
         Surface(
-            onClick = {}, // Handled by pointerInput for better control
             modifier = Modifier.size(120.dp),
             shape = CircleShape,
-            color = accentColor.copy(alpha = 0.12f),
-            border = BorderStroke(2.dp, accentColor.copy(alpha = 0.4f))
+            color = accentColor.copy(alpha = 0.25f), // Increased from 0.12f for better visibility
+            border = BorderStroke(2.dp, accentColor.copy(alpha = 0.7f)) // Increased from 0.4f
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

@@ -77,15 +77,31 @@ fun WeeklyMinutesChart(
             
             val stepX = chartWidth / (minutes.size - 1)
             
-            // Draw horizontal guide lines
+            // Draw grid lines
+            val gridAlpha = if (isDark) 0.12f else 0.05f
+            val gridColor = onSurfaceColor.copy(alpha = gridAlpha)
+            val strokeWidth = 1.dp.toPx()
+
+            // Draw horizontal guide lines (Y-axis)
             val guideLines = 4
             for (i in 0..guideLines) {
                 val y = paddingY + (chartHeight / guideLines) * i
                 drawLine(
-                    color = onSurfaceColor.copy(alpha = 0.05f),
+                    color = gridColor,
                     start = Offset(paddingX, y),
                     end = Offset(width - paddingX, y),
-                    strokeWidth = 1.dp.toPx()
+                    strokeWidth = strokeWidth
+                )
+            }
+
+            // Draw vertical guide lines (X-axis)
+            for (i in 0 until minutes.size) {
+                val x = paddingX + i * stepX
+                drawLine(
+                    color = gridColor,
+                    start = Offset(x, paddingY),
+                    end = Offset(x, paddingY + chartHeight),
+                    strokeWidth = strokeWidth
                 )
             }
 
@@ -176,10 +192,11 @@ fun WeeklyMinutesChart(
             // Draw abbreviated labels
             val paint = android.graphics.Paint().apply {
                 color = onSurfaceArgb
-                alpha = 100
+                alpha = 140 // Slightly more visible for dot matrix
                 textSize = 9.sp.toPx()
                 textAlign = android.graphics.Paint.Align.CENTER
-                typeface = android.graphics.Typeface.create("sans-serif", android.graphics.Typeface.NORMAL)
+                // Use DotMatrix-like typeface if possible, or just regular sans
+                typeface = android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD)
             }
 
             // Show labels for first, mid, and last

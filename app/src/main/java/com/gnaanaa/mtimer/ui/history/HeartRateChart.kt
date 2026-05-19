@@ -33,6 +33,7 @@ fun HeartRateChart(
     val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
     val meditationGreen = Color(0xFF4CAF50)
     val accentColor = if (isDark) meditationGreen else MaterialTheme.colorScheme.primary
+    val gridColor = MaterialTheme.colorScheme.onSurface
     
     val bpmValues = samples.map { it.beatsPerMinute.toFloat() }
     val minBpm = bpmValues.minOrNull() ?: 0f
@@ -96,6 +97,34 @@ fun HeartRateChart(
 
             val width = size.width
             val height = size.height
+            
+            // Draw grid lines
+            val gridAlpha = if (isDark) 0.12f else 0.08f
+            
+            // Horizontal grid lines (BPM) - 3 lines: min, mid, max
+            val horizontalLines = 3
+            for (i in 0 until horizontalLines) {
+                val y = height * i / (horizontalLines - 1)
+                drawLine(
+                    color = gridColor.copy(alpha = gridAlpha),
+                    start = Offset(0f, y),
+                    end = Offset(width, y),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+            
+            // Vertical grid lines (Time) - 5 lines across the width
+            val verticalLines = 5
+            for (i in 0 until verticalLines) {
+                val x = width * i / (verticalLines - 1)
+                drawLine(
+                    color = gridColor.copy(alpha = gridAlpha),
+                    start = Offset(x, 0f),
+                    end = Offset(x, height),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+
             val stepX = width / (samples.size - 1)
 
             val points = bpmValues.mapIndexed { index, bpm ->

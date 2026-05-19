@@ -170,6 +170,7 @@ fun MainContainer(
                     label = "RATE THIS APP",
                     subtext = "HELPS US GROW",
                     icon = Icons.Default.Star,
+                    iconTint = Color(0xFF42A5F5).copy(alpha = 0.4f), // More subtle blue
                     onClick = {
                         scope.launch {
                             drawerState.close()
@@ -191,6 +192,7 @@ fun MainContainer(
                     label = "SUPPORT THIS APP",
                     subtext = "NO ADS, NO SUBSCRIPTION",
                     icon = Icons.Default.Favorite,
+                    iconTint = Color(0xFFEF5350).copy(alpha = 0.4f), // More subtle red
                     onClick = {
                         scope.launch {
                             drawerState.close()
@@ -280,6 +282,7 @@ private fun DrawerActionItem(
     label: String,
     subtext: String,
     icon: ImageVector,
+    iconTint: Color? = null,
     onClick: () -> Unit
 ) {
     Surface(
@@ -299,7 +302,8 @@ private fun DrawerActionItem(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
+                tint = iconTint ?: LocalContentColor.current
             )
             Spacer(Modifier.width(16.dp))
             Column {
