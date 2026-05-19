@@ -50,6 +50,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import com.gnaanaa.mtimer.ui.history.HeartRateChart
 import androidx.health.connect.client.records.HeartRateRecord
@@ -426,6 +427,9 @@ fun PresetDial(
                     coroutineScope {
                         awaitPointerEventScope {
                             val down = awaitFirstDown(requireUnconsumed = false)
+                            // Trigger haptic on initial touch
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            
                             var prevAngle = atan2(
                                 down.position.y - centerY,
                                 down.position.x - centerX
@@ -436,23 +440,29 @@ fun PresetDial(
                             do {
                                 val event = awaitPointerEvent()
                                 val pointer = event.changes.firstOrNull() ?: break
-                                if (!pointer.pressed) break
+                                
+                                if (event.type == PointerEventType.Move) {
+                                    val curAngle = atan2(
+                                        pointer.position.y - centerY,
+                                        pointer.position.x - centerX
+                                    ).toDegrees()
 
-                                val curAngle = atan2(
-                                    pointer.position.y - centerY,
-                                    pointer.position.x - centerX
-                                ).toDegrees()
+                                    var delta = curAngle - prevAngle
+                                    if (delta > 180f) delta -= 360f
+                                    if (delta < -180f) delta += 360f
 
-                                var delta = curAngle - prevAngle
-                                if (delta > 180f) delta -= 360f
-                                if (delta < -180f) delta += 360f
-
-                                launch { rotation.snapTo(rotation.value + delta) }
-                                prevAngle = curAngle
+                                    launch { rotation.snapTo(rotation.value + delta) }
+                                    prevAngle = curAngle
+                                }
+                                
                                 pointer.consume()
+                                if (!pointer.pressed) break
                             } while (true)
 
                             val snappedIndex = indexFromRotation(rotation.value)
+                            // Trigger stronger haptic on release/snap
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
                             val rawTarget = -snappedIndex * step
                             val currentRot = rotation.value
                             val turns = ((currentRot - rawTarget) / 360f).roundToInt()
