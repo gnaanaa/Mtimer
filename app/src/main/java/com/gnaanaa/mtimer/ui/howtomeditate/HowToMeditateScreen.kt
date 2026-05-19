@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +41,7 @@ fun HowToMeditateScreen(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("HOW TO MEDITATE", fontFamily = DotMatrix, letterSpacing = 2.sp) },
+                title = { Text("HOW TO MEDITATE", fontFamily = DotMatrix, letterSpacing = 2.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Default.Menu, contentDescription = "Menu")
@@ -53,28 +55,30 @@ fun HowToMeditateScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = Spacing.medium)
         ) {
+            Spacer(Modifier.height(Spacing.tiny))
             Text(
                 "A PRACTICAL GUIDE FOR EVERY LEVEL",
                 fontFamily = InterFont,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Spacing.tiny))
             Text(
                 "These are time-tested methods drawn from living yogic traditions in India — some over a thousand years old. They have been adapted here for clarity and accessibility, without diluting their depth. No prior belief, background, or flexibility required.",
                 fontFamily = InterFont,
                 fontSize = 15.sp,
                 lineHeight = 22.sp,
-                letterSpacing = 0.5.sp
+                letterSpacing = 0.5.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(Spacing.large))
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(Spacing.large))
 
             SectionTitle("BEFORE YOU BEGIN")
             
@@ -84,9 +88,9 @@ fun HowToMeditateScreen(
             BulletPoint("DURATION", "Start shorter than you think you need. Ten focused minutes beats forty restless ones. Build gradually — the capacity to sit deepens on its own with regular practice.")
             BulletPoint("ATTITUDE", "This is not a performance and there is no grade. Nothing special needs to happen. The instruction is simply to sit, pay attention, and return when you've drifted. That's the whole practice.")
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(Spacing.large))
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(Spacing.large))
 
             SectionTitle("METHODS")
             
@@ -358,13 +362,16 @@ private fun MethodAccordion(
         else -> MaterialTheme.colorScheme.outline
     }
 
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
+            .padding(vertical = Spacing.micro),
+        shape = RoundedCornerShape(Radius.medium),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (expanded) 0.4f else 0.2f)
+            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f) 
+                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (expanded) 0.4f else 0.2f)
         )
     ) {
         Column {
@@ -372,16 +379,16 @@ private fun MethodAccordion(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { expanded = !expanded }
-                    .padding(16.dp),
+                    .padding(Spacing.medium),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(8.dp)
+                        .size(Spacing.tiny)
                         .clip(CircleShape)
                         .background(dotColor)
                 )
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(Spacing.small))
                 Text(
                     text = "$number. ${title.uppercase()}".styleDottedDigits(),
                     fontFamily = InterFont,
@@ -393,7 +400,7 @@ private fun MethodAccordion(
                 Icon(
                     imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                 )
             }
             
@@ -402,35 +409,34 @@ private fun MethodAccordion(
                 enter = expandVertically(),
                 exit = shrinkVertically()
             ) {
-                Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
+                Column(modifier = Modifier.padding(start = Spacing.medium, end = Spacing.medium, bottom = Spacing.medium)) {
                     Text(
                         "Also known as: $alsoKnownAs",
                         fontFamily = InterFont,
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
                     Text(
                         "Level: $level",
                         fontFamily = InterFont,
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
                     Text(
                         text = "Recommended duration: $duration".styleDottedDigits(),
                         fontFamily = InterFont,
                         fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(Spacing.small))
                     content()
-                    Spacer(Modifier.height(16.dp))
-                    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+                    Spacer(Modifier.height(Spacing.medium))
                     val accentColor = if (isDark) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary
 
                     Button(
                         onClick = { onCreatePreset(title, durationMins) },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedCornerShape(Radius.small),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = accentColor.copy(alpha = if (isDark) 0.15f else 0.8f),
                             contentColor = if (isDark) accentColor else MaterialTheme.colorScheme.onPrimary

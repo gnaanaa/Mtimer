@@ -19,6 +19,8 @@ val MTimerDarkColorScheme = darkColorScheme(
     surface = MTimerDarkSurface,
     onBackground = MTimerDarkOnBackground,
     onSurface = MTimerDarkOnSurface,
+    surfaceVariant = MTimerDarkSurfaceVariant,
+    onSurfaceVariant = MTimerDarkOnSurfaceVariant,
     secondary = MTimerDarkSecondary,
     outline = MTimerDarkOutline
 )

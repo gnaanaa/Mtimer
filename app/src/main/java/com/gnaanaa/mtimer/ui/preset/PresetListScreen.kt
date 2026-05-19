@@ -25,10 +25,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.gnaanaa.mtimer.R
 import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
+import androidx.compose.ui.zIndex
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +48,7 @@ fun PresetListScreen(
     val presets = uiState.presets
     var presetToDelete by remember { mutableStateOf<Preset?>(null) }
 
-    Scaffold(
+        Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
@@ -53,7 +57,8 @@ fun PresetListScreen(
                         Text(
                             "PRESETS",
                             fontFamily = DotMatrix,
-                            letterSpacing = 4.sp
+                            letterSpacing = 4.sp,
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "${presets.size} CONFIGURED".styleDottedDigits(),
@@ -61,7 +66,7 @@ fun PresetListScreen(
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.7f)
                         )
                     }
                 },
@@ -98,7 +103,7 @@ fun PresetListScreen(
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
                 )
             }
         } else {
@@ -106,9 +111,9 @@ fun PresetListScreen(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                    .padding(horizontal = Spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(Spacing.tiny),
+                contentPadding = PaddingValues(vertical = Spacing.medium)
             ) {
                 items(presets, key = { it.id }) { preset ->
                     PresetItem(
@@ -173,17 +178,18 @@ fun PresetItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
+            .height(72.dp) // Consistent with HistoryRow
             .background(
-                if (isDark) accentColor.copy(alpha = 0.12f) else primaryColor.copy(alpha = 0.05f),
-                shape = MaterialTheme.shapes.large
+                if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+                else primaryColor.copy(alpha = 0.04f),
+                shape = RoundedCornerShape(Radius.medium)
             )
             .border(
                 width = 1.dp,
-                color = if (isDark) accentColor.copy(alpha = 0.3f) else Color.Transparent,
-                shape = MaterialTheme.shapes.large
+                color = primaryColor.copy(alpha = if (isDark) 0.1f else 0.08f),
+                shape = RoundedCornerShape(Radius.medium)
             )
-            .clip(MaterialTheme.shapes.large)
+            .clip(RoundedCornerShape(Radius.medium))
             .clickable(onClick = onStart),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -191,7 +197,7 @@ fun PresetItem(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .padding(start = 20.dp),
+                .padding(start = Spacing.medium),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Lotus icon
@@ -202,7 +208,7 @@ fun PresetItem(
                 tint = accentColor
             )
 
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.width(Spacing.medium))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -224,13 +230,13 @@ fun PresetItem(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp,
-                    color = accentColor
+                    color = accentColor.copy(alpha = 0.9f)
                 )
             }
 
             IconButton(
                 onClick = onEdit,
-                modifier = Modifier.padding(horizontal = 2.dp)
+                modifier = Modifier.padding(horizontal = Spacing.nano)
             ) {
                 Icon(
                     Icons.Default.Edit,
@@ -242,7 +248,7 @@ fun PresetItem(
 
             IconButton(
                 onClick = onDelete,
-                modifier = Modifier.padding(horizontal = 2.dp)
+                modifier = Modifier.padding(horizontal = Spacing.nano)
             ) {
                 Icon(
                     Icons.Default.Delete,

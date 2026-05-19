@@ -47,6 +47,8 @@ import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.alignColons
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 import com.gnaanaa.mtimer.domain.model.TimerState
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
 import androidx.compose.ui.text.font.FontWeight
 
 @Composable
@@ -118,7 +120,7 @@ fun TimerScreen(
             )
 
             if (!isZenMode) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Spacing.small))
 
             Text(
                 text = labelText.uppercase().styleDottedDigits(),
@@ -135,8 +137,8 @@ fun TimerScreen(
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(24.dp)
-                .size(48.dp)
+                .padding(Spacing.large)
+                .size(Spacing.huge)
                 .clickable { isZenMode = !isZenMode },
             contentAlignment = Alignment.Center
         ) {
@@ -144,7 +146,7 @@ fun TimerScreen(
                 imageVector = if (isZenMode) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                 contentDescription = "Zen Mode",
                 tint = if (isZenMode) Color.White.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.5f),
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(Spacing.large)
             )
         }
 
@@ -152,8 +154,8 @@ fun TimerScreen(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 48.dp)
-                    .size(48.dp)
+                    .padding(bottom = Spacing.huge)
+                    .size(Spacing.huge)
                     .clickable {
                         viewModel.stopTimer()
                         onClose()
@@ -164,7 +166,7 @@ fun TimerScreen(
                     imageVector = Icons.Default.Stop,
                     contentDescription = "Stop",
                     tint = Color.White,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(Spacing.extraLarge)
                 )
             }
         }

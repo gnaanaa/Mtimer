@@ -30,6 +30,8 @@ import com.gnaanaa.mtimer.ui.home.SessionDetailDialog
 import com.gnaanaa.mtimer.ui.home.formatDurationAligned
 import com.gnaanaa.mtimer.ui.home.alignColons
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.health.connect.client.records.HeartRateRecord
 import java.text.SimpleDateFormat
@@ -61,7 +63,8 @@ fun SessionHistoryScreen(
                     Text(
                         "HISTORY",
                         fontFamily = DotMatrix,
-                        letterSpacing = 4.sp
+                        letterSpacing = 4.sp,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 },
                 navigationIcon = {
@@ -84,7 +87,7 @@ fun SessionHistoryScreen(
                     fontFamily = DotMatrix,
                     fontSize = 12.sp,
                     letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             }
         } else {
@@ -92,28 +95,28 @@ fun SessionHistoryScreen(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                contentPadding = PaddingValues(Spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(Spacing.tiny)
             ) {
                 item {
                     PracticeSummaryCard(sessionCount, totalDuration)
                     
                     chartData?.let { data ->
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(Spacing.large))
                         WeeklyStatsRow(
                             thisWeek = data.thisWeekMinutes,
                             bestWeek = data.bestWeekMinutes,
                             avg = data.averageMinutes
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(Spacing.medium))
                         WeeklyMinutesChart(
                             minutes = data.weeklyMinutes,
                             labels = data.labels,
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                            modifier = Modifier.padding(horizontal = Spacing.tiny)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(Spacing.large))
                 }
 
                 groupedSessions.forEach { (monthYear, sessionsInGroup) ->
@@ -127,7 +130,7 @@ fun SessionHistoryScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
+                                    .padding(vertical = Spacing.tiny),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -138,7 +141,7 @@ fun SessionHistoryScreen(
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
                                         letterSpacing = 1.sp,
-                                        color = MaterialTheme.colorScheme.primary
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                                     )
                                     if (!isExpanded) {
                                         val totalSeconds = sessionsInGroup.sumOf { it.durationSeconds.toLong() }
@@ -151,7 +154,7 @@ fun SessionHistoryScreen(
                                             fontFamily = InterFont,
                                             fontSize = 11.sp,
                                             letterSpacing = 0.5.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                                         )
                                     }
                                 }
@@ -162,7 +165,7 @@ fun SessionHistoryScreen(
                                     else 
                                         Icons.Default.KeyboardArrowDown,
                                     contentDescription = if (isExpanded) "Collapse" else "Expand",
-                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                                 )
                             }
                         }
@@ -180,7 +183,7 @@ fun SessionHistoryScreen(
                         }
                         
                         item {
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(Spacing.medium))
                         }
                     }
                 }
@@ -247,18 +250,20 @@ fun StatItem(label: String, value: Any) {
 
 @Composable
 fun PracticeSummaryCard(count: Int, totalSeconds: Long) {
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
     val hours = totalSeconds / 3600
     val minutes = (totalSeconds % 3600) / 60
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(Radius.large),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+                            else MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
         )
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
+            modifier = Modifier.padding(Spacing.medium),
             horizontalAlignment = Alignment.Start
         ) {
             Text(
@@ -267,9 +272,9 @@ fun PracticeSummaryCard(count: Int, totalSeconds: Long) {
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Spacing.small))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -289,7 +294,7 @@ fun PracticeSummaryCard(count: Int, totalSeconds: Long) {
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                         letterSpacing = 0.5.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
@@ -306,7 +311,7 @@ fun PracticeSummaryCard(count: Int, totalSeconds: Long) {
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                         letterSpacing = 0.5.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
             }
@@ -316,15 +321,21 @@ fun PracticeSummaryCard(count: Int, totalSeconds: Long) {
 
 @Composable
 fun SessionItem(session: Session, onClick: () -> Unit) {
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+    val primaryColor = MaterialTheme.colorScheme.primary
     val dateFormat = remember { SimpleDateFormat("MMM dd • HH:mm", Locale.getDefault()) }
     
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            .height(72.dp) // Consistent with other items
+            .clip(RoundedCornerShape(Radius.medium))
+            .background(
+                if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+                else primaryColor.copy(alpha = 0.04f)
+            )
             .clickable(onClick = onClick)
-            .padding(16.dp),
+            .padding(horizontal = Spacing.medium),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -337,18 +348,18 @@ fun SessionItem(session: Session, onClick: () -> Unit) {
                 letterSpacing = 0.5.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
             )
             Text(
                 text = dateFormat.format(Date(session.startTime)).uppercase().alignColons(),
                 fontFamily = InterFont,
                 fontSize = 11.sp,
                 letterSpacing = 0.5.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.95f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
         }
         
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(Spacing.medium))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -359,13 +370,13 @@ fun SessionItem(session: Session, onClick: () -> Unit) {
                 letterSpacing = 1.sp
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(Spacing.small))
 
             Icon(
                 imageVector = if (session.completed) Icons.Default.CheckCircle else Icons.Default.Cancel,
                 contentDescription = if (session.completed) "COMPLETED" else "STOPPED",
                 modifier = Modifier.size(20.dp),
-                tint = if (session.completed) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
+                tint = if (session.completed) Color(0xFF4CAF50).copy(0.9f) else MaterialTheme.colorScheme.error.copy(0.9f)
             )
         }
     }
