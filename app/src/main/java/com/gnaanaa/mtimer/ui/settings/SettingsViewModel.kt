@@ -16,6 +16,7 @@ import com.gnaanaa.mtimer.data.db.toEntity
 import com.gnaanaa.mtimer.data.db.toDomain
 import com.gnaanaa.mtimer.data.db.PresetEntity
 import com.gnaanaa.mtimer.data.sync.BackupData
+import com.gnaanaa.mtimer.ui.theme.ThemeMode
 import com.gnaanaa.mtimer.data.sync.hasAllPermissions
 import com.gnaanaa.mtimer.data.sync.openHealthConnectSettings
 import com.gnaanaa.mtimer.data.sync.HealthConnectSyncWorker
@@ -132,9 +133,18 @@ class SettingsViewModel @Inject constructor(
     val isHealthConnectEnabled: StateFlow<Boolean> = userPreferencesDataStore.isHealthConnectEnabled
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
+    val themeMode: StateFlow<ThemeMode> = userPreferencesDataStore.themeMode
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ThemeMode.FOLLOW_SYSTEM)
+
     fun toggleTheme(useLight: Boolean) {
         viewModelScope.launch {
             userPreferencesDataStore.setUseLightTheme(useLight)
+        }
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        viewModelScope.launch {
+            userPreferencesDataStore.setThemeMode(mode)
         }
     }
 
