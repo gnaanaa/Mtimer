@@ -379,7 +379,7 @@ fun PresetDial(
     // Haptic feedback when the index changes during rotation
     LaunchedEffect(currentIndex) {
         if (rotation.isRunning || rotation.value != 0f) {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
     }
 
@@ -524,7 +524,10 @@ fun PresetDial(
                         .offset(xDp, yDp)
                         .alpha(0.5f)
                         .widthIn(max = 100.dp)
-                        .clickable { onSelected(preset) },
+                        .clickable { 
+                            onSelected(preset)
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onBackground
