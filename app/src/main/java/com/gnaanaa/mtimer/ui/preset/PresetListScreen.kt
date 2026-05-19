@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -72,10 +73,13 @@ fun PresetListScreen(
             )
         },
         floatingActionButton = {
+            val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
             FloatingActionButton(
                 onClick = onCreatePreset,
-                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                contentColor = MaterialTheme.colorScheme.primary
+                containerColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primary,
+                contentColor = if (isDark) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary,
+                shape = CircleShape,
+                elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Preset")
             }
