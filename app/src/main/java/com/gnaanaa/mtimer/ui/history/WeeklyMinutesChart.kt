@@ -140,7 +140,7 @@ fun WeeklyMinutesChart(
             drawPath(
                 path = fillPath,
                 brush = Brush.verticalGradient(
-                    colors = listOf(chartColor.copy(alpha = 0.15f), Color.Transparent),
+                    colors = listOf(chartColor.copy(alpha = if (isDark) 0.3f else 0.15f), Color.Transparent),
                     startY = paddingY,
                     endY = paddingY + chartHeight
                 )
