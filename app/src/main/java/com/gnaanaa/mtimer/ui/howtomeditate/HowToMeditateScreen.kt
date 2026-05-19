@@ -3,6 +3,7 @@ package com.gnaanaa.mtimer.ui.howtomeditate
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -423,13 +424,18 @@ private fun MethodAccordion(
                     Spacer(Modifier.height(12.dp))
                     content()
                     Spacer(Modifier.height(16.dp))
+                    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+                    val accentColor = if (isDark) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary
+
                     Button(
                         onClick = { onCreatePreset(title, durationMins) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-                        )
+                            containerColor = accentColor.copy(alpha = if (isDark) 0.15f else 0.8f),
+                            contentColor = if (isDark) accentColor else MaterialTheme.colorScheme.onPrimary
+                        ),
+                        border = if (isDark) BorderStroke(1.dp, accentColor.copy(alpha = 0.3f)) else null
                     ) {
                         Text(
                             text = "CREATE ${title.split("(")[0].trim().uppercase()} PRESET".styleDottedDigits(),

@@ -44,7 +44,10 @@ fun WeeklyMinutesChart(
         return
     }
 
-    val primaryColor = MaterialTheme.colorScheme.primary
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+    val meditationGreen = Color(0xFF4CAF50)
+    val chartColor = if (isDark) meditationGreen else MaterialTheme.colorScheme.primary
+
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     val surfaceColor = MaterialTheme.colorScheme.surface
     val onSurfaceArgb = onSurfaceColor.toArgb()
@@ -94,7 +97,7 @@ fun WeeklyMinutesChart(
 
             val path = Path().apply {
                 if (points.isNotEmpty()) {
-                    moveTo(points[0].x, points[0].y)
+                    points.firstOrNull()?.let { moveTo(it.x, it.y) }
                     for (i in 1 until points.size) {
                         // Drawing path based on animation progress (left to right)
                         if (i.toFloat() / (points.size - 1) <= animationProgress.value) {
@@ -137,7 +140,7 @@ fun WeeklyMinutesChart(
             drawPath(
                 path = fillPath,
                 brush = Brush.verticalGradient(
-                    colors = listOf(primaryColor.copy(alpha = 0.15f), Color.Transparent),
+                    colors = listOf(chartColor.copy(alpha = 0.15f), Color.Transparent),
                     startY = paddingY,
                     endY = paddingY + chartHeight
                 )
@@ -146,7 +149,7 @@ fun WeeklyMinutesChart(
             // Draw line
             drawPath(
                 path = path,
-                color = primaryColor,
+                color = chartColor,
                 style = Stroke(width = 2.dp.toPx())
             )
 
@@ -159,7 +162,7 @@ fun WeeklyMinutesChart(
                     center = lastPoint
                 )
                 drawCircle(
-                    color = primaryColor,
+                    color = chartColor,
                     radius = 3.dp.toPx(),
                     center = lastPoint
                 )

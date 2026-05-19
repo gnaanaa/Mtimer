@@ -251,8 +251,16 @@ fun StartSessionButton(
     onClick: () -> Unit
 ) {
     val isEffectiveEnabled = enabled || alwaysEnabled
+    val isDark = !MaterialTheme.colorScheme.primary.run { 
+        // Simple check: if background is dark, it's dark theme. 
+        // But better to check isSystemInDarkTheme or look at specific color values.
+        // Since we are inside a Composable, we can use isSystemInDarkTheme() or check the color scheme.
+        MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+    }
+    
     val primaryColor = MaterialTheme.colorScheme.primary
-    val startGreen = Color(0xFF4CAF50)
+    val meditationGreen = Color(0xFF4CAF50)
+    val accentColor = if (!isDark) primaryColor else meditationGreen
 
     Box(
         modifier = Modifier
@@ -261,11 +269,11 @@ fun StartSessionButton(
             .height(84.dp)
             .border(
                 width = 2.dp,
-                color = if (isEffectiveEnabled) startGreen.copy(alpha = 0.4f) else Color.Transparent,
+                color = if (isEffectiveEnabled) accentColor.copy(alpha = 0.4f) else Color.Transparent,
                 shape = RoundedCornerShape(16.dp)
             )
             .background(
-                if (isEffectiveEnabled) startGreen.copy(alpha = 0.15f)
+                if (isEffectiveEnabled) accentColor.copy(alpha = 0.15f)
                 else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(16.dp)
             )
@@ -285,7 +293,7 @@ fun StartSessionButton(
                 contentDescription = null,
                 modifier = Modifier.size(32.dp),
                 tint = if (isEffectiveEnabled)
-                    startGreen
+                    accentColor
                 else
                     MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
             )
@@ -299,7 +307,7 @@ fun StartSessionButton(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp,
                     color = if (isEffectiveEnabled)
-                        startGreen.copy(alpha = 0.8f)
+                        accentColor.copy(alpha = 0.8f)
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
                 )
@@ -319,7 +327,7 @@ fun StartSessionButton(
                 fontSize = 18.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = if (isEffectiveEnabled) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (isEffectiveEnabled) (if (isDark) Color.White else accentColor) else MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (labelOverride == null) {
                 selectedPreset?.let { preset ->
@@ -586,13 +594,16 @@ fun HistoryRow(
         }
 
         // Start Again Button (Fixed Width, Full Height)
-        val startGreen = Color(0xFF4CAF50)
+        val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+        val meditationGreen = Color(0xFF4CAF50)
+        val accentColor = if (isDark) meditationGreen else primaryColor
+
         Box(
             modifier = Modifier
                 .width(69.dp)
                 .fillMaxHeight()
-                .background(startGreen.copy(alpha = 0.15f))
-                .border(1.dp, startGreen.copy(alpha = 0.3f), RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
+                .background(accentColor.copy(alpha = 0.15f))
+                .border(1.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
                 .clickable(onClick = onStartAgain),
             contentAlignment = Alignment.Center
         ) {
@@ -604,7 +615,7 @@ fun HistoryRow(
                     imageVector = Icons.Default.Spa,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = startGreen
+                    tint = accentColor
                 )
                 val mins = (presetDurationSeconds ?: session.durationSeconds) / 60
                 Text(
@@ -612,7 +623,7 @@ fun HistoryRow(
                     fontFamily = InterFont,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = startGreen
+                    color = accentColor
                 )
             }
         }

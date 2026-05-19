@@ -225,22 +225,25 @@ fun PresetItem(
         }
 
         // Start Session Button (Fixed Width, Full Height)
-        val startGreen = Color(0xFF4CAF50)
+        val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+        val meditationGreen = Color(0xFF4CAF50)
+        val accentColor = if (isDark) meditationGreen else primaryColor
+
         Box(
             modifier = Modifier
                 .width(64.dp)
                 .fillMaxHeight()
-                .background(startGreen.copy(alpha = 0.15f))
+                .background(accentColor.copy(alpha = 0.15f))
                 .clickable(onClick = onStart),
             contentAlignment = Alignment.Center
         ) {
-            // Left Border
+            // Left Divider
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(1.dp)
                     .align(Alignment.CenterStart)
-                    .background(startGreen.copy(alpha = 0.2f))
+                    .background(accentColor.copy(alpha = 0.2f))
             )
 
             Column(
@@ -251,7 +254,7 @@ fun PresetItem(
                     imageVector = Icons.Default.Spa,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
-                    tint = startGreen
+                    tint = accentColor
                 )
                 val mins = preset.durationSeconds / 60
                 Text(
@@ -259,7 +262,7 @@ fun PresetItem(
                     fontFamily = InterFont,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = startGreen
+                    color = accentColor
                 )
             }
         }
