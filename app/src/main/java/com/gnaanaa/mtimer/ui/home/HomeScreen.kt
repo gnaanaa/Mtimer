@@ -1,12 +1,16 @@
 package com.gnaanaa.mtimer.ui.home
 
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,9 +35,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -52,9 +60,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import com.gnaanaa.mtimer.ui.history.HeartRateChart
 import androidx.health.connect.client.records.HeartRateRecord
 import kotlinx.coroutines.coroutineScope
@@ -62,6 +67,29 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.*
+
+@Composable
+fun rememberVibrator(): (Int) -> Unit {
+    val context = LocalContext.current
+    val vibrator = remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+    }
+
+    return remember(vibrator) {
+        { durationMillis ->
+            if (vibrator.hasVibrator()) {
+                vibrator.vibrate(VibrationEffect.createOneShot(durationMillis.toLong(), VibrationEffect.DEFAULT_AMPLITUDE))
+            }
+        }
+    }
+}
+
 
 @OptIn(ExperimentalTextApi::class)
 val DotMatrix = FontFamily(
@@ -365,7 +393,7 @@ fun PresetDial(
     onSelected: (Preset) -> Unit,
     onStart: () -> Unit
 ) {
-    val haptic = LocalHapticFeedback.current
+    val vibrate = rememberVibrator()
     val step = if (presets.isEmpty()) 0f else 360f / presets.size
     val rotation = remember { Animatable(0f) }
 
@@ -379,7 +407,7 @@ fun PresetDial(
     // Haptic feedback when the index changes during rotation
     LaunchedEffect(currentIndex) {
         if (rotation.isRunning || rotation.value != 0f) {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            vibrate(15) // Short tick
         }
     }
 
@@ -419,48 +447,70 @@ fun PresetDial(
                 val centerX = size.width / 2f
                 val centerY = size.height / 2f
 
-                forEachGesture {
-                    coroutineScope {
-                        awaitPointerEventScope {
-                            val down = awaitFirstDown(requireUnconsumed = false)
-                            
-                            // Only rotate if touching outside the center start button (roughly 80dp radius)
-                            val touchOffset = down.position
-                            val dist = sqrt((touchOffset.x - centerX).pow(2) + (touchOffset.y - centerY).pow(2))
-                            
-                            if (dist > with(density) { 60.dp.toPx() }) {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                var prevAngle = atan2(
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val touchOffset = down.position
+                    val dist = sqrt((touchOffset.x - centerX).pow(2) + (touchOffset.y - centerY).pow(2))
+                    
+                    // Center Start Button Detection (Radius ~60dp)
+                    if (dist < with(density) { 60.dp.toPx() }) {
+                        // Detect release on center button
+                        val up = waitForUpOrCancellation()
+                        if (up != null) {
+                            onStart()
+                            vibrate(30) // Success thump
+                        }
+                    } else {
+                        // Dial Rotation Detection
+                        vibrate(10) // Touch start tick
+                        var prevAngle = atan2(
+                            down.position.y - centerY,
+                            down.position.x - centerX
+                        ).toDegrees()
+
+                        coroutineScope {
+                            launch { rotation.stop() }
+
+                            var moved = false
+                            do {
+                                val event = awaitPointerEvent()
+                                val pointer = event.changes.firstOrNull() ?: break
+                                
+                                if (event.type == PointerEventType.Move) {
+                                    moved = true
+                                    val curAngle = atan2(
+                                        pointer.position.y - centerY,
+                                        pointer.position.x - centerX
+                                    ).toDegrees()
+
+                                    var delta = curAngle - prevAngle
+                                    if (delta > 180f) delta -= 360f
+                                    if (delta < -180f) delta += 360f
+
+                                    launch { rotation.snapTo(rotation.value + delta) }
+                                    prevAngle = curAngle
+                                }
+                                
+                                pointer.consume()
+                                if (!pointer.pressed) break
+                            } while (true)
+
+                            if (!moved) {
+                                // Tap on the dial area (but not a drag)
+                                // Calculate which preset was tapped
+                                val tapAngle = atan2(
                                     down.position.y - centerY,
                                     down.position.x - centerX
                                 ).toDegrees()
-
-                                launch { rotation.stop() }
-
-                                do {
-                                    val event = awaitPointerEvent()
-                                    val pointer = event.changes.firstOrNull() ?: break
-                                    
-                                    if (event.type == PointerEventType.Move) {
-                                        val curAngle = atan2(
-                                            pointer.position.y - centerY,
-                                            pointer.position.x - centerX
-                                        ).toDegrees()
-
-                                        var delta = curAngle - prevAngle
-                                        if (delta > 180f) delta -= 360f
-                                        if (delta < -180f) delta += 360f
-
-                                        launch { rotation.snapTo(rotation.value + delta) }
-                                        prevAngle = curAngle
-                                    }
-                                    
-                                    pointer.consume()
-                                    if (!pointer.pressed) break
-                                } while (true)
-
+                                
+                                // Adjust angle to match current rotation
+                                val normalizedTapAngle = (tapAngle - rotation.value).mod(360f)
+                                val tappedIndex = (normalizedTapAngle / step).roundToInt().mod(presets.size)
+                                onSelected(presets[tappedIndex])
+                                vibrate(25)
+                            } else {
                                 val snappedIndex = indexFromRotation(rotation.value)
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                vibrate(30) // Snap thump
 
                                 val rawTarget = -snappedIndex * step
                                 val currentRot = rotation.value
@@ -484,6 +534,7 @@ fun PresetDial(
         contentAlignment = Alignment.Center
     ) {
         // ── Dial Items (Presets) ──────────────────────────────────────────
+
         presets.forEachIndexed { index, preset ->
             val worldAngleDeg = rotation.value + index * step
             val rad = Math.toRadians(worldAngleDeg.toDouble())
@@ -523,11 +574,7 @@ fun PresetDial(
                     modifier = Modifier
                         .offset(xDp, yDp)
                         .alpha(0.5f)
-                        .widthIn(max = 100.dp)
-                        .clickable { 
-                            onSelected(preset)
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        },
+                        .widthIn(max = 100.dp),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onBackground
@@ -541,7 +588,7 @@ fun PresetDial(
         val accentColor = if (isDark) meditationGreen else MaterialTheme.colorScheme.primary
         
         Surface(
-            onClick = onStart,
+            onClick = {}, // Handled by pointerInput for better control
             modifier = Modifier.size(120.dp),
             shape = CircleShape,
             color = accentColor.copy(alpha = 0.12f),
