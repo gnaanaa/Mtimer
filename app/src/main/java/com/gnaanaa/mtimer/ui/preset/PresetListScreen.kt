@@ -261,7 +261,7 @@ fun PresetItem(
                     text = "${mins}M".styleDottedDigits(),
                     fontFamily = InterFont,
                     fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.ExtraBold,
                     color = accentColor
                 )
             }
