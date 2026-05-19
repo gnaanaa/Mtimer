@@ -234,28 +234,44 @@ fun PresetItem(
                 )
             }
 
-            IconButton(
-                onClick = onEdit,
-                modifier = Modifier.padding(horizontal = Spacing.nano)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.tiny),
+                modifier = Modifier.padding(end = Spacing.tiny)
             ) {
-                Icon(
-                    Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    modifier = Modifier.size(20.dp),
-                    tint = electricBlue.copy(alpha = if (isDark) 0.9f else 0.8f)
-                )
-            }
+                // Edit Button
+                Surface(
+                    onClick = onEdit,
+                    modifier = Modifier.size(36.dp),
+                    shape = CircleShape,
+                    color = electricBlue.copy(alpha = if (isDark) 0.15f else 0.1f),
+                    contentColor = electricBlue.copy(alpha = if (isDark) 0.9f else 0.8f)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
 
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.padding(horizontal = Spacing.nano)
-            ) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    modifier = Modifier.size(20.dp),
-                    tint = deleteRed.copy(alpha = if (isDark) 0.9f else 0.8f)
-                )
+                // Delete Button
+                Surface(
+                    onClick = onDelete,
+                    modifier = Modifier.size(36.dp),
+                    shape = CircleShape,
+                    color = deleteRed.copy(alpha = if (isDark) 0.15f else 0.1f),
+                    contentColor = deleteRed.copy(alpha = if (isDark) 0.9f else 0.8f)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
             }
         }
     }
