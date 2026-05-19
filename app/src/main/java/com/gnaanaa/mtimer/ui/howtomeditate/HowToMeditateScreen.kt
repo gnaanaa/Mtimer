@@ -37,6 +37,8 @@ fun HowToMeditateScreen(
     onOpenDrawer: () -> Unit,
     onCreatePreset: (String, Int) -> Unit
 ) {
+    var expandedMethodIndex by remember { mutableIntStateOf(-1) }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -101,6 +103,8 @@ fun HowToMeditateScreen(
                 level = "Beginner",
                 duration = "10 min (range: 5–20 min)",
                 durationMins = 10,
+                isExpanded = expandedMethodIndex == 1,
+                onToggle = { expandedMethodIndex = if (expandedMethodIndex == 1) -1 else 1 },
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
@@ -131,6 +135,8 @@ fun HowToMeditateScreen(
                 level = "Beginner",
                 duration = "20 min (range: 10–40 min)",
                 durationMins = 20,
+                isExpanded = expandedMethodIndex == 2,
+                onToggle = { expandedMethodIndex = if (expandedMethodIndex == 2) -1 else 2 },
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
@@ -154,6 +160,8 @@ fun HowToMeditateScreen(
                 level = "Beginner",
                 duration = "10 min (range: 5–20 min)",
                 durationMins = 10,
+                isExpanded = expandedMethodIndex == 3,
+                onToggle = { expandedMethodIndex = if (expandedMethodIndex == 3) -1 else 3 },
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
@@ -177,6 +185,8 @@ fun HowToMeditateScreen(
                 level = "Intermediate",
                 duration = "30 min (range: 15–45 min)",
                 durationMins = 30,
+                isExpanded = expandedMethodIndex == 4,
+                onToggle = { expandedMethodIndex = if (expandedMethodIndex == 4) -1 else 4 },
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
@@ -200,10 +210,12 @@ fun HowToMeditateScreen(
                 level = "Intermediate",
                 duration = "30 min (range: 15–60 min)",
                 durationMins = 30,
+                isExpanded = expandedMethodIndex == 5,
+                onToggle = { expandedMethodIndex = if (expandedMethodIndex == 5) -1 else 5 },
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
-                        description = "Every thought has a thinker. Every experience has someone who is experiencing it. This practice asks: who is that?\n\nNot as a philosophical puzzle — as a direct investigation. Rather than following thoughts outward into their content, you turn attention back toward where thoughts come from. You're looking for the \"I\" that is behind every experience — and the looking itself is the practice.\n\nThe method is deceptively simple: when a thought arises, ask \"who is thinking this?\" The question points back to the source. Follow that pointer inward. You're not looking for a verbal answer — there isn't one. The question is a tool that gradually quiets the usual mental activity by redirecting it toward its own root.\n\nThis is not suitable as a first practice. It requires a mind that is already somewhat settled — not because it's complicated, but because an unsettled mind will simply generate more thoughts in response to the question. Build a stable foundation in breath awareness or mantra practice first, then come to this.",
+                        description = "Every thought has a thinker. Every experience has someone who is experiencing it. This practice asks: who is that?\n\nNot as a philosophical puzzle — as a direct investigation. Rather than following thoughts outward into their content, you turn attention back toward where thoughts come from. You're looking for the \"I\" that is behind every experience — and the looking itself is the practice.\n\nThe method is deceptively simple: when a thought arises, ask \"who is thinking this?\" The question points back to the source. Follow that pointer inward. You're not looking for a verbal answer — there isn't one. The question is a tool that gradually quiets the usual mental activity by redirecting it toward its own root.\n\nThis is not suitable as a first practice. It requires a mind that is already somewhat settled — not because it's complicated, but because an unsettled mind will simply generate more thoughts in response to the question. Build a foundation in breath awareness or mantra practice first, then come to this.",
                         steps = listOf(
                             "Settle the mind first — Begin with at least 5–10 minutes of breath awareness. The inquiry goes nowhere on a turbulent mind.",
                             "Ask the question inwardly — Not aloud, not analytically. Pose \"Who am I?\" or more practically \"Who is thinking this?\" as a direction of attention, not a question awaiting a verbal answer.",
@@ -223,6 +235,8 @@ fun HowToMeditateScreen(
                 level = "Intermediate",
                 duration = "20 min (range: 10–40 min)",
                 durationMins = 20,
+                isExpanded = expandedMethodIndex == 6,
+                onToggle = { expandedMethodIndex = if (expandedMethodIndex == 6) -1 else 6 },
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
@@ -246,6 +260,8 @@ fun HowToMeditateScreen(
                 level = "Advanced",
                 duration = "20 min (range: 10–30 min)",
                 durationMins = 20,
+                isExpanded = expandedMethodIndex == 7,
+                onToggle = { expandedMethodIndex = if (expandedMethodIndex == 7) -1 else 7 },
                 onCreatePreset = onCreatePreset,
                 content = {
                     MethodContent(
@@ -351,10 +367,11 @@ private fun MethodAccordion(
     level: String,
     duration: String,
     durationMins: Int,
+    isExpanded: Boolean,
+    onToggle: () -> Unit,
     onCreatePreset: (String, Int) -> Unit,
     content: @Composable () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val dotColor = when (level.lowercase()) {
         "beginner" -> Color(0xFF4CAF50)
         "intermediate" -> Color(0xFFFF9800)
@@ -371,14 +388,14 @@ private fun MethodAccordion(
         shape = RoundedCornerShape(Radius.medium),
         colors = CardDefaults.cardColors(
             containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f) 
-                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (expanded) 0.4f else 0.2f)
+                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (isExpanded) 0.4f else 0.2f)
         )
     ) {
         Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { expanded = !expanded }
+                    .clickable { onToggle() }
                     .padding(Spacing.medium),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -398,14 +415,14 @@ private fun MethodAccordion(
                     letterSpacing = 0.5.sp
                 )
                 Icon(
-                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                 )
             }
             
             AnimatedVisibility(
-                visible = expanded,
+                visible = isExpanded,
                 enter = expandVertically(),
                 exit = shrinkVertically()
             ) {
