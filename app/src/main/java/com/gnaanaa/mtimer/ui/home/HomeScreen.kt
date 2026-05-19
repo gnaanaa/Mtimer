@@ -1,6 +1,7 @@
 package com.gnaanaa.mtimer.ui.home
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,6 +10,7 @@ import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
@@ -19,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
@@ -159,12 +162,14 @@ fun HomeScreen(
                     .fillMaxSize()
             ) {
 
-                StartSessionButton(
-                    enabled = selectedPreset != null,
+                Spacer(Modifier.height(12.dp))
+
+                // ── Rotary Dial with integrated Start button ───────────────────
+                PresetDial(
+                    presets = presets,
                     selectedPreset = selectedPreset,
-                    labelOverride = if (presets.isEmpty()) "CREATE PRESET >>" else null,
-                    alwaysEnabled = presets.isEmpty(),
-                    onClick = {
+                    onSelected = { selectedPreset = it },
+                    onStart = {
                         if (presets.isEmpty()) {
                             onNavigateToPresets()
                         } else {
@@ -176,16 +181,7 @@ fun HomeScreen(
                     }
                 )
 
-                Spacer(Modifier.height(12.dp))
-
-                // ── Rotary Dial with spring-snap ───────────────────────────────
-                PresetDial(
-                    presets = presets,
-                    selectedPreset = selectedPreset,
-                    onSelected = { selectedPreset = it }
-                )
-
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(24.dp))
 
                 Row(
                     modifier = Modifier
@@ -366,16 +362,15 @@ fun StartSessionButton(
 fun PresetDial(
     presets: List<Preset>,
     selectedPreset: Preset?,
-    onSelected: (Preset) -> Unit
+    onSelected: (Preset) -> Unit,
+    onStart: () -> Unit
 ) {
-    if (presets.isEmpty()) return
-
     val haptic = LocalHapticFeedback.current
-    val step = 360f / presets.size
+    val step = if (presets.isEmpty()) 0f else 360f / presets.size
     val rotation = remember { Animatable(0f) }
 
     fun indexFromRotation(rot: Float): Int =
-        ((-rot / step).roundToInt()).mod(presets.size)
+        if (presets.isEmpty()) 0 else ((-rot / step).roundToInt()).mod(presets.size)
 
     val currentIndex by remember(presets) {
         derivedStateOf { indexFromRotation(rotation.value) }
@@ -412,14 +407,15 @@ fun PresetDial(
     }
 
     val density = LocalDensity.current
-    val radiusDp = 100.dp
+    val radiusDp = 110.dp
     val radiusPx = with(density) { radiusDp.toPx() }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(280.dp)
+            .height(340.dp)
             .pointerInput(presets) {
+                if (presets.isEmpty()) return@pointerInput
                 val centerX = size.width / 2f
                 val centerY = size.height / 2f
 
@@ -427,55 +423,59 @@ fun PresetDial(
                     coroutineScope {
                         awaitPointerEventScope {
                             val down = awaitFirstDown(requireUnconsumed = false)
-                            // Trigger haptic on initial touch
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             
-                            var prevAngle = atan2(
-                                down.position.y - centerY,
-                                down.position.x - centerX
-                            ).toDegrees()
+                            // Only rotate if touching outside the center start button (roughly 80dp radius)
+                            val touchOffset = down.position
+                            val dist = sqrt((touchOffset.x - centerX).pow(2) + (touchOffset.y - centerY).pow(2))
+                            
+                            if (dist > with(density) { 60.dp.toPx() }) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                var prevAngle = atan2(
+                                    down.position.y - centerY,
+                                    down.position.x - centerX
+                                ).toDegrees()
 
-                            launch { rotation.stop() }
+                                launch { rotation.stop() }
 
-                            do {
-                                val event = awaitPointerEvent()
-                                val pointer = event.changes.firstOrNull() ?: break
-                                
-                                if (event.type == PointerEventType.Move) {
-                                    val curAngle = atan2(
-                                        pointer.position.y - centerY,
-                                        pointer.position.x - centerX
-                                    ).toDegrees()
+                                do {
+                                    val event = awaitPointerEvent()
+                                    val pointer = event.changes.firstOrNull() ?: break
+                                    
+                                    if (event.type == PointerEventType.Move) {
+                                        val curAngle = atan2(
+                                            pointer.position.y - centerY,
+                                            pointer.position.x - centerX
+                                        ).toDegrees()
 
-                                    var delta = curAngle - prevAngle
-                                    if (delta > 180f) delta -= 360f
-                                    if (delta < -180f) delta += 360f
+                                        var delta = curAngle - prevAngle
+                                        if (delta > 180f) delta -= 360f
+                                        if (delta < -180f) delta += 360f
 
-                                    launch { rotation.snapTo(rotation.value + delta) }
-                                    prevAngle = curAngle
-                                }
-                                
-                                pointer.consume()
-                                if (!pointer.pressed) break
-                            } while (true)
+                                        launch { rotation.snapTo(rotation.value + delta) }
+                                        prevAngle = curAngle
+                                    }
+                                    
+                                    pointer.consume()
+                                    if (!pointer.pressed) break
+                                } while (true)
 
-                            val snappedIndex = indexFromRotation(rotation.value)
-                            // Trigger stronger haptic on release/snap
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                val snappedIndex = indexFromRotation(rotation.value)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                            val rawTarget = -snappedIndex * step
-                            val currentRot = rotation.value
-                            val turns = ((currentRot - rawTarget) / 360f).roundToInt()
-                            val targetRotation = rawTarget + turns * 360f
+                                val rawTarget = -snappedIndex * step
+                                val currentRot = rotation.value
+                                val turns = ((currentRot - rawTarget) / 360f).roundToInt()
+                                val targetRotation = rawTarget + turns * 360f
 
-                            launch {
-                                rotation.animateTo(
-                                    targetValue = targetRotation,
-                                    animationSpec = spring(
-                                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                                        stiffness = Spring.StiffnessMediumLow
+                                launch {
+                                    rotation.animateTo(
+                                        targetValue = targetRotation,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMediumLow
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                     }
@@ -483,6 +483,7 @@ fun PresetDial(
             },
         contentAlignment = Alignment.Center
     ) {
+        // ── Dial Items (Presets) ──────────────────────────────────────────
         presets.forEachIndexed { index, preset ->
             val worldAngleDeg = rotation.value + index * step
             val rad = Math.toRadians(worldAngleDeg.toDouble())
@@ -496,9 +497,9 @@ fun PresetDial(
                 Box(
                     modifier = Modifier
                         .offset(xDp, yDp)
-                        .width(120.dp)
-                        .scale(1.25f)
-                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(4.dp))
+                        .width(130.dp)
+                        .scale(1.15f)
+                        .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(4.dp))
                         .padding(horizontal = 4.dp, vertical = 2.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -521,22 +522,62 @@ fun PresetDial(
                     letterSpacing = 0.5.sp,
                     modifier = Modifier
                         .offset(xDp, yDp)
-                        .scale(0.85f)
+                        .alpha(0.5f)
                         .widthIn(max = 100.dp)
                         .clickable { onSelected(preset) },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
 
-        Text(
-            "→",
-            fontFamily = InterFont,
-            fontSize = 22.sp,
-            color = MaterialTheme.colorScheme.primary
-        )
+        // ── Central Start Button ──────────────────────────────────────────
+        val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+        val meditationGreen = Color(0xFF4CAF50)
+        val accentColor = if (isDark) meditationGreen else MaterialTheme.colorScheme.primary
+        
+        Surface(
+            onClick = onStart,
+            modifier = Modifier.size(120.dp),
+            shape = CircleShape,
+            color = accentColor.copy(alpha = 0.12f),
+            border = BorderStroke(2.dp, accentColor.copy(alpha = 0.4f))
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Spa,
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp),
+                    tint = accentColor
+                )
+                
+                Spacer(Modifier.height(4.dp))
+                
+                if (presets.isEmpty()) {
+                    Text(
+                        "ADD",
+                        fontFamily = DotMatrix,
+                        fontSize = 16.sp,
+                        color = accentColor
+                    )
+                } else {
+                    selectedPreset?.let {
+                        Text(
+                            text = "${it.durationSeconds / 60}M".styleDottedDigits(),
+                            fontFamily = InterFont,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (isDark) Color.White else accentColor
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
