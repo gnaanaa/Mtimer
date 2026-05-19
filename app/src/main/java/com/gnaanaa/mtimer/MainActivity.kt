@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
@@ -17,6 +18,7 @@ import com.gnaanaa.mtimer.data.datastore.UserPreferencesDataStore
 import com.gnaanaa.mtimer.data.repository.PresetRepository
 import com.gnaanaa.mtimer.service.SoundPlayer
 import com.gnaanaa.mtimer.service.MeditationForegroundService
+import com.gnaanaa.mtimer.ui.theme.ThemeMode
 import com.gnaanaa.mtimer.ui.navigation.Screen
 import com.gnaanaa.mtimer.ui.navigation.MTimerNavGraph
 import com.gnaanaa.mtimer.ui.theme.MTimerTheme
@@ -47,11 +49,17 @@ class MainActivity : ComponentActivity() {
         WidgetUpdateWorker.enqueue(this)
 
         setContent {
-            val useLightTheme by userPreferencesDataStore.useLightTheme.collectAsState(initial = false)
+            val themeMode by userPreferencesDataStore.themeMode.collectAsState(initial = ThemeMode.FOLLOW_SYSTEM)
             val isOnboardingCompleted by userPreferencesDataStore.isOnboardingCompleted.collectAsState(initial = null)
 
             if (isOnboardingCompleted != null) {
-                MTimerTheme(darkTheme = !useLightTheme) {
+                val darkTheme = when (themeMode) {
+                    ThemeMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
+                    ThemeMode.LIGHT -> false
+                    ThemeMode.DARK -> true
+                }
+
+                MTimerTheme(darkTheme = darkTheme) {
                     val navController = rememberNavController()
                     val startDestination = remember(isOnboardingCompleted) {
                         if (isOnboardingCompleted == true) Screen.Main.route else Screen.Onboarding.route

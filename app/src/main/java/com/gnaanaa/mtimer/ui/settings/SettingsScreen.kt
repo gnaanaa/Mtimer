@@ -37,6 +37,9 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -61,6 +64,7 @@ import coil.compose.AsyncImage
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import com.gnaanaa.mtimer.ui.theme.ThemeMode
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -74,7 +78,7 @@ fun SettingsScreen(
     onOpenDrawer: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val useLightTheme by viewModel.useLightTheme.collectAsState()
+    val themeMode by viewModel.themeMode.collectAsState()
     val healthConnectGranted by viewModel.healthConnectPermissionsGranted.collectAsState()
     val healthConnectEnabled by viewModel.isHealthConnectEnabled.collectAsState()
     
@@ -184,12 +188,49 @@ fun SettingsScreen(
 
             SettingsSectionLabel("APPEARANCE")
 
-            SettingsToggleCard(
-                title = "LIGHT THEME",
-                subtitle = "Use light colors instead of true black",
-                checked = useLightTheme,
-                onCheckedChange = { viewModel.toggleTheme(it) }
-            )
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "THEME MODE",
+                        fontFamily = InterFont,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        ThemeMode.entries.forEachIndexed { index, mode ->
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = ThemeMode.entries.size),
+                                onClick = { viewModel.setThemeMode(mode) },
+                                selected = themeMode == mode,
+                                label = {
+                                    Text(
+                                        text = when(mode) {
+                                            ThemeMode.FOLLOW_SYSTEM -> "SYSTEM"
+                                            ThemeMode.LIGHT -> "LIGHT"
+                                            ThemeMode.DARK -> "DARK"
+                                        },
+                                        fontFamily = InterFont,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+            }
 
             SettingsSectionLabel("SYNC & INTEGRATIONS")
 
