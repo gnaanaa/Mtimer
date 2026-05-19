@@ -160,7 +160,10 @@ fun PresetItem(
 ) {
     val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
     val meditationGreen = Color(0xFF4CAF50)
+    val electricBlue = Color(0xFF2196F3)
+    val deleteRed = Color(0xFFF44336)
     val primaryColor = MaterialTheme.colorScheme.primary
+    
     val accentColor = if (isDark) meditationGreen else primaryColor
 
     Row(
@@ -168,12 +171,12 @@ fun PresetItem(
             .fillMaxWidth()
             .height(64.dp)
             .background(
-                if (isDark) Color.Black else primaryColor.copy(alpha = 0.05f),
+                if (isDark) accentColor.copy(alpha = 0.12f) else primaryColor.copy(alpha = 0.05f),
                 shape = MaterialTheme.shapes.large
             )
             .border(
                 width = 1.dp,
-                color = if (isDark) Color(0xFF111111) else Color.Transparent,
+                color = if (isDark) accentColor.copy(alpha = 0.3f) else Color.Transparent,
                 shape = MaterialTheme.shapes.large
             )
             .clip(MaterialTheme.shapes.large)
@@ -205,18 +208,19 @@ fun PresetItem(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 0.5.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
                 )
                 val mins = preset.durationSeconds / 60
                 val secs = preset.durationSeconds % 60
                 val durationLabel = if (secs == 0) "${mins}M" else "${mins}M ${secs}S"
                 Text(
                     text = durationLabel.styleDottedDigits(),
-                    fontFamily = InterFont, // Base font, digits dotted
+                    fontFamily = InterFont,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.95f)
+                    color = accentColor
                 )
             }
 
@@ -227,8 +231,8 @@ fun PresetItem(
                 Icon(
                     Icons.Default.Edit,
                     contentDescription = "Edit",
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                    modifier = Modifier.size(20.dp),
+                    tint = electricBlue.copy(alpha = if (isDark) 0.9f else 0.8f)
                 )
             }
 
@@ -239,37 +243,8 @@ fun PresetItem(
                 Icon(
                     Icons.Default.Delete,
                     contentDescription = "Delete",
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onBackground.copy(0.4f)
-                )
-            }
-        }
-
-        // Start Session Indicator (Fixed Width, Full Height)
-        Box(
-            modifier = Modifier
-                .width(56.dp)
-                .fillMaxHeight()
-                .background(accentColor.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Spa,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = accentColor
-                )
-                val mins = preset.durationSeconds / 60
-                Text(
-                    text = "${mins}M".styleDottedDigits(),
-                    fontFamily = InterFont,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = accentColor
+                    modifier = Modifier.size(20.dp),
+                    tint = deleteRed.copy(alpha = if (isDark) 0.9f else 0.8f)
                 )
             }
         }
