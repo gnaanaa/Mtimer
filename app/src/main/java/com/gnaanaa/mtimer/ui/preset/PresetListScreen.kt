@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.*
@@ -108,7 +109,7 @@ fun PresetListScreen(
                 items(presets, key = { it.id }) { preset ->
                     PresetItem(
                         preset = preset,
-                        onClick = { onEditPreset(preset.id) },
+                        onEdit = { onEditPreset(preset.id) },
                         onStart = {
                             viewModel.startTimer(preset)
                             onStartTimer()
@@ -153,28 +154,36 @@ fun PresetListScreen(
 @Composable
 fun PresetItem(
     preset: Preset,
-    onClick: () -> Unit,
+    onEdit: () -> Unit,
     onStart: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+    val meditationGreen = Color(0xFF4CAF50)
     val primaryColor = MaterialTheme.colorScheme.primary
+    val accentColor = if (isDark) meditationGreen else primaryColor
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(64.dp)
             .background(
-                primaryColor.copy(alpha = 0.07f),
+                if (isDark) Color.Black else primaryColor.copy(alpha = 0.05f),
                 shape = MaterialTheme.shapes.large
             )
-            .clip(MaterialTheme.shapes.large),
+            .border(
+                width = 1.dp,
+                color = if (isDark) Color(0xFF111111) else Color.Transparent,
+                shape = MaterialTheme.shapes.large
+            )
+            .clip(MaterialTheme.shapes.large)
+            .clickable(onClick = onStart),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .clickable(onClick = onClick)
                 .padding(start = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -183,7 +192,7 @@ fun PresetItem(
                 imageVector = Icons.Default.Spa,
                 contentDescription = null,
                 modifier = Modifier.size(26.dp),
-                tint = primaryColor
+                tint = accentColor
             )
 
             Spacer(Modifier.width(16.dp))
@@ -212,40 +221,38 @@ fun PresetItem(
             }
 
             IconButton(
+                onClick = onEdit,
+                modifier = Modifier.padding(horizontal = 2.dp)
+            ) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                )
+            }
+
+            IconButton(
                 onClick = onDelete,
-                modifier = Modifier.padding(horizontal = 4.dp)
+                modifier = Modifier.padding(horizontal = 2.dp)
             ) {
                 Icon(
                     Icons.Default.Delete,
                     contentDescription = "Delete",
                     modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onBackground.copy(0.6f)
+                    tint = MaterialTheme.colorScheme.onBackground.copy(0.4f)
                 )
             }
         }
 
-        // Start Session Button (Fixed Width, Full Height)
-        val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
-        val meditationGreen = Color(0xFF4CAF50)
-        val accentColor = if (isDark) meditationGreen else primaryColor
-
+        // Start Session Indicator (Fixed Width, Full Height)
         Box(
             modifier = Modifier
-                .width(64.dp)
+                .width(56.dp)
                 .fillMaxHeight()
-                .background(accentColor.copy(alpha = 0.15f))
-                .clickable(onClick = onStart),
+                .background(accentColor.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
-            // Left Divider
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(1.dp)
-                    .align(Alignment.CenterStart)
-                    .background(accentColor.copy(alpha = 0.2f))
-            )
-
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center

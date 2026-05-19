@@ -61,18 +61,28 @@ fun HeartRateChart(
                 Text(
                     text = "HEART RATE",
                     fontFamily = DotMatrix,
-                    fontSize = 11.sp,
+                    fontSize = 10.sp,
                     letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
-            Text(
-                text = "${avgBpm} BPM AVG".styleDottedDigits(),
-                fontFamily = InterFont,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = accentColor
-            )
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = avgBpm.toString().styleDottedDigits(),
+                    fontFamily = InterFont,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = accentColor
+                )
+                Text(
+                    text = " BPM AVG",
+                    fontFamily = InterFont,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = accentColor.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(bottom = 1.dp)
+                )
+            }
         }
 
         Spacer(Modifier.height(8.dp))

@@ -14,8 +14,9 @@ val Pink40 = Color(0xFF7D5260)
 val MTimerDarkPrimary = Color(0xFFE8E8E8)
 val MTimerDarkOnPrimary = Color(0xFF1A1A1A)
 val MTimerDarkBackground = Color(0xFF000000)   // true black
-val MTimerDarkSurface = Color(0xFF0D0D0D)
+val MTimerDarkSurface = Color(0xFF000000)      // consistent true black
 val MTimerDarkOnBackground = Color(0xFFE8E8E8)
 val MTimerDarkOnSurface = Color(0xFFCCCCCC)
 val MTimerDarkSecondary = Color(0xFFAAAAAA)
-val MTimerDarkOutline = Color(0xFF333333)
+val MTimerDarkOutline = Color(0xFF222222)      // subtler outline
+

@@ -49,6 +49,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import com.gnaanaa.mtimer.ui.history.HeartRateChart
 import androidx.health.connect.client.records.HeartRateRecord
 import kotlinx.coroutines.coroutineScope
@@ -367,6 +369,7 @@ fun PresetDial(
 ) {
     if (presets.isEmpty()) return
 
+    val haptic = LocalHapticFeedback.current
     val step = 360f / presets.size
     val rotation = remember { Animatable(0f) }
 
@@ -375,6 +378,13 @@ fun PresetDial(
 
     val currentIndex by remember(presets) {
         derivedStateOf { indexFromRotation(rotation.value) }
+    }
+
+    // Haptic feedback when the index changes during rotation
+    LaunchedEffect(currentIndex) {
+        if (rotation.isRunning || rotation.value != 0f) {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        }
     }
 
     LaunchedEffect(currentIndex, presets) {
