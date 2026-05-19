@@ -296,7 +296,7 @@ fun StartSessionButton(
             if (labelOverride == null && selectedPreset != null) {
                 val mins = selectedPreset.durationSeconds / 60
                 Text(
-                    text = "(${mins}M)".styleDottedDigits(),
+                    text = "${mins}M".styleDottedDigits(),
                     fontFamily = InterFont,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.ExtraBold,
