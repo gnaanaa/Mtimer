@@ -251,16 +251,11 @@ fun StartSessionButton(
     onClick: () -> Unit
 ) {
     val isEffectiveEnabled = enabled || alwaysEnabled
-    val isDark = !MaterialTheme.colorScheme.primary.run { 
-        // Simple check: if background is dark, it's dark theme. 
-        // But better to check isSystemInDarkTheme or look at specific color values.
-        // Since we are inside a Composable, we can use isSystemInDarkTheme() or check the color scheme.
-        MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
-    }
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
     
     val primaryColor = MaterialTheme.colorScheme.primary
     val meditationGreen = Color(0xFF4CAF50)
-    val accentColor = if (!isDark) primaryColor else meditationGreen
+    val accentColor = if (isDark) meditationGreen else primaryColor
 
     Box(
         modifier = Modifier
