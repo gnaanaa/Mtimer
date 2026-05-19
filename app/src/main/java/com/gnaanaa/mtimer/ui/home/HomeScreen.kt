@@ -298,11 +298,11 @@ fun StartSessionButton(
                 Text(
                     text = "(${mins}M)".styleDottedDigits(),
                     fontFamily = InterFont,
-                    fontSize = 11.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 0.5.sp,
                     color = if (isEffectiveEnabled)
-                        accentColor.copy(alpha = 0.8f)
+                        accentColor
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant.copy(0.4f)
                 )
@@ -616,7 +616,7 @@ fun HistoryRow(
                 Text(
                     text = "${mins}M".styleDottedDigits(),
                     fontFamily = InterFont,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = accentColor
                 )
