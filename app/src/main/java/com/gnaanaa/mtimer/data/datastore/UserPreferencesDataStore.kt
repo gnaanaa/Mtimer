@@ -30,6 +30,7 @@ class UserPreferencesDataStore @Inject constructor(
     private val historyHintShownKey = booleanPreferencesKey("history_hint_shown")
     private val presetsHintShownKey = booleanPreferencesKey("presets_hint_shown")
     private val guideHintShownKey = booleanPreferencesKey("guide_hint_shown")
+    private val settingsHintShownKey = booleanPreferencesKey("settings_hint_shown")
 
     val useLightTheme: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
@@ -71,6 +72,7 @@ class UserPreferencesDataStore @Inject constructor(
     val historyHintShown: Flow<Boolean> = context.dataStore.data.map { it[historyHintShownKey] ?: false }
     val presetsHintShown: Flow<Boolean> = context.dataStore.data.map { it[presetsHintShownKey] ?: false }
     val guideHintShown: Flow<Boolean> = context.dataStore.data.map { it[guideHintShownKey] ?: false }
+    val settingsHintShown: Flow<Boolean> = context.dataStore.data.map { it[settingsHintShownKey] ?: false }
 
     suspend fun setUseLightTheme(useLight: Boolean) {
         context.dataStore.edit { preferences ->
@@ -116,5 +118,8 @@ class UserPreferencesDataStore @Inject constructor(
     }
     suspend fun setGuideHintShown(shown: Boolean = true) {
         context.dataStore.edit { it[guideHintShownKey] = shown }
+    }
+    suspend fun setSettingsHintShown(shown: Boolean = true) {
+        context.dataStore.edit { it[settingsHintShownKey] = shown }
     }
 }

@@ -61,6 +61,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
+import com.gnaanaa.mtimer.ui.components.ContextualHint
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
@@ -90,6 +91,7 @@ fun SettingsScreen(
     val sdkStatus by viewModel.sdkStatus.collectAsState()
     val googleAccount by viewModel.googleAccount.collectAsState()
     val googleFitEnabled by viewModel.isGoogleFitEnabled.collectAsState()
+    val showSettingsHint by viewModel.showSettingsHint.collectAsState()
     val importStatus by viewModel.importStatus.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -189,6 +191,12 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(Spacing.medium)
         ) {
+            ContextualHint(
+                text = "Manage your theme, health integrations, and data backups here.",
+                isVisible = showSettingsHint,
+                onDismiss = { viewModel.dismissSettingsHint() }
+            )
+
             Spacer(Modifier.height(Spacing.tiny))
 
             SettingsSectionLabel("APPEARANCE")
