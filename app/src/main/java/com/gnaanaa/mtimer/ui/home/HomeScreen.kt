@@ -840,25 +840,33 @@ fun SessionDetailDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(Radius.large),
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("CLOSE", fontFamily = DotMatrix, letterSpacing = 2.sp)
+                Text(
+                    "CLOSE", 
+                    fontFamily = InterFont, 
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         },
         title = {
             Text(
                 "SESSION DETAILS",
                 fontFamily = DotMatrix,
-                letterSpacing = 3.sp
+                letterSpacing = 3.sp,
+                color = MaterialTheme.colorScheme.primary
             )
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.tiny)) {
                 DetailRow("PRESET", (session.presetName ?: "MEDITATION").uppercase())
                 DetailRow("DATE", dateFormat.format(Date(session.startTime)).uppercase().styleDottedDigits())
                 
                 val startStr = timeFormat.format(Date(session.startTime))
-                val endStr = if (session.endTime > 0) timeFormat.format(Date(session.endTime)) else "--:--"
+                val endStr = if (session.endTime > session.startTime) timeFormat.format(Date(session.endTime)) else "--:--"
                 
                 DetailRow("START TIME", startStr.styleDottedDigits())
                 DetailRow("FINISH TIME", endStr.styleDottedDigits())
@@ -870,7 +878,7 @@ fun SessionDetailDialog(
                 }
 
                 if (heartRateSamples.isNotEmpty()) {
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(Spacing.medium))
                     HeartRateChart(samples = heartRateSamples)
                 }
             }

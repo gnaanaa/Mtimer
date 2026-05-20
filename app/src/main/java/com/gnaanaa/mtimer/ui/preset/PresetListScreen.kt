@@ -133,12 +133,22 @@ fun PresetListScreen(
     presetToDelete?.let { preset ->
         AlertDialog(
             onDismissRequest = { presetToDelete = null },
-            title = { Text("DELETE PRESET", fontFamily = InterFont, fontWeight = FontWeight.Bold, letterSpacing = 1.sp) },
+            shape = RoundedCornerShape(Radius.large),
+            title = { 
+                Text(
+                    "DELETE PRESET", 
+                    fontFamily = InterFont, 
+                    fontWeight = FontWeight.Bold, 
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.primary
+                ) 
+            },
             text = { 
                 Text(
                     "Are you sure you want to delete \"${preset.name}\"?",
                     fontFamily = InterFont,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                 ) 
             },
             confirmButton = {
@@ -148,12 +158,25 @@ fun PresetListScreen(
                         presetToDelete = null
                     }
                 ) {
-                    Text("DELETE", color = MaterialTheme.colorScheme.error, fontFamily = InterFont, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    val deleteRed = Color(0xFFF44336)
+                    Text(
+                        "DELETE", 
+                        color = deleteRed, 
+                        fontFamily = InterFont, 
+                        fontWeight = FontWeight.Bold, 
+                        letterSpacing = 1.sp
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { presetToDelete = null }) {
-                    Text("CANCEL", fontFamily = InterFont, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text(
+                        "CANCEL", 
+                        fontFamily = InterFont, 
+                        fontWeight = FontWeight.Bold, 
+                        letterSpacing = 1.sp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                    )
                 }
             }
         )
