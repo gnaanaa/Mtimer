@@ -15,7 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -110,12 +110,13 @@ fun OnboardingScreen(
         }
     }
 
-    Surface(
+    Scaffold(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+        containerColor = MaterialTheme.colorScheme.background
+    ) { padding ->
         Column(
             modifier = Modifier
+                .padding(padding)
                 .fillMaxSize()
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

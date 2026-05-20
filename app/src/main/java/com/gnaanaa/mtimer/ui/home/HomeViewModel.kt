@@ -19,6 +19,7 @@ import javax.inject.Inject
 
 import com.gnaanaa.mtimer.data.sync.fetchHeartRateRange
 import androidx.health.connect.client.records.HeartRateRecord
+import com.gnaanaa.mtimer.data.datastore.UserPreferencesDataStore
 import java.time.Instant
 import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Context
@@ -36,11 +37,16 @@ class HomeViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val sessionRepository: SessionRepository,
     private val presetRepository: PresetRepository,
-    private val startTimerUseCase: StartTimerUseCase
+    private val startTimerUseCase: StartTimerUseCase,
+    private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
 
     private val _heartRateSamples = MutableStateFlow<List<HeartRateRecord.Sample>>(emptyList())
     val heartRateSamples = _heartRateSamples.asStateFlow()
+
+    val showHomeHint: StateFlow<Boolean> = userPreferencesDataStore.homeHintShown
+        .map { !it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val uiState: StateFlow<HomeUiState> = combine(
         presetRepository.getAllPresets(),
@@ -76,5 +82,11 @@ class HomeViewModel @Inject constructor(
 
     fun clearHeartRate() {
         _heartRateSamples.value = emptyList()
+    }
+
+    fun dismissHomeHint() {
+        viewModelScope.launch {
+            userPreferencesDataStore.setHomeHintShown()
+        }
     }
 }

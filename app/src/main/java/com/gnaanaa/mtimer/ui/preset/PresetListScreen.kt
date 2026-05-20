@@ -25,10 +25,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.gnaanaa.mtimer.R
 import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import com.gnaanaa.mtimer.ui.components.ContextualHint
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
+import androidx.compose.ui.zIndex
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,9 +47,10 @@ fun PresetListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val presets = uiState.presets
+    val showPresetsHint by viewModel.showPresetsHint.collectAsState()
     var presetToDelete by remember { mutableStateOf<Preset?>(null) }
 
-    Scaffold(
+        Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
@@ -53,7 +59,8 @@ fun PresetListScreen(
                         Text(
                             "PRESETS",
                             fontFamily = DotMatrix,
-                            letterSpacing = 4.sp
+                            letterSpacing = 4.sp,
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = "${presets.size} CONFIGURED".styleDottedDigits(),
@@ -61,7 +68,7 @@ fun PresetListScreen(
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.7f)
                         )
                     }
                 },
@@ -98,7 +105,7 @@ fun PresetListScreen(
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.5f)
                 )
             }
         } else {
@@ -106,10 +113,18 @@ fun PresetListScreen(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                    .padding(horizontal = Spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(Spacing.tiny),
+                contentPadding = PaddingValues(vertical = Spacing.medium)
             ) {
+                item {
+                    ContextualHint(
+                        text = "Create custom timers for different meditation techniques here.",
+                        isVisible = showPresetsHint,
+                        onDismiss = { viewModel.dismissPresetsHint() }
+                    )
+                }
+
                 items(presets, key = { it.id }) { preset ->
                     PresetItem(
                         preset = preset,
@@ -128,12 +143,22 @@ fun PresetListScreen(
     presetToDelete?.let { preset ->
         AlertDialog(
             onDismissRequest = { presetToDelete = null },
-            title = { Text("DELETE PRESET", fontFamily = InterFont, fontWeight = FontWeight.Bold, letterSpacing = 1.sp) },
+            shape = RoundedCornerShape(Radius.large),
+            title = { 
+                Text(
+                    "DELETE PRESET", 
+                    fontFamily = InterFont, 
+                    fontWeight = FontWeight.Bold, 
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.primary
+                ) 
+            },
             text = { 
                 Text(
                     "Are you sure you want to delete \"${preset.name}\"?",
                     fontFamily = InterFont,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                 ) 
             },
             confirmButton = {
@@ -143,12 +168,25 @@ fun PresetListScreen(
                         presetToDelete = null
                     }
                 ) {
-                    Text("DELETE", color = MaterialTheme.colorScheme.error, fontFamily = InterFont, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    val deleteRed = Color(0xFFF44336)
+                    Text(
+                        "DELETE", 
+                        color = deleteRed, 
+                        fontFamily = InterFont, 
+                        fontWeight = FontWeight.Bold, 
+                        letterSpacing = 1.sp
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { presetToDelete = null }) {
-                    Text("CANCEL", fontFamily = InterFont, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Text(
+                        "CANCEL", 
+                        fontFamily = InterFont, 
+                        fontWeight = FontWeight.Bold, 
+                        letterSpacing = 1.sp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                    )
                 }
             }
         )
@@ -173,17 +211,18 @@ fun PresetItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
+            .height(72.dp) // Consistent with HistoryRow
             .background(
-                if (isDark) accentColor.copy(alpha = 0.12f) else primaryColor.copy(alpha = 0.05f),
-                shape = MaterialTheme.shapes.large
+                if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+                else primaryColor.copy(alpha = 0.04f),
+                shape = RoundedCornerShape(Radius.medium)
             )
             .border(
                 width = 1.dp,
-                color = if (isDark) accentColor.copy(alpha = 0.3f) else Color.Transparent,
-                shape = MaterialTheme.shapes.large
+                color = primaryColor.copy(alpha = if (isDark) 0.1f else 0.08f),
+                shape = RoundedCornerShape(Radius.medium)
             )
-            .clip(MaterialTheme.shapes.large)
+            .clip(RoundedCornerShape(Radius.medium))
             .clickable(onClick = onStart),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -191,7 +230,7 @@ fun PresetItem(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .padding(start = 20.dp),
+                .padding(start = Spacing.medium),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Lotus icon
@@ -202,7 +241,7 @@ fun PresetItem(
                 tint = accentColor
             )
 
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.width(Spacing.medium))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -224,32 +263,48 @@ fun PresetItem(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 1.sp,
-                    color = accentColor
+                    color = accentColor.copy(alpha = 0.9f)
                 )
             }
 
-            IconButton(
-                onClick = onEdit,
-                modifier = Modifier.padding(horizontal = 2.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.tiny),
+                modifier = Modifier.padding(end = Spacing.tiny)
             ) {
-                Icon(
-                    Icons.Default.Edit,
-                    contentDescription = "Edit",
-                    modifier = Modifier.size(20.dp),
-                    tint = electricBlue.copy(alpha = if (isDark) 0.9f else 0.8f)
-                )
-            }
+                // Edit Button
+                Surface(
+                    onClick = onEdit,
+                    modifier = Modifier.size(36.dp),
+                    shape = CircleShape,
+                    color = electricBlue.copy(alpha = if (isDark) 0.15f else 0.1f),
+                    contentColor = electricBlue.copy(alpha = if (isDark) 0.9f else 0.8f)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
 
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.padding(horizontal = 2.dp)
-            ) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    modifier = Modifier.size(20.dp),
-                    tint = deleteRed.copy(alpha = if (isDark) 0.9f else 0.8f)
-                )
+                // Delete Button
+                Surface(
+                    onClick = onDelete,
+                    modifier = Modifier.size(36.dp),
+                    shape = CircleShape,
+                    color = deleteRed.copy(alpha = if (isDark) 0.15f else 0.1f),
+                    contentColor = deleteRed.copy(alpha = if (isDark) 0.9f else 0.8f)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
             }
         }
     }

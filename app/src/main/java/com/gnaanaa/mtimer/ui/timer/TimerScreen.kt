@@ -7,10 +7,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Visibility
@@ -47,6 +53,8 @@ import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.alignColons
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 import com.gnaanaa.mtimer.domain.model.TimerState
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
 import androidx.compose.ui.text.font.FontWeight
 
 @Composable
@@ -83,6 +91,9 @@ fun TimerScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            // Ensure the main content stays centered and ignores the space taken by system bars
+            // while they are visible (e.g. during a swipe down).
+            .windowInsetsPadding(WindowInsets.displayCutout)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = {
@@ -118,7 +129,7 @@ fun TimerScreen(
             )
 
             if (!isZenMode) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(Spacing.small))
 
             Text(
                 text = labelText.uppercase().styleDottedDigits(),
@@ -131,12 +142,13 @@ fun TimerScreen(
             }
         }
 
-        // Zen Mode Toggle
+        // Zen Mode Toggle - Positioned relative to the safe drawing area to avoid overlap with camera cutouts
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(24.dp)
-                .size(48.dp)
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(Spacing.medium)
+                .size(Spacing.huge)
                 .clickable { isZenMode = !isZenMode },
             contentAlignment = Alignment.Center
         ) {
@@ -144,7 +156,7 @@ fun TimerScreen(
                 imageVector = if (isZenMode) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                 contentDescription = "Zen Mode",
                 tint = if (isZenMode) Color.White.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.5f),
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(Spacing.large)
             )
         }
 
@@ -152,8 +164,9 @@ fun TimerScreen(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 48.dp)
-                    .size(48.dp)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(bottom = Spacing.medium)
+                    .size(Spacing.huge)
                     .clickable {
                         viewModel.stopTimer()
                         onClose()
@@ -164,7 +177,7 @@ fun TimerScreen(
                     imageVector = Icons.Default.Stop,
                     contentDescription = "Stop",
                     tint = Color.White,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(Spacing.extraLarge)
                 )
             }
         }

@@ -18,6 +18,7 @@ import javax.inject.Inject
 
 import com.gnaanaa.mtimer.data.sync.fetchHeartRateRange
 import androidx.health.connect.client.records.HeartRateRecord
+import com.gnaanaa.mtimer.data.datastore.UserPreferencesDataStore
 import java.time.Instant
 import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Context
@@ -37,13 +38,18 @@ data class HistoryUiState(
 class SessionHistoryViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val sessionRepository: SessionRepository,
-    private val getWeeklyChartDataUseCase: GetWeeklyChartDataUseCase
+    private val getWeeklyChartDataUseCase: GetWeeklyChartDataUseCase,
+    private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
 
     private val monthYearFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
 
     private val _heartRateSamples = MutableStateFlow<List<HeartRateRecord.Sample>>(emptyList())
     val heartRateSamples = _heartRateSamples.asStateFlow()
+
+    val showHistoryHint: StateFlow<Boolean> = userPreferencesDataStore.historyHintShown
+        .map { !it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val uiState: StateFlow<HistoryUiState> = combine(
         sessionRepository.getSessionCount(),
@@ -82,5 +88,11 @@ class SessionHistoryViewModel @Inject constructor(
 
     fun clearHeartRate() {
         _heartRateSamples.value = emptyList()
+    }
+
+    fun dismissHistoryHint() {
+        viewModelScope.launch {
+            userPreferencesDataStore.setHistoryHintShown()
+        }
     }
 }

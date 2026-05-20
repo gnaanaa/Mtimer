@@ -24,6 +24,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
 import android.app.Activity
 import com.android.billingclient.api.ProductDetails
 
@@ -57,7 +59,7 @@ fun AboutScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("ABOUT", fontFamily = DotMatrix, letterSpacing = 3.sp) },
+                title = { Text("ABOUT", fontFamily = DotMatrix, letterSpacing = 3.sp, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Default.Menu, contentDescription = "Menu")
@@ -71,7 +73,7 @@ fun AboutScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(24.dp),
+                .padding(Spacing.medium),
             horizontalAlignment = Alignment.Start
         ) {
             // Header Section
@@ -92,7 +94,7 @@ fun AboutScreen(
                     fontFamily = DotMatrix,
                     fontSize = 12.sp,
                     letterSpacing = 2.sp,
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.padding(top = Spacing.micro)
                 )
                 Text(
                     text = "VERSION 1.1.7".styleDottedDigits(),
@@ -100,12 +102,12 @@ fun AboutScreen(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
+                    modifier = Modifier.padding(top = Spacing.tiny)
                 )
             }
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(Spacing.huge))
 
             AboutSection("WHAT THIS IS", "MTimer is a minimal meditation timer built for people who sit seriously. Drawing inspiration from Sri M’s teachings and the ancient Nath tradition, it provides a focused environment for your daily practice.\n\nNo guided voices, no streaks, no social feeds. Just a timer, a bell, and an honest record of your journey.")
 
@@ -134,7 +136,7 @@ fun AboutScreen(
                     uriHandler.openUri("https://gnaanaa.github.io/Mtimer/PRIVACY_POLICY.html") 
                 },
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.large,
+                shape = RoundedCornerShape(Radius.medium),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                     contentColor = MaterialTheme.colorScheme.primary
@@ -149,15 +151,15 @@ fun AboutScreen(
                 )
             }
 
-            Spacer(Modifier.height(48.dp))
+            Spacer(Modifier.height(Spacing.huge))
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(Spacing.extraLarge))
 
             AboutSection("CONTACT", "Ideas, bugs, or feedback — open an issue or get in touch.\n(https://github.com/gnaanaa/Mtimer)")
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(Spacing.medium))
             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(Spacing.extraLarge))
 
             SupportSection(
                 productDetails = productDetails,
@@ -166,7 +168,7 @@ fun AboutScreen(
                 }
             )
 
-            Spacer(Modifier.height(48.dp))
+            Spacer(Modifier.height(Spacing.huge))
         }
     }
 }

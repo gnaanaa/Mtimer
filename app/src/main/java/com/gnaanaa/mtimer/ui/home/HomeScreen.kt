@@ -59,6 +59,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.gnaanaa.mtimer.R
 import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.domain.model.Session
+import com.gnaanaa.mtimer.ui.components.ContextualHint
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -111,6 +114,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val heartRateSamples by viewModel.heartRateSamples.collectAsState()
+    val showHomeHint by viewModel.showHomeHint.collectAsState()
     val recentSessions = uiState.recentSessions
     val presets = uiState.presets
 
@@ -170,8 +174,13 @@ fun HomeScreen(
                     .padding(padding)
                     .fillMaxSize()
             ) {
+                ContextualHint(
+                    text = "Spin the dial to select a preset, then tap the center to start.",
+                    isVisible = showHomeHint,
+                    onDismiss = { viewModel.dismissHomeHint() }
+                )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(Spacing.small))
 
                 // ── Rotary Dial with integrated Start button ───────────────────
                 PresetDial(
@@ -190,12 +199,12 @@ fun HomeScreen(
                     }
                 )
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(Spacing.large))
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = Spacing.medium),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -203,7 +212,8 @@ fun HomeScreen(
                         "RECENT SESSIONS",
                         fontFamily = DotMatrix,
                         fontSize = 12.sp,
-                        letterSpacing = 2.sp
+                        letterSpacing = 2.sp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                     )
                 }
 
@@ -211,21 +221,21 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(Spacing.medium),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             "NO SESSIONS YET",
                             fontFamily = DotMatrix,
                             fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(0.6f)
                         )
                     }
                 } else {
                     LazyColumn(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
+                        modifier = Modifier.padding(horizontal = Spacing.medium),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.tiny),
+                        contentPadding = PaddingValues(bottom = Spacing.medium)
                     ) {
                         items(recentSessions, key = { it.id }) { session ->
                             val preset = presets.find { it.id == session.presetId }
@@ -280,18 +290,18 @@ fun StartSessionButton(
 
     Box(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(Spacing.medium)
             .fillMaxWidth()
             .height(84.dp)
             .border(
                 width = 2.dp,
                 color = if (isEffectiveEnabled) accentColor.copy(alpha = 0.4f) else Color.Transparent,
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(Radius.large)
             )
             .background(
                 if (isEffectiveEnabled) accentColor.copy(alpha = 0.15f)
                 else MaterialTheme.colorScheme.surfaceVariant,
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(Radius.large)
             )
             .clickable(enabled = isEffectiveEnabled, onClick = onClick),
         contentAlignment = Alignment.Center
@@ -300,14 +310,14 @@ fun StartSessionButton(
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(start = 24.dp), // Match the horizontal padding
+                .padding(start = Spacing.large), // Match the horizontal padding
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Spa,
                 contentDescription = null,
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(Spacing.extraLarge),
                 tint = if (isEffectiveEnabled)
                     accentColor
                 else
@@ -620,9 +630,9 @@ fun PresetDial(
                         .width(130.dp)
                         .scale(1.15f)
                         .zIndex(1f) // Bring selected preset to the front
-                        .background(MaterialTheme.colorScheme.background, RoundedCornerShape(4.dp)) // Matches theme background
-                        .border(BorderStroke(2.dp, accentColor.copy(alpha = 0.7f)), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                        .background(MaterialTheme.colorScheme.background, RoundedCornerShape(Radius.small)) // Matches theme background
+                        .border(BorderStroke(2.dp, accentColor.copy(alpha = 0.7f)), RoundedCornerShape(Radius.small))
+                        .padding(horizontal = Spacing.micro, vertical = Spacing.nano),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -706,24 +716,29 @@ fun HistoryRow(
     onClick: () -> Unit,
     onStartAgain: () -> Unit
 ) {
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
     val primaryColor = MaterialTheme.colorScheme.primary
+    val meditationGreen = Color(0xFF4CAF50)
+    val accentColor = if (isDark) meditationGreen else primaryColor
+    
     val dateFormat = remember { SimpleDateFormat("MMM dd", Locale.getDefault()) }
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(69.dp)
+            .height(72.dp)
             .border(
                 width = 1.dp,
-                color = primaryColor.copy(alpha = 0.12f),
-                shape = RoundedCornerShape(12.dp)
+                color = primaryColor.copy(alpha = if (isDark) 0.1f else 0.08f),
+                shape = RoundedCornerShape(Radius.medium)
             )
             .background(
-                primaryColor.copy(alpha = 0.03f),
-                shape = RoundedCornerShape(12.dp)
+                if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+                else primaryColor.copy(alpha = 0.04f),
+                shape = RoundedCornerShape(Radius.medium)
             )
-            .clip(RoundedCornerShape(12.dp)),
+            .clip(RoundedCornerShape(Radius.medium)),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -733,7 +748,7 @@ fun HistoryRow(
                 .weight(1f)
                 .fillMaxHeight()
                 .clickable(onClick = onClick)
-                .padding(start = 14.dp),
+                .padding(start = Spacing.medium),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -745,51 +760,51 @@ fun HistoryRow(
                     letterSpacing = 0.5.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.7f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.85f)
                 )
                 Text(
                     text = "${dateFormat.format(Date(session.startTime))} • ${timeFormat.format(Date(session.startTime))}".uppercase(),
                     fontFamily = InterFont,
                     fontSize = 11.sp,
                     letterSpacing = 0.5.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )
             }
 
             // Completed time and status marker
             Row(
-                modifier = Modifier.padding(horizontal = 12.dp),
+                modifier = Modifier.padding(horizontal = Spacing.small),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(Spacing.tiny)
             ) {
                 Text(
                     text = formatDurationAligned(session.durationSeconds),
-                    fontFamily = InterFont, // Base font, digits overridden by styleDottedDigits
-                    fontSize = 15.sp,
+                    fontFamily = InterFont,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(0.95f)
                 )
 
                 Icon(
                     imageVector = if (session.completed) Icons.Default.CheckCircle else Icons.Default.Cancel,
                     contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = if (session.completed) Color(0xFF4CAF50).copy(0.8f) else MaterialTheme.colorScheme.error.copy(0.8f)
+                    modifier = Modifier.size(18.dp),
+                    tint = if (session.completed) Color(0xFF4CAF50).copy(0.9f) else MaterialTheme.colorScheme.error.copy(0.9f)
                 )
             }
         }
 
         // Start Again Button (Fixed Width, Full Height)
-        val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
-        val meditationGreen = Color(0xFF4CAF50)
-        val accentColor = if (isDark) meditationGreen else primaryColor
-
         Box(
             modifier = Modifier
-                .width(69.dp)
+                .width(64.dp)
                 .fillMaxHeight()
-                .background(accentColor.copy(alpha = 0.15f))
-                .border(1.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp))
+                .background(accentColor.copy(alpha = if (isDark) 0.15f else 0.1f))
+                .border(
+                    width = 1.dp, 
+                    color = accentColor.copy(alpha = if (isDark) 0.25f else 0.2f), 
+                    shape = RoundedCornerShape(topEnd = Radius.medium, bottomEnd = Radius.medium)
+                )
                 .clickable(onClick = onStartAgain),
             contentAlignment = Alignment.Center
         ) {
@@ -832,25 +847,33 @@ fun SessionDetailDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(Radius.large),
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("CLOSE", fontFamily = DotMatrix, letterSpacing = 2.sp)
+                Text(
+                    "CLOSE", 
+                    fontFamily = InterFont, 
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         },
         title = {
             Text(
                 "SESSION DETAILS",
                 fontFamily = DotMatrix,
-                letterSpacing = 3.sp
+                letterSpacing = 3.sp,
+                color = MaterialTheme.colorScheme.primary
             )
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.tiny)) {
                 DetailRow("PRESET", (session.presetName ?: "MEDITATION").uppercase())
                 DetailRow("DATE", dateFormat.format(Date(session.startTime)).uppercase().styleDottedDigits())
                 
                 val startStr = timeFormat.format(Date(session.startTime))
-                val endStr = if (session.endTime > 0) timeFormat.format(Date(session.endTime)) else "--:--"
+                val endStr = if (session.endTime > session.startTime) timeFormat.format(Date(session.endTime)) else "--:--"
                 
                 DetailRow("START TIME", startStr.styleDottedDigits())
                 DetailRow("FINISH TIME", endStr.styleDottedDigits())
@@ -862,7 +885,7 @@ fun SessionDetailDialog(
                 }
 
                 if (heartRateSamples.isNotEmpty()) {
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(Spacing.medium))
                     HeartRateChart(samples = heartRateSamples)
                 }
             }

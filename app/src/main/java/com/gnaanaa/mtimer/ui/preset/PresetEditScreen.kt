@@ -37,6 +37,8 @@ import com.gnaanaa.mtimer.service.SoundPlayer
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
 import kotlinx.coroutines.launch
 
 private val SOUND_OPTIONS = listOf(
@@ -143,7 +145,8 @@ fun PresetEditScreen(
                         Text(
                             if (isNew) "NEW PRESET" else "EDIT PRESET",
                             fontFamily    = DotMatrix,
-                            letterSpacing = 4.sp
+                            letterSpacing = 4.sp,
+                            color         = MaterialTheme.colorScheme.primary
                         )
                         Text(
                             if (isNew) "CONFIGURE YOUR SESSION" else name.uppercase(),
@@ -200,13 +203,13 @@ fun PresetEditScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = Spacing.medium)
                 .verticalScroll(scrollState),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(Spacing.small)
         ) {
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(Spacing.tiny))
             // ── Name ──────────────────────────────────────────────────────
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.micro)) {
                 SectionLabel("SESSION NAME")
                 OutlinedTextField(
                     value         = name,
@@ -216,7 +219,7 @@ fun PresetEditScreen(
                             "e.g. MORNING CALM",
                             fontFamily = InterFont,
                             fontSize   = 14.sp,
-                            color      = MaterialTheme.colorScheme.onBackground.copy(0.6f)
+                            color      = MaterialTheme.colorScheme.onBackground.copy(0.5f)
                         )
                     },
                     textStyle  = LocalTextStyle.current.copy(
@@ -226,16 +229,16 @@ fun PresetEditScreen(
                     ),
                     modifier   = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    shape      = RoundedCornerShape(16.dp)
+                    shape      = RoundedCornerShape(Radius.medium)
                 )
             }
 
             // ── Duration ──────────────────────────────────────────────────
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.micro)) {
                 SectionLabel("DURATION")
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.small)
                 ) {
                     SpinnerPicker(
                         modifier = Modifier.weight(1f),
@@ -259,12 +262,12 @@ fun PresetEditScreen(
             // ── Prepare and Interval (Shared Row) ─────────────────────────
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(Spacing.small)
             ) {
                 // Prepare time
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(Spacing.micro)
                 ) {
                     SectionLabel("PREP TIME")
                     val prepareValues: List<Int> = (0..60 step 5).toList()
@@ -281,7 +284,7 @@ fun PresetEditScreen(
                 // Interval Chimes
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(Spacing.micro)
                 ) {
                     SectionLabel("INT CHIME")
                     val intervalValues: List<Int> =
@@ -298,7 +301,7 @@ fun PresetEditScreen(
             }
 
             // ── Sounds ────────────────────────────────────────────────────
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.micro)) {
                 SectionLabel("START SOUND")
                 SoundPicker(
                     selectedId = startSoundId,
@@ -309,7 +312,7 @@ fun PresetEditScreen(
             }
 
             if (intervalSeconds > 0) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.micro)) {
                     SectionLabel("INTERVAL SOUND")
                     SoundPicker(
                         selectedId = intervalSoundId,
@@ -320,7 +323,7 @@ fun PresetEditScreen(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.micro)) {
                 SectionLabel("END SOUND")
                 SoundPicker(
                     selectedId = endSoundId,
@@ -329,7 +332,7 @@ fun PresetEditScreen(
                     onImport = { soundPickerLauncher.launch("audio/*") }
                 )
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(Spacing.medium))
         }
     }
 }
@@ -343,7 +346,8 @@ private fun SectionLabel(text: String) {
         fontSize      = 13.sp,
         letterSpacing = 1.sp,
         fontWeight    = FontWeight.Bold,
-        color         = MaterialTheme.colorScheme.primary // Bolder and brighter (using primary color)
+        color         = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f), // Unified primary label style
+        modifier      = Modifier.padding(bottom = Spacing.micro)
     )
 }
 
@@ -403,25 +407,30 @@ private fun SpinnerPicker(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = label, fontFamily = InterFont, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
-        Spacer(Modifier.height(4.dp))
+        Text(text = label, fontFamily = InterFont, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+        Spacer(Modifier.height(Spacing.micro))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(itemHeightDp * visibleItems)
-                .clip(RoundedCornerShape(14.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                .clip(RoundedCornerShape(Radius.medium))
+                .background(
+                    if (MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 })
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    else 
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                )
         ) {
             // Center Highlight Pill
             Box(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .fillMaxWidth()
-                    .padding(horizontal = 6.dp)
+                    .padding(horizontal = Spacing.tiny)
                     .height(itemHeightDp)
-                    .background(MaterialTheme.colorScheme.primary.copy(0.18f), RoundedCornerShape(10.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(0.35f), RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(0.18f), RoundedCornerShape(Radius.tiny))
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(0.35f), RoundedCornerShape(Radius.tiny))
             )
 
             LazyColumn(
@@ -432,6 +441,7 @@ private fun SpinnerPicker(
             ) {
                 items(values.size) { index ->
                     val isSelected = index == centeredIndex
+                    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
                     Box(
                         modifier = Modifier.fillMaxWidth().height(itemHeightDp),
                         contentAlignment = Alignment.Center
@@ -440,7 +450,8 @@ private fun SpinnerPicker(
                             text = display(values[index]).styleDottedDigits(),
                             fontFamily = InterFont, // Base font, digits dotted
                             fontSize = if (isSelected) 18.sp else 14.sp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(0.7f),
+                            color = if (isSelected) MaterialTheme.colorScheme.primary 
+                                    else MaterialTheme.colorScheme.onBackground.copy(if (isDark) 0.6f else 0.7f),
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                         )
                     }
@@ -482,7 +493,7 @@ private fun SoundPicker(
             modifier = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(Radius.medium)
         )
 
         ExposedDropdownMenu(
@@ -505,7 +516,7 @@ private fun SoundPicker(
             }
 
             if (customSounds.isNotEmpty()) {
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.micro))
                 customSounds.forEach { soundName ->
                     DropdownMenuItem(
                         text = {
@@ -522,7 +533,7 @@ private fun SoundPicker(
                 }
             }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.micro))
             DropdownMenuItem(
                 text = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -531,7 +542,7 @@ private fun SoundPicker(
                             contentDescription = null,
                             modifier           = Modifier.size(16.dp)
                         )
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(Spacing.tiny))
                         Text(
                             "IMPORT SOUND...",
                             fontFamily    = InterFont,

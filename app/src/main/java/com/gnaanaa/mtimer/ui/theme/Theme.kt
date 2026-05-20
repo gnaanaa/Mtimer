@@ -19,6 +19,8 @@ val MTimerDarkColorScheme = darkColorScheme(
     surface = MTimerDarkSurface,
     onBackground = MTimerDarkOnBackground,
     onSurface = MTimerDarkOnSurface,
+    surfaceVariant = MTimerDarkSurfaceVariant,
+    onSurfaceVariant = MTimerDarkOnSurfaceVariant,
     secondary = MTimerDarkSecondary,
     outline = MTimerDarkOutline
 )
@@ -63,13 +65,6 @@ fun MTimerTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) MTimerDarkColorScheme else MTimerLightColorScheme
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
-        }
-    }
 
     MaterialTheme(
         colorScheme = colorScheme,

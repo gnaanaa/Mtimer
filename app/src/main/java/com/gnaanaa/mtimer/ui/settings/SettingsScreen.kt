@@ -61,10 +61,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
+import com.gnaanaa.mtimer.ui.components.ContextualHint
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
 import com.gnaanaa.mtimer.ui.theme.ThemeMode
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -88,6 +91,7 @@ fun SettingsScreen(
     val sdkStatus by viewModel.sdkStatus.collectAsState()
     val googleAccount by viewModel.googleAccount.collectAsState()
     val googleFitEnabled by viewModel.isGoogleFitEnabled.collectAsState()
+    val showSettingsHint by viewModel.showSettingsHint.collectAsState()
     val importStatus by viewModel.importStatus.collectAsState()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -165,7 +169,8 @@ fun SettingsScreen(
                     Text(
                         "SETTINGS",
                         fontFamily = DotMatrix,
-                        letterSpacing = 4.sp
+                        letterSpacing = 4.sp,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 },
                 navigationIcon = {
@@ -176,26 +181,35 @@ fun SettingsScreen(
             )
         }
     ) { padding ->
+        val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+        
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = Spacing.medium)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(Spacing.medium)
         ) {
-            Spacer(Modifier.height(8.dp))
+            ContextualHint(
+                text = "Manage your theme, health integrations, and data backups here.",
+                isVisible = showSettingsHint,
+                onDismiss = { viewModel.dismissSettingsHint() }
+            )
+
+            Spacer(Modifier.height(Spacing.tiny))
 
             SettingsSectionLabel("APPEARANCE")
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(Radius.large),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                 )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(Spacing.medium)) {
                     Text(
                         text = "THEME MODE",
                         fontFamily = InterFont,
@@ -204,7 +218,7 @@ fun SettingsScreen(
                         letterSpacing = 0.5.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(Spacing.small))
                     
                     SingleChoiceSegmentedButtonRow(
                         modifier = Modifier.fillMaxWidth()
@@ -255,20 +269,20 @@ fun SettingsScreen(
                 enabled = viewModel.isHealthConnectAvailable,
                 onContent = {
                     if (viewModel.isHealthConnectAvailable) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(Spacing.micro))
                         Text(
                             text = "To fully revoke access, use the button below to open system settings and remove MTimer's permissions.",
                             fontFamily = InterFont,
                             fontSize = 11.sp,
                             lineHeight = 15.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            modifier = Modifier.padding(bottom = Spacing.micro)
                         )
                         OutlinedButton(
                             onClick = { viewModel.openHC(context) },
-                            shape = RoundedCornerShape(8.dp),
+                            shape = RoundedCornerShape(Radius.small),
                             modifier = Modifier.height(32.dp),
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Spacing.small, vertical = 0.dp),
                             border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF007BFF).copy(alpha = 0.5f)),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF007BFF))
                         ) {
@@ -303,13 +317,14 @@ fun SettingsScreen(
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(Radius.large),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(Spacing.medium)
                 ) {
                     if (googleAccount != null) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -321,7 +336,7 @@ fun SettingsScreen(
                                     .clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
-                            Spacer(modifier = Modifier.width(16.dp))
+                            Spacer(modifier = Modifier.width(Spacing.medium))
                             Column {
                                 Text(
                                     text = (googleAccount?.displayName ?: "USER").uppercase(),
@@ -334,19 +349,19 @@ fun SettingsScreen(
                                     text = (googleAccount?.email ?: "").styleDottedDigits(),
                                     fontFamily = InterFont,
                                     fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.95f)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(Spacing.medium))
                         Text(
                             text = "Connected for cloud backup of presets and history.",
                             fontFamily = InterFont,
                             fontSize = 13.sp,
                             letterSpacing = 0.5.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 1.0f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(Spacing.medium))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -357,9 +372,9 @@ fun SettingsScreen(
                             
                             OutlinedButton(
                                 onClick = { viewModel.syncDrive(context) },
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedCornerShape(Radius.small),
                                 modifier = Modifier.height(32.dp),
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Spacing.small, vertical = 0.dp),
                                 border = androidx.compose.foundation.BorderStroke(1.dp, electricBlue.copy(alpha = 0.5f)),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = electricBlue)
                             ) {
@@ -371,9 +386,9 @@ fun SettingsScreen(
                                         viewModel.updateGoogleAccount(context, null)
                                     }
                                 },
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedCornerShape(Radius.small),
                                 modifier = Modifier.height(32.dp),
-                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Spacing.small, vertical = 0.dp),
                                 border = androidx.compose.foundation.BorderStroke(1.dp, softRed.copy(alpha = 0.5f)),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = softRed)
                             ) {
@@ -386,17 +401,17 @@ fun SettingsScreen(
                             fontFamily = InterFont,
                             fontSize = 13.sp,
                             letterSpacing = 0.5.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 1.0f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(Spacing.medium))
                         val meditationGreen = Color(0xFF4CAF50)
                         Button(
                             onClick = {
                                 googleSignInLauncher.launch(googleSignInClient.signInIntent)
                             },
                             modifier = Modifier.align(Alignment.End).height(32.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            shape = RoundedCornerShape(Radius.small),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Spacing.small, vertical = 0.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = meditationGreen)
                         ) {
                             Text("SIGN IN", fontFamily = InterFont, fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -409,31 +424,31 @@ fun SettingsScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(Spacing.tiny)
             ) {
                 OutlinedButton(
                     onClick = { exportLauncher.launch("mtimer_backup.json") },
                     modifier = Modifier.weight(1f).height(32.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+                    shape = RoundedCornerShape(Radius.small),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Spacing.small, vertical = 0.dp)
                 ) {
                     Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(Spacing.tiny))
                     Text("EXPORT", fontFamily = InterFont, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
                 OutlinedButton(
                     onClick = { importLauncher.launch(arrayOf("application/json", "application/octet-stream")) },
                     modifier = Modifier.weight(1f).height(32.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+                    shape = RoundedCornerShape(Radius.small),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = Spacing.small, vertical = 0.dp)
                 ) {
                     Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(Spacing.tiny))
                     Text("IMPORT", fontFamily = InterFont, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(Spacing.large))
         }
     }
 }
@@ -446,8 +461,8 @@ private fun SettingsSectionLabel(text: String) {
         fontSize = 13.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.sp,
-        color = MaterialTheme.colorScheme.primary, // Brighter and bolder
-        modifier = Modifier.padding(top = 8.dp)
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+        modifier = Modifier.padding(top = Spacing.tiny, bottom = Spacing.micro)
     )
 }
 
@@ -460,14 +475,17 @@ private fun SettingsToggleCard(
     enabled: Boolean = true,
     onContent: @Composable (() -> Unit)? = null
 ) {
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(Radius.large),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) 
+                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
         )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(Spacing.medium)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -486,7 +504,7 @@ private fun SettingsToggleCard(
                         fontFamily = InterFont,
                         fontSize = 13.sp,
                         letterSpacing = 0.5.sp,
-                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 1.0f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                        color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
                     )
                 }
                 Switch(

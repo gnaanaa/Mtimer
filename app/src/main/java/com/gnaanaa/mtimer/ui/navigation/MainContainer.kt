@@ -29,6 +29,8 @@ import com.gnaanaa.mtimer.ui.home.HomeScreen
 import com.gnaanaa.mtimer.ui.howtomeditate.HowToMeditateScreen
 import com.gnaanaa.mtimer.ui.preset.PresetListScreen
 import com.gnaanaa.mtimer.ui.settings.SettingsScreen
+import com.gnaanaa.mtimer.ui.theme.Spacing
+import com.gnaanaa.mtimer.ui.theme.Radius
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -74,12 +76,12 @@ fun MainContainer(
             // ... (rest of the drawer content)
             ModalDrawerSheet(
                 drawerContainerColor = MaterialTheme.colorScheme.background,
-                drawerShape = RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
+                drawerShape = RoundedCornerShape(topEnd = Radius.large, bottomEnd = Radius.large)
             ) {
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(Spacing.medium))
                 Text(
                     "MTIMER",
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(Spacing.large),
                     fontFamily = DotMatrix,
                     fontSize = 24.sp,
                     letterSpacing = 6.sp,
@@ -88,11 +90,11 @@ fun MainContainer(
                 )
                 
                 HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 24.dp),
+                    modifier = Modifier.padding(horizontal = Spacing.large),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                 )
                 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(Spacing.medium))
                 
                 val menuItems = listOf(
                     DrawerMenuItem("HOME", Icons.Default.Home, Screen.Home.route),
@@ -105,7 +107,8 @@ fun MainContainer(
 
                 menuItems.forEach { item ->
                     val isSelected = currentRoute == item.route
-                    
+                    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+
                     Surface(
                         onClick = {
                             scope.launch { drawerState.close() }
@@ -120,21 +123,22 @@ fun MainContainer(
                             }
                         },
                         modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .padding(horizontal = Spacing.medium, vertical = Spacing.micro)
                             .fillMaxWidth()
                             .height(56.dp),
                         shape = MaterialTheme.shapes.large,
                         color = if (isSelected) 
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                         else 
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                         contentColor = if (isSelected)
                             MaterialTheme.colorScheme.primary
                         else
                             MaterialTheme.colorScheme.onSurface
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 20.dp),
+                            modifier = Modifier.padding(horizontal = Spacing.large),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
@@ -146,7 +150,7 @@ fun MainContainer(
                                 else
                                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
-                            Spacer(Modifier.width(16.dp))
+                            Spacer(Modifier.width(Spacing.medium))
                             Text(
                                 text = item.label,
                                 fontFamily = DotMatrix,
@@ -161,7 +165,7 @@ fun MainContainer(
                 Spacer(Modifier.weight(1f))
 
                 HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(horizontal = Spacing.large, vertical = Spacing.tiny),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                 )
 
@@ -170,7 +174,7 @@ fun MainContainer(
                     label = "RATE THIS APP",
                     subtext = "HELPS US GROW",
                     icon = Icons.Default.Star,
-                    iconTint = Color(0xFF42A5F5).copy(alpha = 0.4f), // More subtle blue
+                    iconTint = Color(0xFF42A5F5).copy(alpha = 0.5f), // Slightly more visible
                     onClick = {
                         scope.launch {
                             drawerState.close()
@@ -192,7 +196,7 @@ fun MainContainer(
                     label = "SUPPORT THIS APP",
                     subtext = "NO ADS, NO SUBSCRIPTION",
                     icon = Icons.Default.Favorite,
-                    iconTint = Color(0xFFEF5350).copy(alpha = 0.4f), // More subtle red
+                    iconTint = Color(0xFFEF5350).copy(alpha = 0.5f), // Slightly more visible
                     onClick = {
                         scope.launch {
                             drawerState.close()
@@ -202,7 +206,7 @@ fun MainContainer(
                         }
                     }
                 )
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(Spacing.medium))
             }
         }
     ) {

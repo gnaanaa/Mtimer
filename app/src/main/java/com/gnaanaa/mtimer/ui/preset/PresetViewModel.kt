@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gnaanaa.mtimer.data.repository.PresetRepository
+import com.gnaanaa.mtimer.data.datastore.UserPreferencesDataStore
 import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.domain.usecase.DeletePresetUseCase
 import com.gnaanaa.mtimer.domain.usecase.SavePresetUseCase
@@ -34,8 +35,13 @@ class PresetViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val repository: PresetRepository,
     private val savePresetUseCase: SavePresetUseCase,
-    private val deletePresetUseCase: DeletePresetUseCase
+    private val deletePresetUseCase: DeletePresetUseCase,
+    private val userPreferencesDataStore: UserPreferencesDataStore
 ) : ViewModel() {
+
+    val showPresetsHint: StateFlow<Boolean> = userPreferencesDataStore.presetsHintShown
+        .map { !it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val uiState: StateFlow<PresetUiState> = repository.getAllPresets()
         .map { PresetUiState(isLoading = false, presets = it) }
@@ -100,5 +106,11 @@ class PresetViewModel @Inject constructor(
 
     fun startTimer(preset: Preset) {
         MeditationForegroundService.startTimer(context, preset)
+    }
+
+    fun dismissPresetsHint() {
+        viewModelScope.launch {
+            userPreferencesDataStore.setPresetsHintShown()
+        }
     }
 }

@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 import kotlinx.coroutines.launch
@@ -136,6 +137,10 @@ class SettingsViewModel @Inject constructor(
     val themeMode: StateFlow<ThemeMode> = userPreferencesDataStore.themeMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ThemeMode.FOLLOW_SYSTEM)
 
+    val showSettingsHint: StateFlow<Boolean> = userPreferencesDataStore.settingsHintShown
+        .map { !it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
     fun toggleTheme(useLight: Boolean) {
         viewModelScope.launch {
             userPreferencesDataStore.setUseLightTheme(useLight)
@@ -161,6 +166,12 @@ class SettingsViewModel @Inject constructor(
             if (enabled) {
                 HealthConnectSyncWorker.enqueue(context)
             }
+        }
+    }
+
+    fun dismissSettingsHint() {
+        viewModelScope.launch {
+            userPreferencesDataStore.setSettingsHintShown()
         }
     }
 
