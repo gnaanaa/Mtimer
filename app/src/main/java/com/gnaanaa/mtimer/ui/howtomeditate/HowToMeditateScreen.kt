@@ -32,6 +32,7 @@ import com.gnaanaa.mtimer.ui.components.ContextualHint
 import com.gnaanaa.mtimer.ui.theme.Spacing
 import com.gnaanaa.mtimer.ui.theme.Radius
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,24 +41,35 @@ fun HowToMeditateScreen(
     onCreatePreset: (String, Int) -> Unit,
     viewModel: HowToMeditateViewModel = hiltViewModel()
 ) {
-    var expandedMethodIndex by remember { mutableIntStateOf(-1) }
+    // -1: None, 0: Basics, 1-7: Methods, 8: Principles, 9: Sources
+    var expandedIndex by remember { mutableIntStateOf(-1) }
     val showGuideHint by viewModel.showGuideHint.collectAsState()
     val lazyListState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
+    // Header indices mapping for quick jump
+    // 0: Hint, 1: Guide Text, 2: Chips, 3: Divider, 4: Basics, 5: Methods Title, 6: Method 1...
+    val sectionIndices = mapOf(
+        "BASICS" to 4,
+        "METHODS" to 5,
+        "PRINCIPLES" to 13,
+        "SOURCES" to 14
+    )
 
     // Auto-scroll when an item is expanded
-    LaunchedEffect(expandedMethodIndex) {
-        if (expandedMethodIndex != -1) {
-            // Header items take up some slots:
-            // 0: PRACTICAL GUIDE text block
-            // 1: Divider
-            // 2: BEFORE YOU BEGIN title
-            // 3-7: Bullet points (5 items)
-            // 8: Divider
-            // 9: METHODS title
-            // Note: If hint is shown, indices shift by 1.
+    LaunchedEffect(expandedIndex) {
+        if (expandedIndex != -1) {
             val offset = if (showGuideHint) 1 else 0
-            val targetScrollIndex = 9 + expandedMethodIndex + offset
-            lazyListState.animateScrollToItem(index = targetScrollIndex)
+            val targetScrollIndex = when {
+                expandedIndex == 0 -> 4 // Basics
+                expandedIndex in 1..7 -> 5 + expandedIndex // Methods
+                expandedIndex == 8 -> 13 // Principles
+                expandedIndex == 9 -> 14 // Sources
+                else -> -1
+            }
+            if (targetScrollIndex != -1) {
+                lazyListState.animateScrollToItem(index = targetScrollIndex + offset)
+            }
         }
     }
 
@@ -88,7 +100,7 @@ fun HowToMeditateScreen(
                     onDismiss = { viewModel.dismissGuideHint() }
                 )
             }
-
+            
             item {
                 Text(
                     "A PRACTICAL GUIDE FOR EVERY LEVEL",
@@ -100,36 +112,72 @@ fun HowToMeditateScreen(
                 )
                 Spacer(Modifier.height(Spacing.tiny))
                 Text(
-                    "These are time-tested methods drawn from living yogic traditions in India — some over a thousand years old. They have been adapted here for clarity and accessibility, without diluting their depth. No prior belief, background, or flexibility required.",
+                    "These are time-tested methods drawn from living yogic traditions in India — some over a thousand years old. They have been adapted here for clarity and accessibility, without diluting their depth.",
                     fontFamily = InterFont,
-                    fontSize = 15.sp,
-                    lineHeight = 22.sp,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
                     letterSpacing = 0.5.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                 )
+                Spacer(Modifier.height(Spacing.medium))
+            }
+
+            // Quick Jump Chips
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.tiny)
+                ) {
+                    listOf("BASICS", "METHODS", "PRINCIPLES", "SOURCES").forEach { label ->
+                        FilterChip(
+                            selected = false, // Not used for filtering, just jumping
+                            onClick = {
+                                scope.launch {
+                                    val offset = if (showGuideHint) 1 else 0
+                                    sectionIndices[label]?.let { idx ->
+                                        lazyListState.animateScrollToItem(idx + offset)
+                                    }
+                                }
+                            },
+                            label = { Text(label, fontSize = 10.sp, fontFamily = InterFont, fontWeight = FontWeight.Bold) },
+                            shape = RoundedCornerShape(Radius.small),
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                labelColor = MaterialTheme.colorScheme.primary
+                            ),
+                            border = null
+                        )
+                    }
+                }
+                Spacer(Modifier.height(Spacing.small))
             }
 
             item {
-                Spacer(Modifier.height(Spacing.large))
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-                Spacer(Modifier.height(Spacing.large))
+                Spacer(Modifier.height(Spacing.medium))
             }
 
-            item { SectionTitle("BEFORE YOU BEGIN") }
-            
-            item { BulletPoint("PLACE", "A clean, quiet corner — indoors is fine. Using the same spot each time helps the mind recognise the signal and settle faster. It doesn't need to be special; it just needs to be consistent.") }
-            item { BulletPoint("POSTURE", "Spine upright, body relaxed. Sitting on a chair with feet flat on the floor works just as well as sitting cross-legged. What matters is that your back can be straight without being rigid, and that you won't need to shift around. If lying down, you'll likely fall asleep — save that for rest, not practice.") }
-            item { BulletPoint("TIME", "Early morning — before the day's noise begins — and early evening are both good windows. The world is quieter, and so are you. That said, the best time is whichever time you'll actually keep. Consistency across weeks matters far more than the hour on the clock.") }
-            item { BulletPoint("DURATION", "Start shorter than you think you need. Ten focused minutes beats forty restless ones. Build gradually — the capacity to sit deepens on its own with regular practice.") }
-            item { BulletPoint("ATTITUDE", "This is not a performance and there is no grade. Nothing special needs to happen. The instruction is simply to sit, pay attention, and return when you've drifted. That's the whole practice.") }
+            // BASICS ACCORDION
+            item {
+                AboutAccordion(
+                    title = "BEFORE YOU BEGIN (BASICS)",
+                    isExpanded = expandedIndex == 0,
+                    onToggle = { expandedIndex = if (expandedIndex == 0) -1 else 0 }
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
+                        BulletPoint("PLACE", "A clean, quiet corner — indoors is fine. Using the same spot each time helps the mind recognise the signal and settle faster.")
+                        BulletPoint("POSTURE", "Spine upright, body relaxed. Sitting on a chair with feet flat on the floor works just as well as sitting cross-legged.")
+                        BulletPoint("TIME", "Early morning or early evening are both good windows. Consistency across weeks matters far more than the hour on the clock.")
+                        BulletPoint("DURATION", "Start shorter than you think you need. Ten focused minutes beats forty restless ones. Build gradually.")
+                        BulletPoint("ATTITUDE", "This is not a performance. The instruction is simply to sit, pay attention, and return when you've drifted.")
+                    }
+                }
+            }
 
             item {
-                Spacer(Modifier.height(Spacing.large))
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
-                Spacer(Modifier.height(Spacing.large))
+                Spacer(Modifier.height(Spacing.small))
+                SectionTitle("MEDITATION METHODS")
             }
-
-            item { SectionTitle("METHODS") }
             
             item {
                 MethodAccordion(
@@ -139,8 +187,8 @@ fun HowToMeditateScreen(
                     level = "Beginner",
                     duration = "10 min (range: 5–20 min)",
                     durationMins = 10,
-                    isExpanded = expandedMethodIndex == 1,
-                    onToggle = { expandedMethodIndex = if (expandedMethodIndex == 1) -1 else 1 },
+                    isExpanded = expandedIndex == 1,
+                    onToggle = { expandedIndex = if (expandedIndex == 1) -1 else 1 },
                     onCreatePreset = onCreatePreset,
                     content = {
                         MethodContent(
@@ -173,8 +221,8 @@ fun HowToMeditateScreen(
                     level = "Beginner",
                     duration = "20 min (range: 10–40 min)",
                     durationMins = 20,
-                    isExpanded = expandedMethodIndex == 2,
-                    onToggle = { expandedMethodIndex = if (expandedMethodIndex == 2) -1 else 2 },
+                    isExpanded = expandedIndex == 2,
+                    onToggle = { expandedIndex = if (expandedIndex == 2) -1 else 2 },
                     onCreatePreset = onCreatePreset,
                     content = {
                         MethodContent(
@@ -200,8 +248,8 @@ fun HowToMeditateScreen(
                     level = "Beginner",
                     duration = "10 min (range: 5–20 min)",
                     durationMins = 10,
-                    isExpanded = expandedMethodIndex == 3,
-                    onToggle = { expandedMethodIndex = if (expandedMethodIndex == 3) -1 else 3 },
+                    isExpanded = expandedIndex == 3,
+                    onToggle = { expandedIndex = if (expandedIndex == 3) -1 else 3 },
                     onCreatePreset = onCreatePreset,
                     content = {
                         MethodContent(
@@ -227,8 +275,8 @@ fun HowToMeditateScreen(
                     level = "Intermediate",
                     duration = "30 min (range: 15–45 min)",
                     durationMins = 30,
-                    isExpanded = expandedMethodIndex == 4,
-                    onToggle = { expandedMethodIndex = if (expandedMethodIndex == 4) -1 else 4 },
+                    isExpanded = expandedIndex == 4,
+                    onToggle = { expandedIndex = if (expandedIndex == 4) -1 else 4 },
                     onCreatePreset = onCreatePreset,
                     content = {
                         MethodContent(
@@ -254,8 +302,8 @@ fun HowToMeditateScreen(
                     level = "Intermediate",
                     duration = "30 min (range: 15–60 min)",
                     durationMins = 30,
-                    isExpanded = expandedMethodIndex == 5,
-                    onToggle = { expandedMethodIndex = if (expandedMethodIndex == 5) -1 else 5 },
+                    isExpanded = expandedIndex == 5,
+                    onToggle = { expandedIndex = if (expandedIndex == 5) -1 else 5 },
                     onCreatePreset = onCreatePreset,
                     content = {
                         MethodContent(
@@ -281,8 +329,8 @@ fun HowToMeditateScreen(
                     level = "Intermediate",
                     duration = "20 min (range: 10–40 min)",
                     durationMins = 20,
-                    isExpanded = expandedMethodIndex == 6,
-                    onToggle = { expandedMethodIndex = if (expandedMethodIndex == 6) -1 else 6 },
+                    isExpanded = expandedIndex == 6,
+                    onToggle = { expandedIndex = if (expandedIndex == 6) -1 else 6 },
                     onCreatePreset = onCreatePreset,
                     content = {
                         MethodContent(
@@ -308,8 +356,8 @@ fun HowToMeditateScreen(
                     level = "Advanced",
                     duration = "20 min (range: 10–30 min)",
                     durationMins = 20,
-                    isExpanded = expandedMethodIndex == 7,
-                    onToggle = { expandedMethodIndex = if (expandedMethodIndex == 7) -1 else 7 },
+                    isExpanded = expandedIndex == 7,
+                    onToggle = { expandedIndex = if (expandedIndex == 7) -1 else 7 },
                     onCreatePreset = onCreatePreset,
                     content = {
                         MethodContent(
@@ -327,39 +375,46 @@ fun HowToMeditateScreen(
                 )
             }
 
+            // PRINCIPLES ACCORDION
             item {
-                Spacer(Modifier.height(Spacing.extraLarge))
-                SectionTitle("PRINCIPLES THAT APPLY TO EVERY METHOD")
-                Text(
-                    "Regardless of which practice you sit with, these hold.",
-                    fontFamily = InterFont,
-                    fontSize = 15.sp,
-                    lineHeight = 22.sp,
-                    letterSpacing = 0.5.sp,
-                    modifier = Modifier.padding(bottom = Spacing.medium)
-                )
+                Spacer(Modifier.height(Spacing.small))
+                AboutAccordion(
+                    title = "GUIDING PRINCIPLES",
+                    isExpanded = expandedIndex == 8,
+                    onToggle = { expandedIndex = if (expandedIndex == 8) -1 else 8 }
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.medium)) {
+                        Text(
+                            "Regardless of which practice you sit with, these principles hold.",
+                            fontFamily = InterFont,
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                        )
+                        PrincipleItem("You are not your thoughts.", "Thoughts will arise during meditation — always. That's not a problem to solve. The practice is to notice them without being swept away.")
+                        PrincipleItem("Every return is the practice.", "The moment you notice you've drifted and come back — that moment of return is the meditation. It's not an interruption; it is the practice.")
+                        PrincipleItem("Regularity beats intensity.", "Twenty quiet minutes each day will build more than two hours once a week. show up consistently. Depth comes on its own.")
+                        PrincipleItem("The breath is always your anchor.", "Whatever method you're using, if you get lost or overwhelmed, return to simply watching the breath. It's always available.")
+                        PrincipleItem("Nothing happening is still something happening.", "The quietening of the mind is often invisible. The effects of regular practice show up in daily life — more patience, less reactivity.")
+                    }
+                }
             }
-            
-            item { PrincipleItem("You are not your thoughts.", "Thoughts will arise during meditation — always. That's not a problem to solve. The practice is to notice them without being swept away. You are the one watching the thoughts, not the thoughts themselves. This distinction, felt even once, changes things.") }
-            item { PrincipleItem("Every return is the practice.", "The moment you notice you've drifted and come back — to the breath, the mantra, the question — that moment of return is the meditation. It's not an interruption of the practice; it is the practice. Each return builds the capacity to return faster next time.") }
-            item { PrincipleItem("Regularity beats intensity.", "Twenty quiet minutes each day will build more than two hours once a week. The mind changes through repetition over time, not through occasional long sessions. Show up consistently. Depth comes on its own.") }
-            item { PrincipleItem("The breath is always your anchor.", "Whatever method you're using, if you get lost or overwhelmed, return to simply watching the breath. It's always available, always works, and requires nothing from you except attention.") }
-            item { PrincipleItem("Nothing happening is still something happening.", "Sessions where it feels like \"nothing is going on\" are not wasted. The quietening of the mind is often invisible from the inside. The effects of regular practice tend to show up in daily life — slightly more patience, a bit less reactivity, a little more space between stimulus and response — before they show up dramatically in the session itself.") }
 
+            // SOURCES ACCORDION
             item {
-                Spacer(Modifier.height(Spacing.extraLarge))
-                SectionTitle("WHERE THESE METHODS COME FROM")
-                Text(
-                    "The practices in this guide are drawn primarily from two interconnected streams: the teachings of Sri M (a contemporary teacher in the living Nath yogic lineage, and author of On Meditation and Apprenticed to a Himalayan Master), and the classical texts of the Nath tradition — among them the Hatha Yoga Pradipika, Gheranda Samhita, and Vingnana Bhairava Tantra. These methods are over a thousand years old in origin and have been transmitted through unbroken teacher lineages to the present day.\n\n" +
-                    "These methods belong to no single religion and require no particular belief to practise. They have been used by people of every background. What they require is regular practice, some patience, and genuine curiosity about what the mind actually is.\n\n" +
-                    "Where the classical sources themselves disagree — as they do, for instance, on the precise syllable assignment of certain breath mantras — this guide notes the disagreement plainly rather than papering over it. The uncertainty is real and has been debated for centuries. It doesn't prevent the practice from working.\n\n" +
-                    "Read what's useful. Set aside what isn't. Then sit down and breathe.",
-                    fontFamily = InterFont,
-                    fontSize = 14.sp,
-                    lineHeight = 22.sp,
-                    letterSpacing = 0.5.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                )
+                AboutAccordion(
+                    title = "WHERE THESE METHODS COME FROM",
+                    isExpanded = expandedIndex == 9,
+                    onToggle = { expandedIndex = if (expandedIndex == 9) -1 else 9 }
+                ) {
+                    Text(
+                        "The practices in this guide are drawn primarily from two interconnected streams: the teachings of Sri M (a contemporary teacher in the living Nath yogic lineage), and the classical texts of the Nath tradition — among them the Hatha Yoga Pradipika, Gheranda Samhita, and Vingnana Bhairava Tantra.\n\nThese methods belong to no single religion and require no particular belief to practise. They have been used by people of every background for over a thousand years. What they require is regular practice, some patience, and genuine curiosity about what the mind actually is.",
+                        fontFamily = InterFont,
+                        fontSize = 14.sp,
+                        lineHeight = 22.sp,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                    )
+                }
             }
 
             item {
@@ -375,6 +430,62 @@ fun HowToMeditateScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(Modifier.height(Spacing.extraLarge))
+            }
+        }
+    }
+}
+
+@Composable
+private fun AboutAccordion(
+    title: String,
+    isExpanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = Spacing.nano),
+        shape = RoundedCornerShape(Radius.medium),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f) 
+                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (isExpanded) 0.4f else 0.2f)
+        )
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onToggle() }
+                    .padding(Spacing.medium),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = title.uppercase(),
+                    fontFamily = InterFont,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                    letterSpacing = 1.sp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+                )
+                Icon(
+                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                )
+            }
+            
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                Column(modifier = Modifier.padding(start = Spacing.medium, end = Spacing.medium, bottom = Spacing.medium)) {
+                    content()
+                }
             }
         }
     }
