@@ -22,6 +22,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -40,6 +45,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -199,7 +205,7 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(Spacing.tiny))
 
-            SettingsSectionLabel("APPEARANCE")
+            SettingsSectionLabel("APPEARANCE", Icons.Default.Palette)
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -217,6 +223,12 @@ fun SettingsScreen(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp,
                         color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Choose how MTimer appears on your device.",
+                        fontFamily = InterFont,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
                     Spacer(modifier = Modifier.height(Spacing.small))
                     
@@ -246,7 +258,7 @@ fun SettingsScreen(
                 }
             }
 
-            SettingsSectionLabel("SYNC & INTEGRATIONS")
+            SettingsSectionLabel("SYNC & INTEGRATIONS", Icons.Default.Sync)
 
             SettingsToggleCard(
                 title = "HEALTH CONNECT",
@@ -294,7 +306,7 @@ fun SettingsScreen(
 
             SettingsToggleCard(
                 title = "GOOGLE FIT",
-                subtitle = "Log meditation as activity for third-party health reward programs.",
+                subtitle = "Log meditation as activity for third-party programs.",
                 checked = googleFitEnabled,
                 onCheckedChange = { enabled ->
                     viewModel.toggleGoogleFit(enabled)
@@ -313,7 +325,7 @@ fun SettingsScreen(
                 }
             )
 
-            SettingsSectionLabel("GOOGLE ACCOUNT")
+            SettingsSectionLabel("GOOGLE ACCOUNT", Icons.Default.AccountCircle)
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -420,7 +432,16 @@ fun SettingsScreen(
                 }
             }
 
-            SettingsSectionLabel("BACKUP & RESTORE")
+            SettingsSectionLabel("BACKUP & RESTORE", Icons.Default.Storage)
+
+            Text(
+                text = "Export your full history and presets as a standard JSON file. This file is unencrypted for interoperability — please store it securely.",
+                fontFamily = InterFont,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                modifier = Modifier.padding(bottom = Spacing.micro)
+            )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -454,16 +475,27 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SettingsSectionLabel(text: String) {
-    Text(
-        text = text,
-        fontFamily = InterFont,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 1.sp,
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f),
+private fun SettingsSectionLabel(text: String, icon: ImageVector) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(top = Spacing.tiny, bottom = Spacing.micro)
-    )
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(Spacing.small))
+        Text(
+            text = text,
+            fontFamily = InterFont,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+        )
+    }
 }
 
 @Composable
