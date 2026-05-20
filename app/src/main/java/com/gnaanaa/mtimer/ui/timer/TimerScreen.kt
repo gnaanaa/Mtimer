@@ -7,10 +7,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Visibility
@@ -85,6 +91,9 @@ fun TimerScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            // Ensure the main content stays centered and ignores the space taken by system bars
+            // while they are visible (e.g. during a swipe down).
+            .windowInsetsPadding(WindowInsets.displayCutout)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = {
@@ -133,11 +142,12 @@ fun TimerScreen(
             }
         }
 
-        // Zen Mode Toggle
+        // Zen Mode Toggle - Positioned relative to the safe drawing area to avoid overlap with camera cutouts
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(Spacing.large)
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(Spacing.medium)
                 .size(Spacing.huge)
                 .clickable { isZenMode = !isZenMode },
             contentAlignment = Alignment.Center
@@ -154,7 +164,8 @@ fun TimerScreen(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = Spacing.huge)
+                    .windowInsetsPadding(WindowInsets.safeDrawing)
+                    .padding(bottom = Spacing.medium)
                     .size(Spacing.huge)
                     .clickable {
                         viewModel.stopTimer()

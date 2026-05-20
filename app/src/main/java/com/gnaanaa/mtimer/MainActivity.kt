@@ -2,12 +2,14 @@ package com.gnaanaa.mtimer
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -43,7 +45,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         
         // Ensure widget is updated
         WidgetUpdateWorker.enqueue(this)
@@ -53,10 +54,26 @@ class MainActivity : ComponentActivity() {
             val isOnboardingCompleted by userPreferencesDataStore.isOnboardingCompleted.collectAsState(initial = null)
 
             if (isOnboardingCompleted != null) {
+                val isSystemInDark = isSystemInDarkTheme()
                 val darkTheme = when (themeMode) {
-                    ThemeMode.FOLLOW_SYSTEM -> isSystemInDarkTheme()
+                    ThemeMode.FOLLOW_SYSTEM -> isSystemInDark
                     ThemeMode.LIGHT -> false
                     ThemeMode.DARK -> true
+                }
+
+                // Standard Android 15 edge-to-edge configuration
+                // This replaces the deprecated Accompanist SystemUiController
+                LaunchedEffect(darkTheme) {
+                    enableEdgeToEdge(
+                        statusBarStyle = SystemBarStyle.auto(
+                            android.graphics.Color.TRANSPARENT,
+                            android.graphics.Color.TRANSPARENT,
+                        ) { darkTheme },
+                        navigationBarStyle = SystemBarStyle.auto(
+                            android.graphics.Color.TRANSPARENT,
+                            android.graphics.Color.TRANSPARENT,
+                        ) { darkTheme }
+                    )
                 }
 
                 MTimerTheme(darkTheme = darkTheme) {
@@ -92,9 +109,10 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    Scaffold(
-                        modifier = Modifier.fillMaxSize()
-                    ) { innerPadding ->
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
                         MTimerNavGraph(
                             navController = navController,
                             soundPlayer = soundPlayer,
