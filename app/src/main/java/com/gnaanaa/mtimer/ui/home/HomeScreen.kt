@@ -59,6 +59,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.gnaanaa.mtimer.R
 import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.domain.model.Session
+import com.gnaanaa.mtimer.ui.components.ContextualHint
 import com.gnaanaa.mtimer.ui.theme.Spacing
 import com.gnaanaa.mtimer.ui.theme.Radius
 import androidx.compose.ui.text.AnnotatedString
@@ -113,6 +114,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val heartRateSamples by viewModel.heartRateSamples.collectAsState()
+    val showHomeHint by viewModel.showHomeHint.collectAsState()
     val recentSessions = uiState.recentSessions
     val presets = uiState.presets
 
@@ -172,6 +174,11 @@ fun HomeScreen(
                     .padding(padding)
                     .fillMaxSize()
             ) {
+                ContextualHint(
+                    text = "Spin the dial to select a preset, then tap the center to start.",
+                    isVisible = showHomeHint,
+                    onDismiss = { viewModel.dismissHomeHint() }
+                )
 
                 Spacer(Modifier.height(Spacing.small))
 

@@ -30,6 +30,7 @@ import com.gnaanaa.mtimer.domain.model.Preset
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import com.gnaanaa.mtimer.ui.components.ContextualHint
 import com.gnaanaa.mtimer.ui.theme.Spacing
 import com.gnaanaa.mtimer.ui.theme.Radius
 import androidx.compose.ui.zIndex
@@ -46,6 +47,7 @@ fun PresetListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val presets = uiState.presets
+    val showPresetsHint by viewModel.showPresetsHint.collectAsState()
     var presetToDelete by remember { mutableStateOf<Preset?>(null) }
 
         Scaffold(
@@ -115,6 +117,14 @@ fun PresetListScreen(
                 verticalArrangement = Arrangement.spacedBy(Spacing.tiny),
                 contentPadding = PaddingValues(vertical = Spacing.medium)
             ) {
+                item {
+                    ContextualHint(
+                        text = "Create custom timers for different meditation techniques here.",
+                        isVisible = showPresetsHint,
+                        onDismiss = { viewModel.dismissPresetsHint() }
+                    )
+                }
+
                 items(presets, key = { it.id }) { preset ->
                     PresetItem(
                         preset = preset,

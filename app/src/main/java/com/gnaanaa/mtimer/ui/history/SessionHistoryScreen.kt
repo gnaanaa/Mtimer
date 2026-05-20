@@ -30,6 +30,7 @@ import com.gnaanaa.mtimer.ui.home.SessionDetailDialog
 import com.gnaanaa.mtimer.ui.home.formatDurationAligned
 import com.gnaanaa.mtimer.ui.home.alignColons
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import com.gnaanaa.mtimer.ui.components.ContextualHint
 import com.gnaanaa.mtimer.ui.theme.Spacing
 import com.gnaanaa.mtimer.ui.theme.Radius
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,6 +47,7 @@ fun SessionHistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val heartRateSamples by viewModel.heartRateSamples.collectAsState()
+    val showHistoryHint by viewModel.showHistoryHint.collectAsState()
     val groupedSessions = uiState.groupedSessions
     val sessionCount = uiState.sessionCount
     val totalDuration = uiState.totalDuration
@@ -98,6 +100,14 @@ fun SessionHistoryScreen(
                 contentPadding = PaddingValues(Spacing.medium),
                 verticalArrangement = Arrangement.spacedBy(Spacing.tiny)
             ) {
+                item {
+                    ContextualHint(
+                        text = "Tap a session to see details and heart rate charts.",
+                        isVisible = showHistoryHint,
+                        onDismiss = { viewModel.dismissHistoryHint() }
+                    )
+                }
+
                 item {
                     PracticeSummaryCard(sessionCount, totalDuration)
                     

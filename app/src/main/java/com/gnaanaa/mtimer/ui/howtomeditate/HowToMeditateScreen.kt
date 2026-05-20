@@ -28,16 +28,20 @@ import androidx.compose.ui.unit.sp
 import com.gnaanaa.mtimer.ui.home.DotMatrix
 import com.gnaanaa.mtimer.ui.home.InterFont
 import com.gnaanaa.mtimer.ui.home.styleDottedDigits
+import com.gnaanaa.mtimer.ui.components.ContextualHint
 import com.gnaanaa.mtimer.ui.theme.Spacing
 import com.gnaanaa.mtimer.ui.theme.Radius
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HowToMeditateScreen(
     onOpenDrawer: () -> Unit,
-    onCreatePreset: (String, Int) -> Unit
+    onCreatePreset: (String, Int) -> Unit,
+    viewModel: HowToMeditateViewModel = hiltViewModel()
 ) {
     var expandedMethodIndex by remember { mutableIntStateOf(-1) }
+    val showGuideHint by viewModel.showGuideHint.collectAsState()
     val lazyListState = rememberLazyListState()
 
     // Auto-scroll when an item is expanded
@@ -50,7 +54,9 @@ fun HowToMeditateScreen(
             // 3-7: Bullet points (5 items)
             // 8: Divider
             // 9: METHODS title
-            val targetScrollIndex = 9 + expandedMethodIndex 
+            // Note: If hint is shown, indices shift by 1.
+            val offset = if (showGuideHint) 1 else 0
+            val targetScrollIndex = 9 + expandedMethodIndex + offset
             lazyListState.animateScrollToItem(index = targetScrollIndex)
         }
     }
@@ -75,6 +81,14 @@ fun HowToMeditateScreen(
                 .fillMaxSize(),
             contentPadding = PaddingValues(horizontal = Spacing.medium, vertical = Spacing.small)
         ) {
+            item {
+                ContextualHint(
+                    text = "Tap a method to learn the technique and create a matching preset.",
+                    isVisible = showGuideHint,
+                    onDismiss = { viewModel.dismissGuideHint() }
+                )
+            }
+
             item {
                 Text(
                     "A PRACTICAL GUIDE FOR EVERY LEVEL",
