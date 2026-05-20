@@ -90,40 +90,9 @@ fun AboutScreen(
             contentPadding = PaddingValues(Spacing.medium),
             verticalArrangement = Arrangement.spacedBy(Spacing.tiny)
         ) {
-            // Header Section
+            // Header Section removed - simplified entry
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Spacing.medium),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        "MTIMER",
-                        fontFamily = DotMatrix,
-                        fontSize = 32.sp,
-                        letterSpacing = 8.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        "RETURN TO YOURSELF, DAILY.",
-                        fontFamily = DotMatrix,
-                        fontSize = 12.sp,
-                        letterSpacing = 2.sp,
-                        modifier = Modifier.padding(top = Spacing.micro)
-                    )
-                    Text(
-                        text = "VERSION 1.2.0".styleDottedDigits(),
-                        fontFamily = InterFont,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
-                        modifier = Modifier.padding(top = Spacing.tiny)
-                    )
-                }
-                Spacer(Modifier.height(Spacing.medium))
+                Spacer(Modifier.height(Spacing.tiny))
             }
 
             // 1. WHAT THIS IS
@@ -266,7 +235,20 @@ fun AboutScreen(
                         (context as? Activity)?.let { viewModel.supportApp(it, productId) }
                     }
                 )
-                Spacer(Modifier.height(Spacing.huge))
+                Spacer(Modifier.height(Spacing.extraLarge))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "MTimer Version 1.2.0".uppercase().styleDottedDigits(),
+                        fontFamily = DotMatrix,
+                        fontSize = 11.sp,
+                        letterSpacing = 1.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                }
+                Spacer(Modifier.height(Spacing.large))
             }
         }
     }
@@ -401,16 +383,19 @@ private fun SupportSection(
         ) {
             TipButton(
                 icon = Icons.Default.Favorite,
+                iconColor = Color(0xFF4CAF50), // Subtle Green
                 price = productDetails["tip_1"]?.oneTimePurchaseOfferDetails?.formattedPrice ?: "$1",
                 onClick = { onSupport("tip_1") }
             )
             TipButton(
                 icon = Icons.Default.LocalCafe,
+                iconColor = Color(0xFFFFD54F), // Subtle Yellow/Amber
                 price = productDetails["tip_3"]?.oneTimePurchaseOfferDetails?.formattedPrice ?: "$3",
                 onClick = { onSupport("tip_3") }
             )
             TipButton(
                 icon = Icons.Default.Cake,
+                iconColor = Color(0xFFFF9800), // Subtle Orange
                 price = productDetails["tip_6"]?.oneTimePurchaseOfferDetails?.formattedPrice ?: "$6",
                 onClick = { onSupport("tip_6") }
             )
@@ -421,37 +406,38 @@ private fun SupportSection(
 @Composable
 private fun TipButton(
     icon: ImageVector,
+    iconColor: Color,
     price: String,
     onClick: () -> Unit
 ) {
     val isDark = MaterialTheme.colorScheme.background.run { (red + green + blue) < 0.5 }
     
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.size(84.dp), // Slightly larger to fit text inside
+        shape = CircleShape,
+        color = iconColor.copy(alpha = if (isDark) 0.12f else 0.08f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, iconColor.copy(alpha = 0.2f))
     ) {
-        Surface(
-            onClick = onClick,
-            modifier = Modifier.size(72.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-            contentColor = MaterialTheme.colorScheme.primary
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(Spacing.tiny)
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp)
-                )
-            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = iconColor.copy(alpha = 0.9f)
+            )
+            Spacer(modifier = Modifier.height(Spacing.nano))
+            Text(
+                text = price.styleDottedDigits(),
+                fontFamily = DotMatrix, // Dotted font for the price
+                fontSize = 13.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = if (isDark) Color.White else iconColor.copy(alpha = 0.9f)
+            )
         }
-        Spacer(Modifier.height(Spacing.tiny))
-        Text(
-            text = price.styleDottedDigits(),
-            fontFamily = InterFont,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
-        )
     }
 }
